@@ -18,7 +18,7 @@ The v1 prototype demonstrates a complete end-to-end flow:
 ## Documentation
 All design artifacts and technical specifications are maintained in [`/docs`](docs).
 
-- [Software Design Document (SDD)](docs/Software Design Document (SDD)) — full architecture, diagrams, schema, and acceptance criteria  
+- [Software Design Document (SDD)](docs/SDD.md)) — full architecture, diagrams, schema, and acceptance criteria  
 - System Context Diagram  
 - Sequence Diagrams (Citizen + Operator flows)  
 - ERD & Data Dictionary  
