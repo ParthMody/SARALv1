@@ -5,7 +5,7 @@
 
 ---
 
-## 📖 Overview
+##  Overview
 SARAL is a lightweight, citizen-centred platform designed to test how low-literacy users can interact with welfare schemes through simple digital channels.  
 
 The v1 prototype demonstrates a complete end-to-end flow:
@@ -18,7 +18,7 @@ The v1 prototype demonstrates a complete end-to-end flow:
 ## Documentation
 All design artifacts and technical specifications are maintained in [`/docs`](docs).
 
-- [Software Design Document (SDD)](docs/SDD.md)) — full architecture, diagrams, schema, and acceptance criteria  
+- [Software Design Document (SDD)](docs/SDD.md) — full architecture, diagrams, schema, and acceptance criteria  
 - System Context Diagram  
 - Sequence Diagrams (Citizen + Operator flows)  
 - ERD & Data Dictionary  
@@ -33,7 +33,7 @@ All design artifacts and technical specifications are maintained in [`/docs`](do
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 This repo is under active development. Contributions are welcome after v1 milestone.
 
 ---
