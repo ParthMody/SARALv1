@@ -35,8 +35,3 @@ All design artifacts and technical specifications are maintained in [`/docs`](do
 
 ##  Contributing
 This repo is under active development. Contributions are welcome after v1 milestone.
-
----
-
-##  License
-[MIT License](LICENSE)
