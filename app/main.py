@@ -2,10 +2,12 @@
 from fastapi import FastAPI
 from .db import Base, engine, SessionLocal
 from . import models
-from .routes import cases, metrics, dashboard, events
+from .routes import cases, metrics, dashboard, events, ai
 from .logging_config import log_event
+from .errors import install_error_handlers
 
-app = FastAPI(title="SARAL v1 API")
+app = FastAPI()
+install_error_handlers(app)
 
 @app.on_event("startup")
 def on_startup():
@@ -26,6 +28,7 @@ app.include_router(cases.router)
 app.include_router(metrics.router)
 app.include_router(dashboard.router)
 app.include_router(events.router)
+app.include_router(ai.router)
 
 @app.get("/")
 def health():

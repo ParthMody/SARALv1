@@ -14,7 +14,6 @@ def recent_events(limit: int = 50, db: Session = Depends(get_db)):
           .limit(limit)
           .all()
     )
-    # Make sure everything is JSON-serializable
     return [
         {
             "id": str(r.id),

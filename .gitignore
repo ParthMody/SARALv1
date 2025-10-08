@@ -16,6 +16,28 @@ venv/
 .idea/
 .DS_Store
 
-# Byte-compiled / cache
+# Caches
 .pytest_cache/
 .mypy_cache/
+
+# Logs & temp
+*.log
+logs/
+*.pid
+*.tmp
+
+# AI artifacts
+ai/models/*.pkl
+!ai/models/README.md
+
+# Notebooks
+*.ipynb_checkpoints/
+*.ipynb~
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Alembic
+alembic/versions/__pycache__/

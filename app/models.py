@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Enum, ForeignKey, DateTime
+from sqlalchemy import Column, String, Enum, ForeignKey, DateTime, Float, Boolean, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.sql import func
 import uuid, enum
@@ -41,6 +41,11 @@ class Case(Base):
     locale = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    predicted_eligibility = Column(String, nullable=True)
+    eligibility_confidence = Column(Float, nullable=True)
+    intent_label = Column(String, nullable=True)
+    risk_flag = Column(Boolean, default=False)
+    risk_score = Column(Float, nullable=True)
 
 class Event(Base):
     __tablename__ = "events"
