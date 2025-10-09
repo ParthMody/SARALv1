@@ -1,3 +1,4 @@
+# app/routes/dashboard.py
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
@@ -25,12 +26,7 @@ TEMPLATE = Template("""
 </head>
 <body>
   <h1>SARAL — Operator Dashboard</h1>
-  <div class="toolbar">
-    <strong>AI Summary:</strong>
-    Likely: {{ ai_likely }} &nbsp; | &nbsp;
-    Uncertain: {{ ai_uncertain }} &nbsp; | &nbsp;
-    High-risk flags: {{ ai_flags }}
-  </div>
+
   <div class="toolbar">
     <form method="get" action="/dashboard" style="display:flex; gap:8px; align-items:center;">
       <label>Scheme
@@ -53,20 +49,27 @@ TEMPLATE = Template("""
       <a href="/metrics/">Metrics (JSON)</a>
     </form>
   </div>
+
   <div class="toolbar"><strong>AI Summary:</strong>
-    Likely: {{ ai_likely }} | Uncertain: {{ ai_uncertain }} | High-risk flags: {{ ai_flags }}
+    Review-ready (≥0.7): {{ ready }} | Needs attention: {{ needs }} | Flags: {{ flags }}
   </div>
+
   <table>
-    <tr><th>ID</th><th>Scheme</th><th>Status</th><th>Locale</th><th>AI: Eligibility</th><th>Intent</th><th>Risk</th><th>Actions</th></tr>
+    <tr>
+      <th>ID</th><th>Scheme</th><th>Status</th><th>Locale</th>
+      <th>Confidence</th><th>Audit</th><th>Reason</th><th>Intent</th>
+      <th>Actions</th>
+    </tr>
     {% for c in cases %}
     <tr>
       <td>{{ c.id }}</td>
       <td>{{ c.scheme_code }}</td>
       <td>{{ c.status }}</td>
       <td>{{ c.locale }}</td>
-      <td>{{ c.predicted_eligibility or '-' }} ({{ c.eligibility_confidence if c.eligibility_confidence else '' }})</td>
+      <td>{{ '%.2f'|format(c.review_confidence) if c.review_confidence is not none else '-' }}</td>
+      <td>{{ '⚠️' if c.audit_flag else '' }}</td>
+      <td>{{ c.flag_reason or '-' }}</td>
       <td>{{ c.intent_label or '-' }}</td>
-      <td>{{ '⚠️' if c.risk_flag else '' }} {{ c.risk_score if c.risk_score else '' }}</td>
       <td>
         <form method="post" action="/dashboard/update">
           <input type="hidden" name="id" value="{{ c.id }}">
@@ -87,27 +90,21 @@ TEMPLATE = Template("""
 
 @router.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request, db: Session = Depends(get_db), scheme: str | None = None, status: str | None = None):
-    ai_likely = db.query(Case).filter(Case.predicted_eligibility == "likely").count()
-    ai_uncertain = db.query(Case).filter(Case.predicted_eligibility == "uncertain").count()
-    ai_flags = db.query(Case).filter(Case.risk_flag == True).count()
-
     q = db.query(Case)
-    if scheme:
-        q = q.filter(Case.scheme_code == scheme)
-    if status:
-        q = q.filter(Case.status == status)
+    if scheme: q = q.filter(Case.scheme_code == scheme)
+    if status: q = q.filter(Case.status == status)
     items = q.order_by(Case.created_at.desc().nullslast()).limit(50).all()
+
+    ready = db.query(Case).filter(Case.review_confidence >= 0.7).count()
+    needs = db.query(Case).filter((Case.review_confidence < 0.7) | (Case.review_confidence.is_(None))).count()
+    flags = db.query(Case).filter(Case.audit_flag == True).count()
+
     statuses = [s.value for s in StatusEnum]
-    schemes = ["UJJ", "PMAY"]  # quick static list; could query DB
+    schemes = ["UJJ", "PMAY"]
     return TEMPLATE.render(
-        cases=items,
-        statuses=statuses,
-        schemes=schemes,
-        sel_scheme=scheme,
-        sel_status=status,
-        ai_likely=ai_likely,
-        ai_uncertain=ai_uncertain,
-        ai_flags=ai_flags
+        cases=items, statuses=statuses, schemes=schemes,
+        sel_scheme=scheme, sel_status=status,
+        ready=ready, needs=needs, flags=flags
     )
 
 @router.post("/dashboard/update")
@@ -117,10 +114,8 @@ async def dashboard_update(request: Request, db: Session = Depends(get_db)):
     status = form.get("status")
 
     obj = db.query(Case).filter(Case.id == case_id).first()
-    if not obj:
-        raise HTTPException(404, detail="Case not found")
-    if status not in [s.value for s in StatusEnum]:
-        raise HTTPException(400, detail="Invalid status")
+    if not obj: raise HTTPException(404, detail="Case not found")
+    if status not in [s.value for s in StatusEnum]: raise HTTPException(400, detail="Invalid status")
 
     obj.status = status
     db.commit()

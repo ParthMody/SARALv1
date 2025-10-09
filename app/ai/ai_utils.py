@@ -1,55 +1,54 @@
 # app/ai/ai_utils.py
-import pathlib, pickle, numpy as np
+from dataclasses import dataclass
+from typing import Optional
 
-# This file is inside app/ai/, so parents[1] == app/
-APP_ROOT = pathlib.Path(__file__).resolve().parents[1]
-MODELS = APP_ROOT / "ai" / "models"
+@dataclass
+class AssistOut:
+    review_confidence: float   # 0..1
+    audit_flag: bool
+    flag_reason: str
+    intent_label: Optional[str] = None
 
-class EligibilityModelNotFound(FileNotFoundError): ...
-class IntentModelNotFound(FileNotFoundError): ...
+def completeness_score(fields: dict) -> float:
+    keys = ["scheme_code", "citizen_hash", "locale"]
+    have = sum(1 for k in keys if fields.get(k))
+    return round(have / len(keys), 2)
 
-_elig = _clf = _vec = None
+def clarity_score_from_text(text: Optional[str]) -> float:
+    if not text:
+        return 0.3
+    t = text.lower()
+    base = min(1.0, max(0.0, len(t) / 80))
+    hints = any(w in t for w in ["apply", "status", "rejected", "help", "eligibility", "document"])
+    return round(min(1.0, base + (0.2 if hints else 0.0)), 2)
 
-def load_elig():
-    global _elig
-    if _elig is None:
-        p = MODELS / "eligibility.pkl"
-        if not p.exists():
-            raise EligibilityModelNotFound(f"eligibility.pkl not found at {p}")
-        with open(p, "rb") as f:
-            _elig = pickle.load(f)
-    return _elig
+def rule_checks(schema: dict) -> list[str]:
+    reasons = []
+    # put simple, explainable checks here later (doc presence, etc.)
+    return reasons
 
-def load_intent():
-    global _clf, _vec
-    if _clf is None or _vec is None:
-        p1, p2 = MODELS / "intent_nb.pkl", MODELS / "intent_vectorizer.pkl"
-        if not p1.exists() or not p2.exists():
-            raise IntentModelNotFound(f"intent model/vectorizer missing at {p1}, {p2}")
-        with open(p1, "rb") as f:
-            _clf = pickle.load(f)
-        with open(p2, "rb") as f:
-            _vec = pickle.load(f)
-    return _clf, _vec
+def assistive_score(case_fields: dict, message_text: Optional[str]) -> AssistOut:
+    comp = completeness_score(case_fields)
+    clar = clarity_score_from_text(message_text)
+    review_confidence = round(0.6 * comp + 0.4 * clar, 2)
 
-def predict_eligibility(row: dict):
-    """
-    row keys: age, gender ('M'/'F'), income, education_years, rural (0/1), caste_marginalized (0/1)
-    """
-    model = load_elig()
-    X = np.array([[row["age"], row["gender"], row["income"], row["education_years"],
-                   int(row["rural"]), int(row["caste_marginalized"])]], dtype=object)
-    proba = float(model.predict_proba(X)[0][1])
-    label = "likely" if proba >= 0.6 else ("uncertain" if proba >= 0.4 else "unlikely")
-    # simple risk
-    low_income = 1.0 if row["income"] < 120000 else 0.0
-    risk = round(0.5*(1-proba) + 0.5*low_income, 3)
-    fairness_flag = (row["caste_marginalized"] == 1 and proba < 0.4 and row["income"] < 120000)
-    return {"label": label, "prob": round(proba, 3), "risk_score": risk, "risk_flag": bool(fairness_flag)}
+    reasons = []
+    if comp < 0.7: reasons.append("missing_fields")
+    if clar < 0.5: reasons.append("low_message_clarity")
+    reasons += rule_checks(case_fields)
 
-def classify_intent(text: str):
-    clf, vec = load_intent()
-    X = vec.transform([text])
-    probs = clf.predict_proba(X)[0]
-    idx = int(probs.argmax())
-    return clf.classes_[idx], float(probs[idx])
+    return AssistOut(
+        review_confidence=review_confidence,
+        audit_flag=bool(reasons),
+        flag_reason="|".join(reasons)
+    )
+
+# Optional: intent classifier hooks (no exceptions required for v1)
+def classify_intent(text: str) -> tuple[str, float]:
+    # drop-in for your TF-IDF model when ready; placeholder for now
+    t = text.lower()
+    if "rejected" in t: return "rejected", 0.9
+    if "apply" in t:    return "apply", 0.8
+    if "status" in t:   return "status", 0.8
+    if "help" in t:     return "help", 0.7
+    return "other", 0.5

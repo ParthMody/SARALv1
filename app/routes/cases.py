@@ -1,8 +1,9 @@
+# app/routes/cases.py
 from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..db import get_db
-from app.ai.ai_utils import predict_eligibility, classify_intent
+from app.ai.ai_utils import assistive_score, classify_intent
 import os
 
 router = APIRouter(prefix="/cases", tags=["cases"])
@@ -13,6 +14,7 @@ def create_case(case: schemas.CaseCreate, db: Session = Depends(get_db)):
     scheme = db.query(models.Scheme).filter(models.Scheme.code == case.scheme_code).first()
     if not scheme:
         raise HTTPException(status_code=400, detail="Invalid scheme_code")
+
     new_case = models.Case(
         citizen_hash=case.citizen_hash,
         scheme_code=case.scheme_code,
@@ -23,20 +25,24 @@ def create_case(case: schemas.CaseCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_case)
 
-    # AI predictions
-    demo = {"age": 30, "gender": "F", "income": 120000, "education_years": 10, "rural": 1, "caste_marginalized": 1}
-    elig = predict_eligibility(demo)
-    intent_label, intent_conf = classify_intent("apply gas connection")
+    # Assistive AI (ethical, explainable)
+    message_text = "apply gas connection"  # replace with real SMS text when available
+    assist = assistive_score(
+        {"scheme_code": new_case.scheme_code, "citizen_hash": new_case.citizen_hash, "locale": new_case.locale},
+        message_text
+    )
+    new_case.review_confidence = assist.review_confidence
+    new_case.audit_flag = assist.audit_flag
+    new_case.flag_reason = assist.flag_reason
 
-    new_case.predicted_eligibility = elig.label
-    new_case.eligibility_confidence = elig.prob
-    new_case.intent_label = intent_label
-    new_case.risk_flag = elig.risk_flag
-    new_case.risk_score = elig.risk_score
+    # Optional: intent label
+    label, _ = classify_intent(message_text)
+    new_case.intent_label = label
+
     db.commit()
     db.refresh(new_case)
 
-    # log CREATE_CASE
+    # Log CREATE_CASE
     db.add(models.Event(
         case_id=new_case.id,
         action=models.ActionEnum.CREATE_CASE,
@@ -59,7 +65,7 @@ def update_status(
     x_mock_otp: str | None = Header(None, alias="X-Mock-OTP"),
     db: Session = Depends(get_db),
 ):
-    _assert_otp(x_mock_otp)  # comment this out if you don’t want the guard yet
+    _assert_otp(x_mock_otp)
     obj = db.query(models.Case).filter(models.Case.id == case_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Case not found")
@@ -69,7 +75,7 @@ def update_status(
     obj.status = status
     db.commit()
     db.refresh(obj)
-    # log UPDATE_STATUS
+
     db.add(models.Event(
         case_id=obj.id,
         action=models.ActionEnum.UPDATE_STATUS,

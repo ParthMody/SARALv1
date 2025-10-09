@@ -1,32 +1,30 @@
 # app/routes/ai.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
-from app.ai.ai_utils import predict_eligibility, classify_intent, EligibilityModelNotFound, IntentModelNotFound
+from typing import Optional
+from app.ai.ai_utils import assistive_score, classify_intent
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
-class EligIn(BaseModel):
-    age:int; gender:str; income:int; education_years:int; rural:int; caste_marginalized:int
+class AssistIn(BaseModel):
+    scheme_code: str
+    citizen_hash: str
+    locale: str
+    message_text: Optional[str] = None
 
-@router.post("/predict")
-def predict(inp: EligIn):
-    try:
-        out = predict_eligibility(inp.model_dump())
-        return {"label": out["label"], "confidence": out["prob"], "risk_score": out["risk_score"], "risk_flag": out["risk_flag"]}
-    except EligibilityModelNotFound as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"eligibility error: {e}")
+@router.post("/assist")
+def assist(inp: AssistIn):
+    out = assistive_score(inp.model_dump(), inp.message_text)
+    return {
+        "review_confidence": out.review_confidence,
+        "audit_flag": out.audit_flag,
+        "flag_reason": out.flag_reason
+    }
 
 class IntentIn(BaseModel):
     text: str
 
 @router.post("/classify")
 def classify(inp: IntentIn):
-    try:
-        label, conf = classify_intent(inp.text)
-        return {"label": label, "confidence": conf}
-    except IntentModelNotFound as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"intent error: {e}")
+    label, conf = classify_intent(inp.text)
+    return {"label": label, "confidence": conf}
