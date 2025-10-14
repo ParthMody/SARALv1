@@ -1,37 +1,31 @@
-# SARAL v1
+# SARAL v1 – AI-Assisted Welfare Access System
+> A transparent, offline-first prototype to test equitable AI-enabled welfare delivery.
 
-**Citizen-Centred Welfare Access Prototype**  
-*Deadline: 25 Oct 2025 (v1 feature lock)*
-
----
-
-##  Overview
-SARAL is a lightweight, citizen-centred platform designed to test how low-literacy users can interact with welfare schemes through simple digital channels.  
-
-The v1 prototype demonstrates a complete end-to-end flow:
-- Citizens create welfare cases via **SMS (mock/test harness)**.
-- Operators triage and update cases via a **Dashboard**.
-- Events are logged automatically, and **Analytics** show real-time counts.
+![architecture](docs/architecture.png)
 
 ---
 
-## Documentation
-All design artifacts and technical specifications are maintained in [`/docs`](docs).
+## Overview
+SARAL v1 evaluates how citizens experience welfare access through a rule-based, explainable system while the **Operator Behaviour Module** studies how human intermediaries interpret or override algorithmic guidance.
 
-- [Software Design Document (SDD)](docs/SDD.md) — full architecture, diagrams, schema, and acceptance criteria  
-- System Context Diagram  
-- Sequence Diagrams (Citizen + Operator flows)  
-- ERD & Data Dictionary  
-
----
-
-##  Tech Stack (planned)
-- **Backend:** Python (FastAPI), SQLAlchemy  
-- **Database:** PostgreSQL 15  
-- **Auth (mock v1):** OTP stub (header-based)  
-- **Infra:** Docker Compose (local), single VM deploy (cloud)  
+### Core Principles
+- Human-first, explainable AI
+- Offline-first, low-bandwidth operation
+- Transparent logs + local privacy
+- Co-accountability between citizen & operator
 
 ---
 
-##  Contributing
-This repo is under active development. Contributions are welcome after v1 milestone.
+## Architecture
+| Layer | Stack | Purpose |
+|-------|--------|----------|
+| API | FastAPI + SQLite | Offline logic & storage |
+| AI | Python (scikit-learn + rules) | Eligibility + intent assist |
+| Dashboard | HTML/Jinja2 | Operator interface |
+| Logs | RotatingFileHandler + CSV export | Transparent audit trail |
+
+---
+
+## Run Locally
+```bash
+uvicorn app.main:app --reload
