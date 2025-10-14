@@ -1,12 +1,11 @@
-# app/main.py (snippet)
+# app/main.py
 from fastapi import FastAPI
 from .db import Base, engine, SessionLocal
 from . import models
-from .routes import cases, metrics, dashboard, events, ai
-from .errors import install_error_handlers  # if you added unified errors
+from .routes import cases, metrics, dashboard, events, ai, export
+from app.logging_config import log_event
 
 app = FastAPI(title="SARAL v1 API")
-install_error_handlers(app)
 
 @app.on_event("startup")
 def on_startup():
@@ -14,18 +13,23 @@ def on_startup():
     db = SessionLocal()
     try:
         if not db.query(models.Scheme).first():
-            db.add_all([models.Scheme(code="UJJ", name="PM Ujjwala Yojana"),
-                        models.Scheme(code="PMAY", name="PM Awas Yojana")])
+            db.add_all([
+                models.Scheme(code="UJJ", name="PM Ujjwala Yojana"),
+                models.Scheme(code="PMAY", name="PM Awas Yojana"),
+            ])
             db.commit()
     finally:
         db.close()
 
+# Routers
 app.include_router(cases.router)
 app.include_router(metrics.router)
 app.include_router(dashboard.router)
 app.include_router(events.router)
-app.include_router(ai.router)
+app.include_router(ai.router)   
+app.include_router(export.router)
 
 @app.get("/")
 def health():
+    log_event("HEALTH_CHECK", "ok")
     return {"status": "ok", "service": "saral-v1"}

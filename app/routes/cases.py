@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..db import get_db
 from app.ai.ai_utils import assistive_score, classify_intent
+from app.logging_config import log_event
 import os
 
 router = APIRouter(prefix="/cases", tags=["cases"])
@@ -25,8 +26,8 @@ def create_case(case: schemas.CaseCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_case)
 
-    # Assistive AI (ethical, explainable)
-    message_text = "apply gas connection"  # replace with real SMS text when available
+    # Assistive AI (triage, not decision)
+    message_text = "apply gas connection"  # replace with SMS text when available
     assist = assistive_score(
         {"scheme_code": new_case.scheme_code, "citizen_hash": new_case.citizen_hash, "locale": new_case.locale},
         message_text
@@ -35,14 +36,18 @@ def create_case(case: schemas.CaseCreate, db: Session = Depends(get_db)):
     new_case.audit_flag = assist.audit_flag
     new_case.flag_reason = assist.flag_reason
 
-    # Optional: intent label
+    # Optional intent
     label, _ = classify_intent(message_text)
     new_case.intent_label = label
 
     db.commit()
     db.refresh(new_case)
 
-    # Log CREATE_CASE
+    # Log
+    log_event("CREATE_CASE",
+              f"id={new_case.id} scheme={new_case.scheme_code} conf={new_case.review_confidence} flag={new_case.audit_flag}")
+
+    # Event row
     db.add(models.Event(
         case_id=new_case.id,
         action=models.ActionEnum.CREATE_CASE,
@@ -72,10 +77,13 @@ def update_status(
     allowed = [s.value for s in models.StatusEnum]
     if status not in allowed:
         raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {allowed}")
+
     obj.status = status
     db.commit()
     db.refresh(obj)
 
+    # Log + event
+    log_event("UPDATE_STATUS", f"id={obj.id} status={obj.status}")
     db.add(models.Event(
         case_id=obj.id,
         action=models.ActionEnum.UPDATE_STATUS,

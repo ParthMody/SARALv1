@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 from ..db import get_db
 from ..models import Case, StatusEnum
 from jinja2 import Template
@@ -22,10 +23,11 @@ TEMPLATE = Template("""
     .pill { padding: 4px 8px; border-radius: 12px; background:#f3f4f6; }
     .toolbar { margin-bottom: 12px; }
     button { padding: 6px 10px; border:1px solid #ccc; background:#fff; cursor:pointer; border-radius:6px; }
+    .muted { color:#666; font-size: 0.9rem; }
   </style>
 </head>
 <body>
-  <h1>SARAL — Operator Dashboard</h1>
+  <h1>Operator Dashboard <span title="Assistive AI – triage only"></span></h1>
 
   <div class="toolbar">
     <form method="get" action="/dashboard" style="display:flex; gap:8px; align-items:center;">
@@ -45,8 +47,10 @@ TEMPLATE = Template("""
           {% endfor %}
         </select>
       </label>
+      <label><input type="checkbox" name="flags" value="true" {{ 'checked' if sel_flags else '' }}> Flags only</label>
+      <label>Min confidence <input type="number" step="0.05" min="0" max="1" name="min_conf" value="{{ sel_min_conf or '' }}" style="width:6rem"></label>
       <button type="submit">Apply</button>
-      <a href="/metrics/">Metrics (JSON)</a>
+      <a class="muted" href="/metrics/">Metrics (JSON)</a>
     </form>
   </div>
 
@@ -91,10 +95,27 @@ TEMPLATE = Template("""
 @router.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request, db: Session = Depends(get_db), scheme: str | None = None, status: str | None = None):
     q = db.query(Case)
-    if scheme: q = q.filter(Case.scheme_code == scheme)
-    if status: q = q.filter(Case.status == status)
-    items = q.order_by(Case.created_at.desc().nullslast()).limit(50).all()
 
+    # Filters
+    flags_only = request.query_params.get("flags") == "true"
+    min_conf = request.query_params.get("min_conf")
+    if scheme:
+        q = q.filter(Case.scheme_code == scheme)
+    if status:
+        q = q.filter(Case.status == status)
+    if flags_only:
+        q = q.filter(Case.audit_flag == True)
+    if min_conf:
+        try:
+            q = q.filter(Case.review_confidence >= float(min_conf))
+        except ValueError:
+            pass
+
+    # Sort: flags first, high confidence next, newest last
+    q = q.order_by(Case.audit_flag.desc(), Case.review_confidence.desc(), Case.created_at.desc().nullslast())
+    items = q.limit(50).all()
+
+    # Insight strip
     ready = db.query(Case).filter(Case.review_confidence >= 0.7).count()
     needs = db.query(Case).filter((Case.review_confidence < 0.7) | (Case.review_confidence.is_(None))).count()
     flags = db.query(Case).filter(Case.audit_flag == True).count()
@@ -103,7 +124,8 @@ def dashboard(request: Request, db: Session = Depends(get_db), scheme: str | Non
     schemes = ["UJJ", "PMAY"]
     return TEMPLATE.render(
         cases=items, statuses=statuses, schemes=schemes,
-        sel_scheme=scheme, sel_status=status,
+        sel_scheme=scheme or "", sel_status=status or "",
+        sel_flags=flags_only, sel_min_conf=min_conf or "",
         ready=ready, needs=needs, flags=flags
     )
 
