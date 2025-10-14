@@ -1,8 +1,6 @@
 # SARAL v1 – AI-Assisted Welfare Access System
 > A transparent, offline-first prototype to test equitable AI-enabled welfare delivery.
 
-![architecture](docs/architecture.png)
-
 ---
 
 ## Overview
