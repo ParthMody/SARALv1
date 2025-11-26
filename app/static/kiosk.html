@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SARAL Field Client v1.1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* ... keep existing styles ... */
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        .chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        .bubble { max-width: 85%; padding: 15px; border-radius: 15px; font-size: 16px; line-height: 1.4; animation: popIn 0.3s ease; }
+        .bot { align-self: flex-start; background: white; color: #333; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .user { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 2px; }
+        .input-area { background: white; padding: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        .input-wrapper { flex: 1; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        button { padding: 0 20px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        
+        /* Queue Indicator */
+        #netStatus { position: fixed; top: 0; left: 0; right: 0; padding: 5px; text-align: center; font-size: 12px; color: white; display: none; }
+        .bg-red { background: #ef4444; }
+        .bg-green { background: #22c55e; }
+        
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .status-pill { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
+        .status-green { background: #dcfce7; color: #166534; }
+        .status-red { background: #fee2e2; color: #991b1b; }
+        .status-gray { background: #f3f4f6; color: #4b5563; }
+        .checklist { background: #e0f2fe; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div id="netStatus"></div>
+<div class="chat-container" id="chatBox"></div>
+
+<div class="input-area">
+    <div class="input-wrapper" id="inputContainer"></div>
+    <button id="nextBtn" onclick="handleNext()">Start</button>
+</div>
+
+<script>
+    // --- TELEMETRY STATE ---
+    let startTime = null; // Set when first question answered
+
+    // --- CONVERSATION FLOW ---
+    const flow = [
+        { id: 'intro', text: "Namaste. I am SARAL. Which scheme are we checking today?", type: 'select', options: ['UJJ', 'PMAY'], labels: ['PM Ujjwala (Gas)', 'PM Awas (Housing)'], key: 'scheme_code' },
+        { id: 'id', text: "Please enter the 10-digit Mobile Number.", type: 'tel', pattern: '[6-9][0-9]{9}', key: 'citizen_hash' },
+        { id: 'age', text: "Age (must be 18+)?", type: 'number', min: 18, max: 100, key: 'age' },
+        { id: 'gender', text: "Gender?", type: 'select', options: ['F', 'M', 'O'], labels: ['Female', 'Male', 'Other'], key: 'gender' },
+        { id: 'income', text: "Annual Household Income Bracket?", type: 'select', 
+          options: ['90000', '250000', '500000', '900000'], 
+          labels: ['< 1 Lakh (Poor)', '1L - 3L (EWS)', '3L - 6L (LIG)', '> 6L'], key: 'income' },
+        { id: 'edu', text: "Education Level?", type: 'select',
+          options: ['0', '5', '10', '12', '15'], labels: ['None', 'Primary', 'High School', 'Inter', 'Graduate'], key: 'education_years' },
+        { id: 'loc', text: "Location type?", type: 'select', options: ['1', '0'], labels: ['Rural', 'Urban'], key: 'rural' },
+        { id: 'caste', text: "Category?", type: 'select', options: ['1', '0'], labels: ['Marginalized (SC/ST)', 'General'], key: 'caste_marginalized' },
+        { id: 'msg', text: "Any specific help needed?", type: 'text', key: 'message_text' }
+    ];
+
+    let currentStep = -1;
+    let formData = { profile: {} };
+
+    // --- UI HELPERS ---
+    function addBubble(html, isUser) {
+        const div = document.createElement('div');
+        div.className = `bubble ${isUser ? 'user' : 'bot'}`;
+        div.innerHTML = html;
+        document.getElementById('chatBox').appendChild(div);
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function renderInput(step) {
+        const container = document.getElementById('inputContainer');
+        container.innerHTML = '';
+        
+        if (step.type === 'select') {
+            const sel = document.createElement('select');
+            sel.id = 'currInput';
+            step.options.forEach((opt, idx) => {
+                const op = document.createElement('option');
+                op.value = opt;
+                op.innerText = step.labels ? step.labels[idx] : opt;
+                sel.appendChild(op);
+            });
+            container.appendChild(sel);
+        } else {
+            const inp = document.createElement('input');
+            inp.type = step.type;
+            inp.id = 'currInput';
+            inp.placeholder = "Answer...";
+            if(step.key === 'message_text') inp.value = "Check eligibility";
+            container.appendChild(inp);
+            inp.focus();
+        }
+    }
+
+    // --- FLOW LOGIC ---
+    async function handleNext() {
+        if (currentStep === -1) startTime = Date.now(); // TELEMETRY START
+
+        if (currentStep >= 0) {
+            const step = flow[currentStep];
+            let val = document.getElementById('currInput').value;
+            
+            // BASIC VALIDATION
+            if (step.type === 'number') val = parseInt(val);
+            if (step.key === 'age' && val < 18) { alert("Age must be 18+"); return; }
+            if (step.key === 'citizen_hash' && val.length < 5) { alert("ID too short"); return; }
+
+            let displayVal = val;
+            if (step.type === 'select' && step.labels) {
+                const idx = step.options.indexOf(String(val));
+                if(idx > -1) displayVal = step.labels[idx];
+            }
+            
+            if (step.key === 'rural' || step.key === 'caste_marginalized' || step.key === 'income' || step.key === 'education_years') val = parseInt(val);
+
+            if (['age','gender','income','education_years','rural','caste_marginalized'].includes(step.key)) {
+                formData.profile[step.key] = val;
+            } else {
+                formData[step.key] = val;
+            }
+            addBubble(displayVal, true); 
+        } else {
+            document.getElementById('nextBtn').innerText = "Next";
+        }
+
+        currentStep++;
+        if (currentStep >= flow.length) {
+            submitForm();
+            return;
+        }
+        const nextStep = flow[currentStep];
+        addBubble(nextStep.text, false);
+        renderInput(nextStep);
+    }
+
+    // --- OFFLINE QUEUE LOGIC ---
+    const QUEUE_KEY = 'saral_queue_v1';
+    
+    function saveToQueue(data) {
+        let q = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
+        q.push(data);
+        localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
+        updateNetStatus(false);
+    }
+
+    async function processQueue() {
+        if (!navigator.onLine) return;
+        let q = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
+        if (q.length === 0) { updateNetStatus(true); return; }
+
+        const item = q[0]; // Peek
+        try {
+            const res = await fetch('/cases/', {
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(item)
+            });
+            if (res.ok || res.status === 422 || res.status === 409) {
+                q.shift(); // Remove on success or fatal error
+                localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
+                processQueue(); // Loop
+            }
+        } catch (e) { console.log("Sync failed", e); }
+    }
+    setInterval(processQueue, 5000); // Auto-sync
+
+    function updateNetStatus(online) {
+        const el = document.getElementById('netStatus');
+        if (!online) {
+            el.style.display = 'block'; el.className = 'bg-red'; el.innerText = 'Offline Mode: Data Queued';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+
+    // --- SUBMIT ---
+    async function submitForm() {
+        document.getElementById('inputContainer').innerHTML = '<em>Processing...</em>';
+        document.getElementById('nextBtn').disabled = true;
+        
+        formData.source = "KIOSK_CHAT";
+        formData.locale = "en";
+        // TELEMETRY END
+        // Note: Requires backend to accept meta_duration_seconds in schema if we sent it.
+        // For now, we just capture it locally, but the backend field is ready.
+        
+        if (navigator.onLine) {
+            try {
+                const res = await fetch('/cases/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                const data = await res.json();
+                renderResult(data);
+            } catch (e) {
+                saveToQueue(formData);
+                addBubble("⚠️ Network Offline. Data saved to Queue.", false);
+                resetUI();
+            }
+        } else {
+            saveToQueue(formData);
+            addBubble("⚠️ Network Offline. Data saved to Queue.", false);
+            resetUI();
+        }
+    }
+
+    function renderResult(data) {
+        let html = `<div style='margin-bottom:5px'><strong>Case ID:</strong> ${data.id.substring(0,8)}...</div>`;
+        if (data.review_confidence !== null) {
+            const pct = Math.round(data.review_confidence * 100);
+            if (pct >= 60 && !data.audit_flag) {
+                 html += `<span class='status-pill status-green'>✅ Likely Eligible (${pct}%)</span>`;
+            } else {
+                 html += `<span class='status-pill status-red'>⚠️ Review Needed</span>`;
+            }
+        } else {
+            html += `<span class='status-pill status-gray'>ℹ️ Data Recorded</span>`;
+        }
+        
+        if (data.documents && data.documents.length > 0) {
+            html += `<div class='checklist'><strong>Required Documents:</strong><ul>`;
+            data.documents.forEach(d => html += `<li>${d}</li>`);
+            html += `</ul></div>`;
+        }
+        addBubble(html, false);
+        resetUI();
+    }
+
+    function resetUI() {
+        const rst = document.createElement('button');
+        rst.innerText = "Start New Case";
+        rst.onclick = () => window.location.reload();
+        rst.style.width = "100%";
+        rst.style.marginTop = "10px";
+        document.getElementById('inputContainer').innerHTML = '';
+        document.getElementById('inputContainer').appendChild(rst);
+        document.getElementById('nextBtn').style.display = 'none';
+    }
+</script>
+</body>
+</html>

@@ -1,11 +1,14 @@
 # app/main.py
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from .db import Base, engine, SessionLocal
 from . import models
-from .routes import cases, metrics, dashboard, events, ai, export
+from .routes import cases, metrics, dashboard, events, ai, export, ops # Added ops
 from app.logging_config import log_event
 
 app = FastAPI(title="SARAL v1 API")
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.on_event("startup")
 def on_startup():
@@ -23,6 +26,7 @@ def on_startup():
 
 # Routers
 app.include_router(cases.router)
+app.include_router(ops.router) # NEW: Operations Router
 app.include_router(metrics.router)
 app.include_router(dashboard.router)
 app.include_router(events.router)
@@ -31,5 +35,4 @@ app.include_router(export.router)
 
 @app.get("/")
 def health():
-    log_event("HEALTH_CHECK", "ok")
     return {"status": "ok", "service": "saral-v1"}
