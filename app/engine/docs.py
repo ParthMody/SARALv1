@@ -1,35 +1,32 @@
 # app/engine/docs.py
+from .scheme_config import get_scheme_config
 
 def get_document_checklist(scheme_code: str, profile: dict) -> list[str]:
     """
-    Returns a deterministic list of documents required for the citizen.
-    Logic is based on Scheme Rules + Citizen Profile.
+    Generates documents dynamically from scheme_config.py
     """
-    docs = ["Aadhaar Card (Identity Proof)"] # Universal requirement
+    config = get_scheme_config(scheme_code)
+    if not config:
+        return ["Error: Scheme not found"]
     
-    # 1. PM UJJWALA YOJANA (Gas Connection)
-    if scheme_code == "UJJ":
-        docs.append("Bank Account Passbook (Front Page)")
-        docs.append("Ration Card")
-        docs.append("Passport Size Photo")
+    doc_rules = config.get("documents", {})
+    
+    # 1. Always add base documents
+    final_list = list(doc_rules.get("base", []))
+    
+    # 2. Add Caste docs if user is marginalized AND scheme requires it
+    if profile.get("caste_marginalized") == 1 and "caste_marginalized" in doc_rules:
+        final_list.extend(doc_rules["caste_marginalized"])
         
-        # Conditional: Caste Certificate
-        if profile.get("caste_marginalized") == 1:
-            docs.append("Caste Certificate (SC/ST)")
-            
-        # Conditional: Address Proof (if Rural)
-        if profile.get("rural") == 1:
-            docs.append("Gram Panchayat Certificate")
-            
-    # 2. PM AWAS YOJANA (Housing)
-    elif scheme_code == "PMAY":
-        docs.append("Proof of Land Ownership (Patta/Registry)")
-        docs.append("Bank Account Details")
+    # 3. Add Rural docs if user is rural AND scheme requires it
+    if profile.get("rural") == 1 and "rural" in doc_rules:
+        final_list.extend(doc_rules["rural"])
         
-        # Conditional: Income Proof
-        if profile.get("income", 0) < 300000:
-            docs.append("Income Certificate (EWS/LIG)")
-        else:
-            docs.append("Income Tax Return (ITR)")
-            
-    return docs
+    # 4. Add Scheme-specific special keys (like PMAY income/land proof)
+    if "income_proof" in doc_rules and profile.get("income", 0) > 0:
+        final_list.extend(doc_rules["income_proof"])
+        
+    if "land_proof" in doc_rules:
+        final_list.extend(doc_rules["land_proof"])
+        
+    return final_list

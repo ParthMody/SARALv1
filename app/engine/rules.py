@@ -1,86 +1,90 @@
-# app/engine/rules.py
-from dataclasses import dataclass
-from typing import Dict, Any, List
-
-from .scoring import completeness_score, clarity_score_from_text, combined_score
-
+from dataclasses import dataclass, field
+from typing import List
+from .scheme_config import get_scheme_config
+from .audit import risk_flag_from_prob
+from .near_miss import check_near_miss
 
 @dataclass
 class AssistOut:
-    """
-    Single, explainable object returned by the rule engine.
-    """
-    review_confidence: float          # 0..1
+    review_confidence: float
     audit_flag: bool
-    flag_reason: str                  # pipe-separated reasons or ""
-    intent_label: str | None = None   # optional, can be set by NLP layer
+    flag_reason: str
+    is_near_miss: bool = False
+    alternatives: List[str] = field(default_factory=list)
 
-
-def rule_checks(fields: Dict[str, Any]) -> List[str]:
+def assistive_decision(
+    scheme_code: str,
+    profile: dict,
+    message_text: str | None
+) -> AssistOut:
     """
-    Deterministic, documentable checks.
-
-    These rules MUST stay simple and auditable. They are deliberately
-    conservative and can be shown verbatim in documentation.
+    Deterministic rules + near-miss + audit wiring.
     """
+    config = get_scheme_config(scheme_code)
+
+    # 1. Invalid Scheme Check
+    if not config:
+        return AssistOut(0.0, True, "invalid_scheme")
+
+    criteria = config["criteria"]
     reasons: List[str] = []
+    alternatives: List[str] = []
 
-    scheme = (fields.get("scheme_code") or "").upper()
-    locale = (fields.get("locale") or "").lower()
+    # --- GENERIC CRITERIA CHECK ---
 
-    # Example: ensure locale is set for any scheme
-    if not locale:
-        reasons.append("missing_locale")
+    # Age
+    if profile.get("age", 0) < criteria.get("min_age", 0):
+        reasons.append(f"Age must be {criteria['min_age']}+")
 
-    # Example: PMAY may require more structured follow-up
-    if scheme == "PMAY":
-        # Placeholder rule to show extensibility
-        # e.g., later: if not fields.get("has_address_proof"): reasons.append("missing_address_proof")
-        pass
+    # Gender
+    allowed_genders = criteria.get("gender", [])
+    if allowed_genders and profile.get("gender") not in allowed_genders:
+        reasons.append(f"Scheme only for {allowed_genders}")
 
-    return reasons
+    # Income
+    limit = criteria.get("max_income")
+    income = profile.get("income", 0)
+    if limit and income > limit:
+        reasons.append(f"Income > {limit}")
 
+    # Rural requirement
+    if criteria.get("must_be_rural") and profile.get("rural") != 1:
+        reasons.append("Must be Rural")
 
-def assistive_decision(case_fields: Dict[str, Any], message_text: str | None) -> AssistOut:
-    """
-    Top-level function the rest of the app should call.
+    # --- SCORING & NEAR-MISS / CONTEXT WIRING ---
 
-    Computes:
-    - completeness and clarity scores
-    - combined review_confidence
-    - list of rule-based reasons → audit_flag + flag_reason
-    """
-    comp = completeness_score(case_fields)
-    clar = clarity_score_from_text(message_text)
-    review_confidence = combined_score(comp, clar)
+    if not reasons:
+        # Eligible by rules
+        confidence = 0.9
+        audit_flag = False
+        is_near_miss = False
+        alternatives = []
+    else:
+        # Failed at least one rule
+        confidence = 0.1
+        audit_flag = True
+        is_near_miss = False
+        alternatives = config.get("alternatives", [])
 
-    reasons: List[str] = []
-    if comp < 0.7:
-        reasons.append("missing_fields")
-    if clar < 0.5:
-        reasons.append("low_message_clarity")
+        # Near-miss check
+        nm = check_near_miss(profile, scheme_code)
 
-    reasons.extend(rule_checks(case_fields))
+        if nm.is_near_miss and nm.counterfactual:
+            is_near_miss = True
+            reasons.append(f"Near Miss: {nm.counterfactual}")
 
-    audit_flag = bool(reasons)
-    flag_reason = "|".join(reasons)
+        # Merge any contextual alternatives (e.g., MGNREGA) regardless of near-miss flag
+        if nm.alternatives:
+            alternatives = list(set(alternatives + nm.alternatives))
+
+    # Audit Engine (fairness-aware flag)
+    risk_flag = risk_flag_from_prob(confidence, profile.get("caste_marginalized"))
+    final_audit = audit_flag or risk_flag
 
     return AssistOut(
-        review_confidence=review_confidence,
-        audit_flag=audit_flag,
-        flag_reason=flag_reason or "",
+        review_confidence=confidence,
+        audit_flag=final_audit,
+        flag_reason="|".join(reasons),
+        is_near_miss=is_near_miss,
+        alternatives=alternatives
     )
-
-def get_document_checklist(profile: dict, scheme_code: str) -> list[str]:
-    docs = ["Aadhar Card"] # Base requirement
-
-    if scheme_code == "UJJ":
-        docs.append("Bank Account Passbook")
-        if profile.get("caste_marginalized"):
-             docs.append("Caste Certificate (SC/ST)")
-
-    if scheme_code == "PMAY":
-        if profile.get("income") < 300000:
-            docs.append("Income Certificate (EWS)")
-
-    return docs

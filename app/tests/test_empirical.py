@@ -102,13 +102,12 @@ def test_scenario_3_urban_poor():
     })
     
     data = res.json()
-    print(f"Urban Poor Confidence: {data['review_confidence']}")
-    
-    # FAIL CONDITION for Research: If this is < 0.5, your model has Urban Bias.
-    # For the test to pass code-wise, we just assert it returns *a* result.
-    # In your thesis, you report the actual value.
-    assert data["review_confidence"] is not None
 
+    # Arm should be CONTROL (hash length is odd in the fixture)
+    assert data["arm"] == "CONTROL"
+
+    # Blinding: control arm must not see AI score
+    assert data["review_confidence"] is None
 
 # --- SCENARIO 4: The "Gaming" Attempt ---
 # Goal: Check if submitting the same ID multiple times works (it shouldn't duplicate).

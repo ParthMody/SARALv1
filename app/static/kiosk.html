@@ -1,80 +1,469 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>SARAL Field Client v1.1</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SARAL Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <style>
-        /* ... keep existing styles ... */
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        .chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
-        .bubble { max-width: 85%; padding: 15px; border-radius: 15px; font-size: 16px; line-height: 1.4; animation: popIn 0.3s ease; }
-        .bot { align-self: flex-start; background: white; color: #333; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .user { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 2px; }
-        .input-area { background: white; padding: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
-        .input-wrapper { flex: 1; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        button { padding: 0 20px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        button:disabled { background: #ccc; }
+        :root {
+            --brand-blue: #4f8cff;
+            --brand-mint: #22c55e;
+            --bg-color: #f5f5f0;
+            --chat-bg: #ffffff;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, #ffffff 0, #f9fafb 30%, #f5f5f0 70%),
+                var(--bg-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        .topbar {
+            flex: 0 0 auto;
+            background: #f5f5f0;
+            padding: 14px 24px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(15,23,42,0.04);
+        }
+
+        .brand-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 32px;
+            width: auto;
+            display: block;
+        }
+
+        .brand-title {
+            font-family: "Georgia", serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--brand-blue);
+            letter-spacing: 0.08em;
+            line-height: 1.1;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .pilot-tag {
+            font-size: 11px;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 999px;
+            color: #475569;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- LANDING PAGE --- */
+        #landing {
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .hero-card {
+            background: #ffffff;
+            padding: 26px 22px 24px;
+            border-radius: 22px;
+            box-shadow: 0 18px 40px rgba(15,23,42,0.12);
+            border: 1px solid #e2e8f0;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #64748b;
+            background: linear-gradient(90deg, #e0f2fe, #ecfeff);
+            margin-bottom: 10px;
+        }
+
+        .hero-badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: var(--brand-blue);
+        }
+
+        .hero-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .hero-sub {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 22px;
+            font-size: 14px;
+        }
+
+        .hero-sub strong {
+            color: var(--brand-blue);
+            font-weight: 600;
+        }
+
+        .hero-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+            margin: 10px 0 14px;
+        }
+
+        .hero-lang-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .lang-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .lang-btn {
+            padding: 11px 18px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 999px;
+            background: #f9fafb;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.18s ease-out;
+            min-width: 110px;
+        }
+
+        .lang-btn:hover {
+            border-color: var(--brand-blue);
+            box-shadow: 0 8px 18px rgba(37,99,235,0.12);
+        }
+
+        .lang-btn.active {
+            border-color: var(--brand-blue);
+            background: radial-gradient(circle at top left, #eff6ff, #dbeafe);
+            color: var(--brand-blue);
+        }
+
+        .hero-footnote {
+            margin-top: 14px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* --- CHAT INTERFACE --- */
+        #chatSection {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            background: white;
+            border-left: 1px solid #f1f5f9;
+            border-right: 1px solid #f1f5f9;
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
+        }
+
+        .bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 16px;
+            line-height: 1.4;
+            animation: slideUp 0.3s ease;
+        }
+
+        .bot {
+            align-self: flex-start;
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user {
+            align-self: flex-end;
+            background: var(--brand-blue);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-area {
+            flex: 0 0 auto;
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--brand-blue);
+        }
+
+        .primary-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--brand-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
         
-        /* Queue Indicator */
-        #netStatus { position: fixed; top: 0; left: 0; right: 0; padding: 5px; text-align: center; font-size: 12px; color: white; display: none; }
-        .bg-red { background: #ef4444; }
-        .bg-green { background: #22c55e; }
-        
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .status-pill { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
+        .status-pill { display: inline-block; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; }
         .status-green { background: #dcfce7; color: #166534; }
         .status-red { background: #fee2e2; color: #991b1b; }
-        .status-gray { background: #f3f4f6; color: #4b5563; }
-        .checklist { background: #e0f2fe; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9em; }
+        .checklist { background: #eff6ff; padding: 15px; border-radius: 12px; margin-top: 10px; font-size: 0.95em; }
+        .checklist ul { padding-left: 20px; margin: 5px 0; }
+        .checklist li { margin-bottom: 5px; }
+        .near-miss { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px; margin: 10px 0; font-size: 0.9em; }
+
+        @media (max-width: 640px) {
+            .hero-card { padding: 22px 18px 20px; }
+            .hero-title { font-size: 22px; }
+        }
     </style>
 </head>
 <body>
 
-<div id="netStatus"></div>
-<div class="chat-container" id="chatBox"></div>
+<header class="topbar">
+    <div class="brand-left">
+        <img src="/static/assets/saral.png" class="logo-img" alt="SARAL logo">
+        <div style="display:flex; flex-direction:column;">
+            <span class="brand-title">SARAL</span>
+            <span class="brand-sub">ASSISTANT</span>
+        </div>
+    </div>
+    <div class="pilot-tag">Field Pilot v1.3</div>
+</header>
 
-<div class="input-area">
-    <div class="input-wrapper" id="inputContainer"></div>
-    <button id="nextBtn" onclick="handleNext()">Start</button>
+<div class="main-area">
+    <!-- LANDING SCREEN -->
+    <section id="landing">
+        <div class="hero-card">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                WELFARE ACCESS · KIOSK TRIAGE
+            </div>
+            <div class="hero-title">Welcome / स्वागत हे</div>
+            <div class="hero-sub">
+                Select the language you will use with the citizen.  
+                <strong>SARAL</strong> will guide basic eligibility questions and prepare a short checklist of documents.
+            </div>
+
+            <div class="hero-divider"></div>
+
+            <div class="hero-lang-label">Choose language for this session</div>
+            <div class="lang-row">
+                <button class="lang-btn" onclick="startSession('en')">English</button>
+                <button class="lang-btn" onclick="startSession('hi')">हिन्दी</button>
+                <button class="lang-btn" onclick="startSession('mr')">मराठी</button>
+            </div>
+
+            <div class="hero-footnote">
+                Answers are stored without names. Operators still make the final decision.
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAT SCREEN -->
+    <section id="chatSection" class="hidden">
+        <div class="chat-container" id="chatBox"></div>
+        
+        <div class="input-area">
+            <div id="inputWrapper"></div>
+            <div id="nudgeBox" style="display:none; color:#d97706; font-size:0.9em; margin-bottom:8px;">💡 <span id="nudgeText"></span></div>
+            <button id="nextBtn" class="primary-btn" onclick="handleNext()">Start</button>
+        </div>
+    </section>
 </div>
 
 <script>
-    // --- TELEMETRY STATE ---
-    let startTime = null; // Set when first question answered
+    // --- TEXT ASSETS ---
+    const STRINGS = {
+        en: {
+            intro: "Namaste. Which scheme are we checking today?",
+            mobile: "Citizen Mobile Number?",
+            age: "Age?",
+            gender: "Gender?",
+            income: "Annual Household Income (₹)?",
+            edu: "Years of Education?",
+            loc: "Location?",
+            caste: "Category?",
+            notes: "Any notes (Optional)?",
+            start: "Next",
+            next: "Next",
+            nudge: "Is this amount exact? Rounding errors affect eligibility.",
+            caseLabel: "Case ID:",
+            docs: "Required Documents:",
+            newCase: "Start New Case"
+        },
+        hi: {
+            intro: "नमस्ते। आज कौन सी योजना जाँचनी है?",
+            mobile: "मोबाइल नंबर?",
+            age: "उम्र?",
+            gender: "लिंग?",
+            income: "वार्षिक आय (₹)?",
+            edu: "शिक्षा (वर्ष)?",
+            loc: "स्थान?",
+            caste: "श्रेणी?",
+            notes: "नोट्स (वैकल्पिक)?",
+            start: "आगे",
+            next: "आगे",
+            nudge: "क्या यह राशि सही है?",
+            caseLabel: "मामला आईडी:",
+            docs: "आवश्यक दस्तावेज़:",
+            newCase: "नया मामला"
+        },
+        mr: {
+            intro: "नमस्कार. आज कोणती योजना तपासायची आहे?",
+            mobile: "मोबाईल नंबर?",
+            age: "वय?",
+            gender: "लिंग?",
+            income: "वार्षिक उत्पन्न (₹)?",
+            edu: "शिक्षण (वर्षे)?",
+            loc: "ठिकाण?",
+            caste: "वर्ग?",
+            notes: "टिपा (ऐच्छिक)?",
+            start: "पुढे",
+            next: "पुढे",
+            nudge: "ही रक्कम अचूक आहे का?",
+            caseLabel: "केस आयडी:",
+            docs: "कागदपत्रे:",
+            newCase: "नवीन केस"
+        }
+    };
 
-    // --- CONVERSATION FLOW ---
-    const flow = [
-        { id: 'intro', text: "Namaste. I am SARAL. Which scheme are we checking today?", type: 'select', options: ['UJJ', 'PMAY'], labels: ['PM Ujjwala (Gas)', 'PM Awas (Housing)'], key: 'scheme_code' },
-        { id: 'id', text: "Please enter the 10-digit Mobile Number.", type: 'tel', pattern: '[6-9][0-9]{9}', key: 'citizen_hash' },
-        { id: 'age', text: "Age (must be 18+)?", type: 'number', min: 18, max: 100, key: 'age' },
-        { id: 'gender', text: "Gender?", type: 'select', options: ['F', 'M', 'O'], labels: ['Female', 'Male', 'Other'], key: 'gender' },
-        { id: 'income', text: "Annual Household Income Bracket?", type: 'select', 
-          options: ['90000', '250000', '500000', '900000'], 
-          labels: ['< 1 Lakh (Poor)', '1L - 3L (EWS)', '3L - 6L (LIG)', '> 6L'], key: 'income' },
-        { id: 'edu', text: "Education Level?", type: 'select',
-          options: ['0', '5', '10', '12', '15'], labels: ['None', 'Primary', 'High School', 'Inter', 'Graduate'], key: 'education_years' },
-        { id: 'loc', text: "Location type?", type: 'select', options: ['1', '0'], labels: ['Rural', 'Urban'], key: 'rural' },
-        { id: 'caste', text: "Category?", type: 'select', options: ['1', '0'], labels: ['Marginalized (SC/ST)', 'General'], key: 'caste_marginalized' },
-        { id: 'msg', text: "Any specific help needed?", type: 'text', key: 'message_text' }
-    ];
-
+    let currentLang = 'en';
     let currentStep = -1;
     let formData = { profile: {} };
+    let startTime = null;
 
-    // --- UI HELPERS ---
+    // --- FLOW DEFINITION ---
+    const flow = [
+        { id: 'intro', key: 'intro', type: 'select', options: ['UJJ', 'PMAY'], labels: ['PM Ujjwala', 'PM Awas'], field: 'scheme_code' },
+        { id: 'id', key: 'mobile', type: 'tel', pattern: '[0-9]{10}', field: 'citizen_hash' },
+        { id: 'age', key: 'age', type: 'number', field: 'age' },
+        { id: 'gender', key: 'gender', type: 'select', options: ['F', 'M', 'O'], labels: ['Female', 'Male', 'Other'], field: 'gender' },
+        { id: 'income', key: 'income', type: 'number', field: 'income', nudge: true },
+        { id: 'edu', key: 'edu', type: 'number', field: 'education_years' },
+        { id: 'loc', key: 'loc', type: 'select', options: ['1', '0'], labels: ['Rural', 'Urban'], field: 'rural' },
+        { id: 'caste', key: 'caste', type: 'select', options: ['1', '0'], labels: ['Marginalized', 'General'], field: 'caste_marginalized' },
+        { id: 'msg', key: 'notes', type: 'text', field: 'message_text' }
+    ];
+
+    function startSession(lang) {
+        currentLang = lang;
+
+        // highlight selected button
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('onclick').includes("'" + lang + "'"));
+        });
+
+        document.getElementById('landing').classList.add('hidden');
+        document.getElementById('chatSection').classList.remove('hidden');
+        
+        let sess = localStorage.getItem('saral_sess');
+        if(!sess) { sess = Date.now().toString(); localStorage.setItem('saral_sess', sess); }
+        formData.session_id = sess;
+        startTime = Date.now();
+
+        currentStep = 0;
+        addBubble(STRINGS[lang].intro, false);
+        renderInput(flow[0]);
+        document.getElementById('nextBtn').innerText = STRINGS[lang].start;
+    }
+
     function addBubble(html, isUser) {
         const div = document.createElement('div');
         div.className = `bubble ${isUser ? 'user' : 'bot'}`;
         div.innerHTML = html;
-        document.getElementById('chatBox').appendChild(div);
-        window.scrollTo(0, document.body.scrollHeight);
+        const box = document.getElementById('chatBox');
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
     }
 
     function renderInput(step) {
-        const container = document.getElementById('inputContainer');
-        container.innerHTML = '';
+        const wrapper = document.getElementById('inputWrapper');
+        wrapper.innerHTML = '';
         
+        const nudgeBox = document.getElementById('nudgeBox');
+        if(step.nudge) {
+            nudgeBox.style.display = 'block';
+            document.getElementById('nudgeText').innerText = STRINGS[currentLang].nudge;
+        } else {
+            nudgeBox.style.display = 'none';
+        }
+
         if (step.type === 'select') {
             const sel = document.createElement('select');
             sel.id = 'currInput';
@@ -84,47 +473,35 @@
                 op.innerText = step.labels ? step.labels[idx] : opt;
                 sel.appendChild(op);
             });
-            container.appendChild(sel);
+            wrapper.appendChild(sel);
         } else {
             const inp = document.createElement('input');
             inp.type = step.type;
             inp.id = 'currInput';
-            inp.placeholder = "Answer...";
-            if(step.key === 'message_text') inp.value = "Check eligibility";
-            container.appendChild(inp);
+            if(step.pattern) inp.pattern = step.pattern;
+            wrapper.appendChild(inp);
             inp.focus();
         }
     }
 
-    // --- FLOW LOGIC ---
     async function handleNext() {
-        if (currentStep === -1) startTime = Date.now(); // TELEMETRY START
+        const step = flow[currentStep];
+        let val = document.getElementById('currInput').value;
+        if(!val) return;
 
-        if (currentStep >= 0) {
-            const step = flow[currentStep];
-            let val = document.getElementById('currInput').value;
-            
-            // BASIC VALIDATION
-            if (step.type === 'number') val = parseInt(val);
-            if (step.key === 'age' && val < 18) { alert("Age must be 18+"); return; }
-            if (step.key === 'citizen_hash' && val.length < 5) { alert("ID too short"); return; }
+        let displayVal = val;
+        if(step.type === 'select' && step.labels) {
+            const idx = step.options.indexOf(val);
+            if(idx > -1) displayVal = step.labels[idx];
+        }
+        addBubble(displayVal, true);
 
-            let displayVal = val;
-            if (step.type === 'select' && step.labels) {
-                const idx = step.options.indexOf(String(val));
-                if(idx > -1) displayVal = step.labels[idx];
-            }
-            
-            if (step.key === 'rural' || step.key === 'caste_marginalized' || step.key === 'income' || step.key === 'education_years') val = parseInt(val);
-
-            if (['age','gender','income','education_years','rural','caste_marginalized'].includes(step.key)) {
-                formData.profile[step.key] = val;
-            } else {
-                formData[step.key] = val;
-            }
-            addBubble(displayVal, true); 
+        if(step.type === 'number' || ['rural', 'caste_marginalized'].includes(step.field)) val = parseInt(val) || 0;
+        
+        if(['age','gender','income','education_years','rural','caste_marginalized'].includes(step.field)) {
+            formData.profile[step.field] = val;
         } else {
-            document.getElementById('nextBtn').innerText = "Next";
+            formData[step.field] = val;
         }
 
         currentStep++;
@@ -132,114 +509,68 @@
             submitForm();
             return;
         }
+
         const nextStep = flow[currentStep];
-        addBubble(nextStep.text, false);
+        let qText = STRINGS[currentLang][nextStep.key] || nextStep.key;
+        addBubble(qText, false);
         renderInput(nextStep);
     }
 
-    // --- OFFLINE QUEUE LOGIC ---
-    const QUEUE_KEY = 'saral_queue_v1';
-    
-    function saveToQueue(data) {
-        let q = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-        q.push(data);
-        localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
-        updateNetStatus(false);
-    }
+    async function submitForm() {
+        document.getElementById('inputWrapper').innerHTML = '<em>Processing...</em>';
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('nudgeBox').style.display = 'none';
 
-    async function processQueue() {
-        if (!navigator.onLine) return;
-        let q = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-        if (q.length === 0) { updateNetStatus(true); return; }
+        formData.source = "KIOSK_CHAT";
+        formData.locale = currentLang;
+        formData.meta_duration_seconds = Math.round((Date.now() - startTime) / 1000);
 
-        const item = q[0]; // Peek
         try {
             const res = await fetch('/cases/', {
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(item)
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
             });
-            if (res.ok || res.status === 422 || res.status === 409) {
-                q.shift(); // Remove on success or fatal error
-                localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
-                processQueue(); // Loop
-            }
-        } catch (e) { console.log("Sync failed", e); }
-    }
-    setInterval(processQueue, 5000); // Auto-sync
-
-    function updateNetStatus(online) {
-        const el = document.getElementById('netStatus');
-        if (!online) {
-            el.style.display = 'block'; el.className = 'bg-red'; el.innerText = 'Offline Mode: Data Queued';
-        } else {
-            el.style.display = 'none';
-        }
-    }
-
-    // --- SUBMIT ---
-    async function submitForm() {
-        document.getElementById('inputContainer').innerHTML = '<em>Processing...</em>';
-        document.getElementById('nextBtn').disabled = true;
-        
-        formData.source = "KIOSK_CHAT";
-        formData.locale = "en";
-        // TELEMETRY END
-        // Note: Requires backend to accept meta_duration_seconds in schema if we sent it.
-        // For now, we just capture it locally, but the backend field is ready.
-        
-        if (navigator.onLine) {
-            try {
-                const res = await fetch('/cases/', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
-                });
-                const data = await res.json();
-                renderResult(data);
-            } catch (e) {
-                saveToQueue(formData);
-                addBubble("⚠️ Network Offline. Data saved to Queue.", false);
-                resetUI();
-            }
-        } else {
-            saveToQueue(formData);
-            addBubble("⚠️ Network Offline. Data saved to Queue.", false);
-            resetUI();
+            const data = await res.json();
+            renderResult(data);
+        } catch (e) {
+            addBubble("⚠️ Network Error. Please retry.", false);
         }
     }
 
     function renderResult(data) {
-        let html = `<div style='margin-bottom:5px'><strong>Case ID:</strong> ${data.id.substring(0,8)}...</div>`;
+        let html = `<div><strong>${STRINGS[currentLang].caseLabel}</strong> ${data.id.substring(0,6)}</div>`;
+
+        if (data.flag_reason && data.flag_reason.includes("Near Miss")) {
+            const msg = data.flag_reason.split("Near Miss:")[1];
+            html += `<div class='near-miss'>💡 ${msg}</div>`;
+        }
+
         if (data.review_confidence !== null) {
             const pct = Math.round(data.review_confidence * 100);
             if (pct >= 60 && !data.audit_flag) {
-                 html += `<span class='status-pill status-green'>✅ Likely Eligible (${pct}%)</span>`;
+                 html += `<div style="margin-top:10px"><span class='status-pill status-green'>✅ Eligible (${pct}%)</span></div>`;
             } else {
-                 html += `<span class='status-pill status-red'>⚠️ Review Needed</span>`;
+                 html += `<div style="margin-top:10px"><span class='status-pill status-red'>⚠️ Review Needed</span></div>`;
             }
         } else {
-            html += `<span class='status-pill status-gray'>ℹ️ Data Recorded</span>`;
+            html += `<div style="margin-top:10px; color:#666"><em>Data Recorded (Blinded)</em></div>`;
         }
-        
+
         if (data.documents && data.documents.length > 0) {
-            html += `<div class='checklist'><strong>Required Documents:</strong><ul>`;
+            html += `<div class='checklist'><strong>${STRINGS[currentLang].docs}</strong><ul>`;
             data.documents.forEach(d => html += `<li>${d}</li>`);
             html += `</ul></div>`;
         }
-        addBubble(html, false);
-        resetUI();
-    }
 
-    function resetUI() {
-        const rst = document.createElement('button');
-        rst.innerText = "Start New Case";
-        rst.onclick = () => window.location.reload();
-        rst.style.width = "100%";
-        rst.style.marginTop = "10px";
-        document.getElementById('inputContainer').innerHTML = '';
-        document.getElementById('inputContainer').appendChild(rst);
-        document.getElementById('nextBtn').style.display = 'none';
+        addBubble(html, false);
+        
+        const btn = document.createElement('button');
+        btn.innerText = STRINGS[currentLang].newCase;
+        btn.className = "primary-btn";
+        btn.style.marginTop = "15px";
+        btn.onclick = () => window.location.reload();
+        document.querySelector('.input-area').appendChild(btn);
     }
 </script>
 </body>
