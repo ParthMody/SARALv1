@@ -72,3 +72,9 @@ class Event(Base):
     payload = Column(Text)
     ts = Column(DateTime(timezone=True), server_default=func.now())
     app_version = Column(String, nullable=True)
+
+class ActionEnum(str, enum.Enum):
+    ML_FALLBACK = "ML_FALLBACK"
+    UPDATE_STATUS = "UPDATE_STATUS"
+    EXPORT_CASES = "EXPORT_CASES"
+    FAILURE_LOG = "FAILURE_LOG"  

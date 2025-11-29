@@ -92,6 +92,10 @@ class CaseResponse(BaseModel):
     ai_shown: Optional[bool] = None
     meta_duration_seconds: Optional[int] = None
 
+    # Failure invariants
+    error_code: Optional[str] = None          
+    failure_log_id: Optional[str] = None 
+
     # Value Add (Safe Defaults)
     documents: List[str] = Field(default_factory=list)
     alternatives: List[str] = Field(default_factory=list)
