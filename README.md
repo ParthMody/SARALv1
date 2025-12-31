@@ -3,8 +3,6 @@
 
 A transparent, offline-first **research prototype** to study AI-assisted welfare access and human decision-making under algorithmic guidance.
 
----
-
 ## 1. Purpose
 
 SARAL v1 is **not a production system**.  
@@ -15,8 +13,6 @@ It is a **research instrument** designed to empirically study:
 - How explainable, low-automation AI affects access, consistency, and fairness
 
 The system is intentionally **minimal, auditable, and constrained**.
-
----
 
 ## 2. Research Framing
 
@@ -46,8 +42,6 @@ SARAL v1 supports **quasi-experimental and RCT-style field testing**.
   - Human operators make all final decisions
   - No automated approvals or rejections
 
----
-
 ## 3. Core Principles
 
 - Human-first decision-making
@@ -56,8 +50,6 @@ SARAL v1 supports **quasi-experimental and RCT-style field testing**.
 - Local data storage with no cloud dependency
 - Explicit auditability
 - Co-accountability between system and operator
-
----
 
 ## 4. System Architecture
 
@@ -72,8 +64,6 @@ SARAL v1 supports **quasi-experimental and RCT-style field testing**.
 **Design constraints:**
 - No external APIs  
 - No real-time inference dependency  
-
----
 
 ## 5. Functional Components
 
@@ -106,8 +96,6 @@ Captures:
 
 This module represents the **primary research contribution** of SARAL v1.
 
----
-
 ## 6. Logging & Auditability
 
 Each case generates:
@@ -122,8 +110,6 @@ Each case generates:
 
 No black-box decisions exist.
 
----
-
 ## 7. Privacy & Ethics Model
 
 - Local-only data storage
@@ -132,8 +118,6 @@ No black-box decisions exist.
 - Explicit informed consent during field testing
 
 Designed to be compatible with **academic ethics review** requirements.
-
----
 
 ## 8. Local Setup
 
