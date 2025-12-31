@@ -1,90 +1,107 @@
+# app/engine/rules.py
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import List
+
 from .scheme_config import get_scheme_config
-from .audit import risk_flag_from_prob
-from .near_miss import check_near_miss
+
 
 @dataclass
-class AssistOut:
-    review_confidence: float
-    audit_flag: bool
-    flag_reason: str
-    is_near_miss: bool = False
+class RuleOut:
+    rule_result: str  # ELIGIBLE_BY_RULE / INELIGIBLE_BY_RULE / UNKNOWN_NEEDS_DOCS
+    reasons: List[str] = field(default_factory=list)
     alternatives: List[str] = field(default_factory=list)
+    tags: List[str] = field(default_factory=list)  # non-decision metadata
 
-def assistive_decision(
-    scheme_code: str,
-    profile: dict,
-    message_text: str | None
-) -> AssistOut:
-    """
-    Deterministic rules + near-miss + audit wiring.
-    """
-    config = get_scheme_config(scheme_code)
 
-    # 1. Invalid Scheme Check
-    if not config:
-        return AssistOut(0.0, True, "invalid_scheme")
+def _annualize_income(income: int, period: str) -> int:
+    if period == "annual":
+        return income
+    if period == "monthly":
+        return income * 12
+    raise ValueError("Invalid income period")
 
-    criteria = config["criteria"]
+
+def assistive_decision(scheme_code: str, profile: dict) -> RuleOut:
+    cfg = get_scheme_config(scheme_code)
+    if not cfg:
+        return RuleOut(
+            "UNKNOWN_NEEDS_DOCS",
+            ["Invalid scheme code"],
+            [],
+            [],
+        )
+
+    criteria = cfg.get("criteria", {}) or {}
     reasons: List[str] = []
-    alternatives: List[str] = []
+    alts: List[str] = list(cfg.get("alternatives", []) or [])
+    tags: List[str] = []
 
-    # --- GENERIC CRITERIA CHECK ---
+    # ---------- inputs ----------
+    age = int(profile.get("age") or 0)
+    gender = profile.get("gender")
+    rural = int(profile.get("rural") or 0)
+    caste_flag = int(profile.get("caste_marginalized") or 0)
 
-    # Age
-    if profile.get("age", 0) < criteria.get("min_age", 0):
-        reasons.append(f"Age must be {criteria['min_age']}+")
+    income = profile.get("income")
+    income_period = profile.get("income_period")
 
-    # Gender
-    allowed_genders = criteria.get("gender", [])
-    if allowed_genders and profile.get("gender") not in allowed_genders:
-        reasons.append(f"Scheme only for {allowed_genders}")
+    # ---------- hard guards ----------
+    # If income missing, rules cannot conclude; route to docs.
+    if income is None or income_period is None:
+        return RuleOut(
+            "UNKNOWN_NEEDS_DOCS",
+            ["Income or income period missing"],
+            alts,
+            tags,
+        )
 
-    # Income
-    limit = criteria.get("max_income")
-    income = profile.get("income", 0)
-    if limit and income > limit:
-        reasons.append(f"Income > {limit}")
+    try:
+        annual_income = _annualize_income(int(income), str(income_period))
+    except Exception:
+        return RuleOut(
+            "UNKNOWN_NEEDS_DOCS",
+            ["Invalid income format"],
+            alts,
+            tags,
+        )
 
-    # Rural requirement
-    if criteria.get("must_be_rural") and profile.get("rural") != 1:
+    # ---------- deterministic checks ----------
+    min_age = int(criteria.get("min_age") or 0)
+    if min_age and age < min_age:
+        reasons.append(f"Age must be {min_age}+")
+
+    allowed_genders = criteria.get("gender") or []
+    if allowed_genders and gender not in allowed_genders:
+        reasons.append("Applicant category not eligible")
+
+    if bool(criteria.get("must_be_rural")) and rural != 1:
         reasons.append("Must be Rural")
 
-    # --- SCORING & NEAR-MISS / CONTEXT WIRING ---
+    # ---------- income band logic (config-driven) ----------
+    bands = criteria.get("income_bands") or []
+    matched_band = None
+    for band in bands:
+        try:
+            if annual_income <= int(band.get("max", -1)):
+                matched_band = str(band.get("name", ""))
+                break
+        except Exception:
+            continue
 
+    if bands and not matched_band:
+        reasons.append("Income exceeds all eligible bands")
+    elif matched_band:
+        tags.append(f"{scheme_code}_BAND:{matched_band}")
+
+    # ---------- caste logic (binary by design) ----------
+    if bool(criteria.get("requires_marginalized")) and caste_flag != 1:
+        reasons.append("Must belong to eligible social category")
+
+    # ---------- final outcome ----------
     if not reasons:
-        # Eligible by rules
-        confidence = 0.9
-        audit_flag = False
-        is_near_miss = False
-        alternatives = []
-    else:
-        # Failed at least one rule
-        confidence = 0.1
-        audit_flag = True
-        is_near_miss = False
-        alternatives = config.get("alternatives", [])
+        return RuleOut("ELIGIBLE_BY_RULE", [], [], tags)
 
-        # Near-miss check
-        nm = check_near_miss(profile, scheme_code)
-
-        if nm.is_near_miss and nm.counterfactual:
-            is_near_miss = True
-            reasons.append(f"Near Miss: {nm.counterfactual}")
-
-        # Merge any contextual alternatives (e.g., MGNREGA) regardless of near-miss flag
-        if nm.alternatives:
-            alternatives = list(set(alternatives + nm.alternatives))
-
-    # Audit Engine (fairness-aware flag)
-    risk_flag = risk_flag_from_prob(confidence, profile.get("caste_marginalized"))
-    final_audit = audit_flag or risk_flag
-
-    return AssistOut(
-        review_confidence=confidence,
-        audit_flag=final_audit,
-        flag_reason="|".join(reasons),
-        is_near_miss=is_near_miss,
-        alternatives=alternatives
-    )
+    # IMPORTANT: keep alts for ineligible/unknown flows (triage, not auto-reject)
+    return RuleOut("INELIGIBLE_BY_RULE", reasons, alts, tags)

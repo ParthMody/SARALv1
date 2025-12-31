@@ -1,7 +1,11 @@
-# app/routes/metrics.py
-from fastapi import APIRouter, Depends
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import Any, Dict
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, case, or_
 from sqlalchemy.orm import Session
-from statistics import mean
 
 from ..db import get_db
 from .. import models
@@ -10,77 +14,104 @@ from ..settings import get_settings
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 settings = get_settings()
 
+def _parse_since(since: str | None) -> datetime | None:
+    if not since:
+        return None
+    try:
+        return datetime.strptime(since, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid 'since' date. Use YYYY-MM-DD.")
 
 @router.get("/")
-def metrics_overview(db: Session = Depends(get_db)):
-    """
-    Pre-registered metrics only.
+def get_metrics(
+    since: str | None = Query(None, description="YYYY-MM-DD (optional)"),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    since_dt = _parse_since(since)
 
-    1) Difference in means: meta_duration_seconds (T vs C)
-    2) Difference in audit_flag rate (logit-ready)
-    3) Simple directional bias indicators by scheme / caste / gender
-    """
-    cases = db.query(models.Case).all()
-    if not cases:
-        return {"row_count": 0}
+    base = db.query(models.Case)
+    if since_dt:
+        base = base.filter(models.Case.created_at >= since_dt)
 
-    # Split arms
-    t = [c for c in cases if c.arm == "TREATMENT"]
-    c = [c for c in cases if c.arm == "CONTROL"]
+    total = base.count()
 
-    def safe_mean(xs):
-        xs = [x for x in xs if x is not None]
-        return mean(xs) if xs else None
+    by_status_rows = (
+        base.with_entities(models.Case.status, func.count(models.Case.id))
+        .group_by(models.Case.status)
+        .all()
+    )
+    by_status = {str(k): int(v) for k, v in by_status_rows}
 
-    # 1) triage time (difference in means)
-    t_time = safe_mean([c.meta_duration_seconds for c in t])
-    c_time = safe_mean([c.meta_duration_seconds for c in c])
-    triage_diff = None
-    if t_time is not None and c_time is not None:
-        triage_diff = t_time - c_time
+    by_scheme_rows = (
+        base.with_entities(models.Case.scheme_code, func.count(models.Case.id))
+        .group_by(models.Case.scheme_code)
+        .all()
+    )
+    by_scheme = {str(k): int(v) for k, v in by_scheme_rows}
 
-    # 2) audit_flag rate (logit-ready; we just output rates here)
-    def rate_audit(xs):
-        xs = [int(c.audit_flag) for c in xs]
-        return (sum(xs) / len(xs)) if xs else None
+    by_arm_rows = (
+        base.with_entities(models.Case.arm, func.count(models.Case.id))
+        .group_by(models.Case.arm)
+        .all()
+    )
+    by_arm = {str(k): int(v) for k, v in by_arm_rows}
 
-    t_audit = rate_audit(t)
-    c_audit = rate_audit(c)
-    audit_diff = None
-    if t_audit is not None and c_audit is not None:
-        audit_diff = t_audit - c_audit
+    def arm_stats(arm_name: str) -> Dict[str, float]:
+        row = (
+            base.filter(models.Case.arm == arm_name)
+            .with_entities(
+                func.count(models.Case.id).label("n"),
+                func.avg(models.Case.meta_duration_seconds).label("avg_time"),
+                func.sum(case((models.Case.audit_flag == True, 1), else_=0)).label("flags"),
+            )
+            .first()
+        )
+        n = int(row.n or 0)
+        avg_time = float(row.avg_time) if row.avg_time is not None else 0.0
+        flags = int(row.flags or 0)
+        flag_rate = (flags / n) if n else 0.0
+        return {"n": n, "avg_time": avg_time, "flag_rate": flag_rate}
 
-    # 3) directional bias indicators (no magnitude over-claim)
-    # Example: PMAY, marginalized vs general
-    bias_snapshots = []
-    pmay_cases = [c for c in cases if c.scheme_code == "PMAY"]
-    for group_label, selector in [
-        ("caste_marginalized_1", lambda c: c.caste_marginalized == 1),
-        ("caste_marginalized_0", lambda c: c.caste_marginalized == 0),
-    ]:
-        grp = [c for c in pmay_cases if selector(c)]
-        bias_snapshots.append({
-            "group": group_label,
-            "n": len(grp),
-            "audit_rate": rate_audit(grp),
-        })
+    treatment = arm_stats("TREATMENT")
+    control = arm_stats("CONTROL")
 
-    return {
-        "row_count": len(cases),
-        "triage_time": {
-            "treatment_mean": t_time,
-            "control_mean": c_time,
-            "difference_in_means": triage_diff,
+    payload: Dict[str, Any] = {
+        "by_status": by_status,
+        "by_scheme": by_scheme,
+        "by_arm": by_arm,
+        "meta": {
+            "version": settings.APP_VERSION,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "since_filter": since,
+            "total_cases": total,
         },
-        "audit_flag_rate": {
-            "treatment": t_audit,
-            "control": c_audit,
-            "difference": audit_diff,
+        "experimental_rct": {
+            "treatment": treatment,
+            "control": control,
+            "delta_analysis": {
+                "time_savings_seconds": float(treatment["avg_time"] - control["avg_time"]),
+                "audit_rate_diff": float(treatment["flag_rate"] - control["flag_rate"]),
+            },
         },
-        "bias_snapshots": bias_snapshots,
-        "notes": [
-            "triage_time difference_in_means is the pre-registered estimator for efficiency",
-            "audit_flag_rate difference is the pre-registered estimator for intervention intensity",
-            "bias_snapshots provide directional signals only; no fairness adjustments are applied here.",
-        ],
     }
+
+    # Override metrics: only if your schema supports final_action + enum
+    has_final_action = hasattr(models.Case, "final_action") and hasattr(models, "FinalActionEnum")
+    if has_final_action:
+        override = (
+            base.filter(models.Case.ai_shown == True)
+            .filter(models.Case.flag_reason == "High ML risk score")
+            .filter(models.Case.final_action == models.FinalActionEnum.ELIGIBLE_PROVISIONAL)
+            .count()
+        )
+        treatment_total = base.filter(models.Case.ai_shown == True).count()
+        payload["override_n"] = int(override)
+        payload["treatment_n"] = int(treatment_total)
+        payload["override_rate"] = float((override / treatment_total) if treatment_total else 0.0)
+    else:
+        payload["override_n"] = 0
+        payload["treatment_n"] = int(base.filter(models.Case.ai_shown == True).count())
+        payload["override_rate"] = 0.0
+        payload["override_note"] = "final_action not present in schema; override rate disabled"
+
+    return payload

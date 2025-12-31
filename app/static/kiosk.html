@@ -1,38 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8" />
     <title>SARAL Assistant</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <style>
+        /* --- CSS Variables & Reset --- */
         :root {
             --brand-blue: #4f8cff;
-            --brand-mint: #22c55e;
-            --bg-color: #f5f5f0;
-            --chat-bg: #ffffff;
+            --bg: #f5f2eb;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --muted: #64748b;
+            --danger: #991b1b;
+            --danger-bg: #fee2e2;
+            --warn: #b45309;
+            --warn-bg: #fef3c7;
+            --ok: #166534;
+            --ok-bg: #dcfce7;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         html, body {
             height: 100%;
             margin: 0;
-            padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background:
-                radial-gradient(circle at top left, #ffffff 0, #f9fafb 30%, #f5f5f0 70%),
-                var(--bg-color);
+                radial-gradient(circle at top left, #ffffff 0, #f9fafb 30%, var(--bg) 70%),
+                var(--bg);
+            color: var(--text);
             display: flex;
             flex-direction: column;
         }
 
-        /* --- HEADER --- */
+        /* --- Header / Topbar --- */
         .topbar {
             flex: 0 0 auto;
-            background: #f5f5f0;
+            background: var(--bg);
             padding: 14px 24px 10px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 4px rgba(15,23,42,0.04);
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
         }
 
         .brand-left {
@@ -42,17 +56,22 @@
         }
 
         .logo-img {
-            height: 32px;
+            height: 34px;
             width: auto;
             display: block;
+        }
+
+        .brand-wrap {
+            display: flex;
+            flex-direction: column;
         }
 
         .brand-title {
             font-family: "Georgia", serif;
             font-size: 24px;
             font-weight: 700;
-            color: var(--brand-blue);
             letter-spacing: 0.08em;
+            color: var(--brand-blue);
             line-height: 1.1;
         }
 
@@ -60,21 +79,21 @@
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.16em;
-            color: #9ca3af;
+            color: #6b7280;
             margin-top: 2px;
         }
 
         .pilot-tag {
-            font-size: 11px;
-            background: #f1f5f9;
-            padding: 4px 10px;
+            font-size: 12px;
+            background: #e5e5e5;
+            padding: 6px 12px;
             border-radius: 999px;
             color: #475569;
-            font-weight: 600;
+            font-weight: 700;
             white-space: nowrap;
         }
 
-        /* --- MAIN LAYOUT --- */
+        /* --- Main Layout --- */
         .main-area {
             flex: 1;
             display: flex;
@@ -83,23 +102,24 @@
             position: relative;
         }
 
-        /* --- LANDING PAGE --- */
+        /* --- Landing Page --- */
         #landing {
             padding: 24px 20px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             height: 100%;
-            max-width: 640px;
+            max-width: 680px;
             margin: 0 auto;
+            width: 100%;
         }
 
         .hero-card {
-            background: #ffffff;
+            background: var(--surface);
             padding: 26px 22px 24px;
             border-radius: 22px;
-            box-shadow: 0 18px 40px rgba(15,23,42,0.12);
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+            border: 1px solid var(--border);
         }
 
         .hero-badge {
@@ -111,7 +131,7 @@
             font-size: 11px;
             letter-spacing: 0.14em;
             text-transform: uppercase;
-            color: #64748b;
+            color: var(--muted);
             background: linear-gradient(90deg, #e0f2fe, #ecfeff);
             margin-bottom: 10px;
         }
@@ -125,13 +145,13 @@
 
         .hero-title {
             font-size: 24px;
-            font-weight: 700;
-            color: #0f172a;
+            font-weight: 800;
+            color: var(--text);
             margin-bottom: 8px;
         }
 
         .hero-sub {
-            color: #64748b;
+            color: var(--muted);
             line-height: 1.6;
             margin-bottom: 22px;
             font-size: 14px;
@@ -139,7 +159,7 @@
 
         .hero-sub strong {
             color: var(--brand-blue);
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .hero-divider {
@@ -165,19 +185,19 @@
 
         .lang-btn {
             padding: 11px 18px;
-            border: 1.5px solid #e2e8f0;
+            border: 1.5px solid var(--border);
             border-radius: 999px;
             background: #f9fafb;
-            font-weight: 600;
+            font-weight: 700;
             color: #475569;
             cursor: pointer;
             transition: all 0.18s ease-out;
-            min-width: 110px;
+            min-width: 120px;
         }
 
         .lang-btn:hover {
             border-color: var(--brand-blue);
-            box-shadow: 0 8px 18px rgba(37,99,235,0.12);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
         }
 
         .lang-btn.active {
@@ -192,15 +212,15 @@
             color: #94a3b8;
         }
 
-        /* --- CHAT INTERFACE --- */
+        /* --- Chat Section --- */
         #chatSection {
             display: flex;
             flex-direction: column;
             height: 100%;
-            max-width: 600px;
+            max-width: 640px;
             margin: 0 auto;
             width: 100%;
-            background: white;
+            background: var(--surface);
             border-left: 1px solid #f1f5f9;
             border-right: 1px solid #f1f5f9;
         }
@@ -216,12 +236,14 @@
         }
 
         .bubble {
-            max-width: 80%;
+            max-width: 84%;
             padding: 12px 16px;
             border-radius: 18px;
             font-size: 16px;
             line-height: 1.4;
             animation: slideUp 0.3s ease;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .bot {
@@ -234,7 +256,7 @@
         .user {
             align-self: flex-end;
             background: var(--brand-blue);
-            color: white;
+            color: #fff;
             border-bottom-right-radius: 4px;
         }
 
@@ -243,21 +265,23 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* --- Input Area --- */
         .input-area {
             flex: 0 0 auto;
-            padding: 20px;
-            border-top: 1px solid #e2e8f0;
-            background: white;
+            padding: 18px 20px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
         }
 
         input, select {
             width: 100%;
             padding: 14px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--border);
             border-radius: 12px;
             font-size: 16px;
             margin-bottom: 10px;
             box-sizing: border-box;
+            background: #fff;
         }
 
         input:focus, select:focus {
@@ -269,23 +293,65 @@
             width: 100%;
             padding: 14px;
             background: var(--brand-blue);
-            color: white;
+            color: #fff;
             border: none;
             border-radius: 12px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 800;
             cursor: pointer;
         }
 
-        .hidden { display: none !important; }
-        
-        .status-pill { display: inline-block; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9em; margin-bottom: 8px; }
-        .status-green { background: #dcfce7; color: #166534; }
-        .status-red { background: #fee2e2; color: #991b1b; }
-        .checklist { background: #eff6ff; padding: 15px; border-radius: 12px; margin-top: 10px; font-size: 0.95em; }
+        .helper {
+            font-size: 12px;
+            color: var(--muted);
+            margin: -2px 0 10px;
+        }
+
+        .error {
+            font-size: 13px;
+            color: var(--danger);
+            background: var(--danger-bg);
+            border: 1px solid #fecaca;
+            padding: 8px 10px;
+            border-radius: 10px;
+            margin: 0 0 10px;
+            display: none;
+        }
+
+        /* --- Utility & Result Styles --- */
+        .status-pill {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 900;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .status-green { background: var(--ok-bg); color: var(--ok); }
+        .status-red { background: var(--danger-bg); color: var(--danger); }
+
+        .checklist {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+
         .checklist ul { padding-left: 20px; margin: 5px 0; }
         .checklist li { margin-bottom: 5px; }
-        .near-miss { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px; margin: 10px 0; font-size: 0.9em; }
+
+        .near-miss {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
+            color: var(--warn);
+        }
+
+        .hidden { display: none !important; }
 
         @media (max-width: 640px) {
             .hero-card { padding: 22px 18px 20px; }
@@ -293,285 +359,503 @@
         }
     </style>
 </head>
+
 <body>
-
-<header class="topbar">
-    <div class="brand-left">
-        <img src="/static/assets/saral.png" class="logo-img" alt="SARAL logo">
-        <div style="display:flex; flex-direction:column;">
-            <span class="brand-title">SARAL</span>
-            <span class="brand-sub">ASSISTANT</span>
+    <header class="topbar">
+        <div class="brand-left">
+            <img src="/static/assets/saral.png" class="logo-img" alt="SARAL logo" onerror="this.style.display='none'">
+            <div class="brand-wrap">
+                <span class="brand-title">SARAL</span>
+                <span class="brand-sub">ASSISTANT</span>
+            </div>
         </div>
+        <div class="pilot-tag">Field Pilot v1.3</div>
+    </header>
+
+    <div class="main-area">
+
+        <section id="landing">
+            <div class="hero-card">
+                <div class="hero-badge"><span class="hero-badge-dot"></span>WELFARE ACCESS · KIOSK TRIAGE</div>
+                <div class="hero-title">Welcome / स्वागत हे</div>
+                <div class="hero-sub">
+                    Select the language you will use with the citizen.
+                    <strong>SARAL</strong> will ask basic eligibility questions and generate a document checklist.
+                </div>
+
+                <div class="hero-divider"></div>
+
+                <div class="hero-lang-label">Choose language for this session</div>
+                <div class="lang-row">
+                    <button class="lang-btn" onclick="startSession('en')">English</button>
+                    <button class="lang-btn" onclick="startSession('hi')">हिन्दी</button>
+                    <button class="lang-btn" onclick="startSession('mr')">मराठी</button>
+                </div>
+
+                <div class="hero-footnote">Answers are stored without names. Operators still make the final decision.</div>
+            </div>
+        </section>
+
+        <section id="chatSection" class="hidden">
+            <div class="chat-container" id="chatBox"></div>
+
+            <div class="input-area">
+                <div id="inlineError" class="error"></div>
+                <div id="inputWrapper"></div>
+                
+                <div id="nudgeBox" class="helper" style="display:none;">
+                    <span id="nudgeText"></span>
+                </div>
+                
+                <button id="nextBtn" class="primary-btn" onclick="handleNext()">Start</button>
+            </div>
+        </section>
     </div>
-    <div class="pilot-tag">Field Pilot v1.3</div>
-</header>
 
-<div class="main-area">
-    <!-- LANDING SCREEN -->
-    <section id="landing">
-        <div class="hero-card">
-            <div class="hero-badge">
-                <span class="hero-badge-dot"></span>
-                WELFARE ACCESS · KIOSK TRIAGE
-            </div>
-            <div class="hero-title">Welcome / स्वागत हे</div>
-            <div class="hero-sub">
-                Select the language you will use with the citizen.  
-                <strong>SARAL</strong> will guide basic eligibility questions and prepare a short checklist of documents.
-            </div>
-
-            <div class="hero-divider"></div>
-
-            <div class="hero-lang-label">Choose language for this session</div>
-            <div class="lang-row">
-                <button class="lang-btn" onclick="startSession('en')">English</button>
-                <button class="lang-btn" onclick="startSession('hi')">हिन्दी</button>
-                <button class="lang-btn" onclick="startSession('mr')">मराठी</button>
-            </div>
-
-            <div class="hero-footnote">
-                Answers are stored without names. Operators still make the final decision.
-            </div>
-        </div>
-    </section>
-
-    <!-- CHAT SCREEN -->
-    <section id="chatSection" class="hidden">
-        <div class="chat-container" id="chatBox"></div>
-        
-        <div class="input-area">
-            <div id="inputWrapper"></div>
-            <div id="nudgeBox" style="display:none; color:#d97706; font-size:0.9em; margin-bottom:8px;">💡 <span id="nudgeText"></span></div>
-            <button id="nextBtn" class="primary-btn" onclick="handleNext()">Start</button>
-        </div>
-    </section>
-</div>
-
-<script>
-    // --- TEXT ASSETS ---
-    const STRINGS = {
-        en: {
-            intro: "Namaste. Which scheme are we checking today?",
-            mobile: "Citizen Mobile Number?",
-            age: "Age?",
-            gender: "Gender?",
-            income: "Annual Household Income (₹)?",
-            edu: "Years of Education?",
-            loc: "Location?",
-            caste: "Category?",
-            notes: "Any notes (Optional)?",
-            start: "Next",
-            next: "Next",
-            nudge: "Is this amount exact? Rounding errors affect eligibility.",
-            caseLabel: "Case ID:",
-            docs: "Required Documents:",
-            newCase: "Start New Case"
-        },
-        hi: {
-            intro: "नमस्ते। आज कौन सी योजना जाँचनी है?",
-            mobile: "मोबाइल नंबर?",
-            age: "उम्र?",
-            gender: "लिंग?",
-            income: "वार्षिक आय (₹)?",
-            edu: "शिक्षा (वर्ष)?",
-            loc: "स्थान?",
-            caste: "श्रेणी?",
-            notes: "नोट्स (वैकल्पिक)?",
-            start: "आगे",
-            next: "आगे",
-            nudge: "क्या यह राशि सही है?",
-            caseLabel: "मामला आईडी:",
-            docs: "आवश्यक दस्तावेज़:",
-            newCase: "नया मामला"
-        },
-        mr: {
-            intro: "नमस्कार. आज कोणती योजना तपासायची आहे?",
-            mobile: "मोबाईल नंबर?",
-            age: "वय?",
-            gender: "लिंग?",
-            income: "वार्षिक उत्पन्न (₹)?",
-            edu: "शिक्षण (वर्षे)?",
-            loc: "ठिकाण?",
-            caste: "वर्ग?",
-            notes: "टिपा (ऐच्छिक)?",
-            start: "पुढे",
-            next: "पुढे",
-            nudge: "ही रक्कम अचूक आहे का?",
-            caseLabel: "केस आयडी:",
-            docs: "कागदपत्रे:",
-            newCase: "नवीन केस"
-        }
-    };
-
-    let currentLang = 'en';
-    let currentStep = -1;
-    let formData = { profile: {} };
-    let startTime = null;
-
-    // --- FLOW DEFINITION ---
-    const flow = [
-        { id: 'intro', key: 'intro', type: 'select', options: ['UJJ', 'PMAY'], labels: ['PM Ujjwala', 'PM Awas'], field: 'scheme_code' },
-        { id: 'id', key: 'mobile', type: 'tel', pattern: '[0-9]{10}', field: 'citizen_hash' },
-        { id: 'age', key: 'age', type: 'number', field: 'age' },
-        { id: 'gender', key: 'gender', type: 'select', options: ['F', 'M', 'O'], labels: ['Female', 'Male', 'Other'], field: 'gender' },
-        { id: 'income', key: 'income', type: 'number', field: 'income', nudge: true },
-        { id: 'edu', key: 'edu', type: 'number', field: 'education_years' },
-        { id: 'loc', key: 'loc', type: 'select', options: ['1', '0'], labels: ['Rural', 'Urban'], field: 'rural' },
-        { id: 'caste', key: 'caste', type: 'select', options: ['1', '0'], labels: ['Marginalized', 'General'], field: 'caste_marginalized' },
-        { id: 'msg', key: 'notes', type: 'text', field: 'message_text' }
-    ];
-
-    function startSession(lang) {
-        currentLang = lang;
-
-        // highlight selected button
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('onclick').includes("'" + lang + "'"));
-        });
-
-        document.getElementById('landing').classList.add('hidden');
-        document.getElementById('chatSection').classList.remove('hidden');
-        
-        let sess = localStorage.getItem('saral_sess');
-        if(!sess) { sess = Date.now().toString(); localStorage.setItem('saral_sess', sess); }
-        formData.session_id = sess;
-        startTime = Date.now();
-
-        currentStep = 0;
-        addBubble(STRINGS[lang].intro, false);
-        renderInput(flow[0]);
-        document.getElementById('nextBtn').innerText = STRINGS[lang].start;
-    }
-
-    function addBubble(html, isUser) {
-        const div = document.createElement('div');
-        div.className = `bubble ${isUser ? 'user' : 'bot'}`;
-        div.innerHTML = html;
-        const box = document.getElementById('chatBox');
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    function renderInput(step) {
-        const wrapper = document.getElementById('inputWrapper');
-        wrapper.innerHTML = '';
-        
-        const nudgeBox = document.getElementById('nudgeBox');
-        if(step.nudge) {
-            nudgeBox.style.display = 'block';
-            document.getElementById('nudgeText').innerText = STRINGS[currentLang].nudge;
-        } else {
-            nudgeBox.style.display = 'none';
-        }
-
-        if (step.type === 'select') {
-            const sel = document.createElement('select');
-            sel.id = 'currInput';
-            step.options.forEach((opt, idx) => {
-                const op = document.createElement('option');
-                op.value = opt;
-                op.innerText = step.labels ? step.labels[idx] : opt;
-                sel.appendChild(op);
-            });
-            wrapper.appendChild(sel);
-        } else {
-            const inp = document.createElement('input');
-            inp.type = step.type;
-            inp.id = 'currInput';
-            if(step.pattern) inp.pattern = step.pattern;
-            wrapper.appendChild(inp);
-            inp.focus();
-        }
-    }
-
-    async function handleNext() {
-        const step = flow[currentStep];
-        let val = document.getElementById('currInput').value;
-        if(!val) return;
-
-        let displayVal = val;
-        if(step.type === 'select' && step.labels) {
-            const idx = step.options.indexOf(val);
-            if(idx > -1) displayVal = step.labels[idx];
-        }
-        addBubble(displayVal, true);
-
-        if(step.type === 'number' || ['rural', 'caste_marginalized'].includes(step.field)) val = parseInt(val) || 0;
-        
-        if(['age','gender','income','education_years','rural','caste_marginalized'].includes(step.field)) {
-            formData.profile[step.field] = val;
-        } else {
-            formData[step.field] = val;
-        }
-
-        currentStep++;
-        if (currentStep >= flow.length) {
-            submitForm();
-            return;
-        }
-
-        const nextStep = flow[currentStep];
-        let qText = STRINGS[currentLang][nextStep.key] || nextStep.key;
-        addBubble(qText, false);
-        renderInput(nextStep);
-    }
-
-    async function submitForm() {
-        document.getElementById('inputWrapper').innerHTML = '<em>Processing...</em>';
-        document.getElementById('nextBtn').style.display = 'none';
-        document.getElementById('nudgeBox').style.display = 'none';
-
-        formData.source = "KIOSK_CHAT";
-        formData.locale = currentLang;
-        formData.meta_duration_seconds = Math.round((Date.now() - startTime) / 1000);
-
-        try {
-            const res = await fetch('/cases/', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(formData)
-            });
-            const data = await res.json();
-            renderResult(data);
-        } catch (e) {
-            addBubble("⚠️ Network Error. Please retry.", false);
-        }
-    }
-
-    function renderResult(data) {
-        let html = `<div><strong>${STRINGS[currentLang].caseLabel}</strong> ${data.id.substring(0,6)}</div>`;
-
-        if (data.flag_reason && data.flag_reason.includes("Near Miss")) {
-            const msg = data.flag_reason.split("Near Miss:")[1];
-            html += `<div class='near-miss'>💡 ${msg}</div>`;
-        }
-
-        if (data.review_confidence !== null) {
-            const pct = Math.round(data.review_confidence * 100);
-            if (pct >= 60 && !data.audit_flag) {
-                 html += `<div style="margin-top:10px"><span class='status-pill status-green'>✅ Eligible (${pct}%)</span></div>`;
-            } else {
-                 html += `<div style="margin-top:10px"><span class='status-pill status-red'>⚠️ Review Needed</span></div>`;
+    <script>
+        // --- Localization ---
+        const STRINGS = {
+            en: {
+                intro: "Namaste. Which scheme are we checking today?",
+                mobile: "Citizen mobile number (10 digits)?",
+                age: "Age (years)?",
+                gender: "Gender?",
+                income_period: "Income period?",
+                income: "Household income (₹)?",
+                edu: "Years of education?",
+                loc: "Location?",
+                caste: "Category?",
+                notes: "Any notes (optional)?",
+                start: "Next",
+                next: "Next",
+                nudge: "Enter the exact amount. Thresholds are sensitive to rounding.",
+                caseLabel: "Case ID:",
+                docs: "Required documents:",
+                newCase: "Start new case",
+                invalid: "Invalid value. Fix and continue."
+            },
+            hi: {
+                intro: "नमस्ते। आज कौन सी योजना जाँचनी है?",
+                mobile: "मोबाइल नंबर (10 अंक)?",
+                age: "उम्र (वर्ष)?",
+                gender: "लिंग?",
+                income_period: "आय अवधि?",
+                income: "घरेलू आय (₹)?",
+                edu: "शिक्षा (वर्ष)?",
+                loc: "स्थान?",
+                caste: "श्रेणी?",
+                notes: "नोट्स (वैकल्पिक)?",
+                start: "आगे",
+                next: "आगे",
+                nudge: "सटीक राशि दर्ज करें। सीमा पर फर्क पड़ता है।",
+                caseLabel: "मामला आईडी:",
+                docs: "आवश्यक दस्तावेज़:",
+                newCase: "नया मामला",
+                invalid: "गलत मान। ठीक करके आगे बढ़ें।"
+            },
+            mr: {
+                intro: "नमस्कार. आज कोणती योजना तपासायची आहे?",
+                mobile: "मोबाईल नंबर (10 अंक)?",
+                age: "वय (वर्षे)?",
+                gender: "लिंग?",
+                income_period: "उत्पन्न कालावधी?",
+                income: "घरगुती उत्पन्न (₹)?",
+                edu: "शिक्षण (वर्षे)?",
+                loc: "ठिकाण?",
+                caste: "वर्ग?",
+                notes: "टिपा (ऐच्छिक)?",
+                start: "पुढे",
+                next: "पुढे",
+                nudge: "अचूक रक्कम भरा. मर्यादांवर फरक पडतो.",
+                caseLabel: "केस आयडी:",
+                docs: "कागदपत्रे:",
+                newCase: "नवीन केस",
+                invalid: "चुकीचे मूल्य. दुरुस्त करून पुढे जा."
             }
-        } else {
-            html += `<div style="margin-top:10px; color:#666"><em>Data Recorded (Blinded)</em></div>`;
+        };
+
+        // --- State ---
+        let currentLang = "en";
+        let currentStep = -1;
+        let startTime = null;
+        let formData = { profile: {} };
+
+        // --- Question Flow ---
+        const flow = [
+            { 
+                key: "intro", type: "select",
+                options: ["UJJ", "PMAY"],
+                labels_en: ["PM Ujjwala", "PM Awas"],
+                labels_hi: ["पीएम उज्ज्वला", "पीएम आवास"],
+                labels_mr: ["पीएम उज्ज्वला", "पीएम आवास"],
+                field: "scheme_code"
+            },
+            { 
+                key: "mobile", type: "tel", field: "citizen_hash",
+                helper_en: "Digits only. Example: 9876543210",
+                helper_hi: "केवल अंक। उदाहरण: 9876543210",
+                helper_mr: "फक्त अंक. उदाहरण: 9876543210"
+            },
+            { key: "age", type: "number", field: "age", min: 0, max: 120 },
+            { 
+                key: "gender", type: "select", options: ["F", "M", "O"],
+                labels_en: ["Female", "Male", "Other"],
+                labels_hi: ["महिला", "पुरुष", "अन्य"],
+                labels_mr: ["महिला", "पुरुष", "इतर"],
+                field: "gender"
+            },
+            { 
+                key: "income_period", type: "select",
+                options: ["monthly", "annual"],
+                labels_en: ["Monthly", "Annual"],
+                labels_hi: ["मासिक", "वार्षिक"],
+                labels_mr: ["मासिक", "वार्षिक"],
+                field: "income_period"
+            },
+            { key: "income", type: "number", field: "income", min: 0, nudge: true },
+            { key: "edu", type: "number", field: "education_years", min: 0, max: 30 },
+            { 
+                key: "loc", type: "select", options: ["1", "0"],
+                labels_en: ["Rural", "Urban"],
+                labels_hi: ["ग्रामीण", "शहरी"],
+                labels_mr: ["ग्रामीण", "शहरी"],
+                field: "rural"
+            },
+            { 
+                key: "caste", type: "select", options: ["1", "0"],
+                labels_en: ["Marginalized", "General"],
+                labels_hi: ["वंचित", "सामान्य"],
+                labels_mr: ["वंचित", "सामान्य"],
+                field: "caste_marginalized"
+            },
+            { key: "notes", type: "text", field: "message_text", optional: true }
+        ];
+
+        // --- Helpers ---
+        function showError(msg) {
+            const box = document.getElementById("inlineError");
+            box.innerText = msg || STRINGS[currentLang].invalid;
+            box.style.display = "block";
         }
 
-        if (data.documents && data.documents.length > 0) {
-            html += `<div class='checklist'><strong>${STRINGS[currentLang].docs}</strong><ul>`;
-            data.documents.forEach(d => html += `<li>${d}</li>`);
-            html += `</ul></div>`;
+        function clearError() {
+            const box = document.getElementById("inlineError");
+            box.innerText = "";
+            box.style.display = "none";
         }
 
-        addBubble(html, false);
-        
-        const btn = document.createElement('button');
-        btn.innerText = STRINGS[currentLang].newCase;
-        btn.className = "primary-btn";
-        btn.style.marginTop = "15px";
-        btn.onclick = () => window.location.reload();
-        document.querySelector('.input-area').appendChild(btn);
-    }
-</script>
+        function isMobile10(raw) {
+            const s = String(raw).trim();
+            return /^[0-9]{10}$/.test(s);
+        }
+
+        function toIntStrict(raw) {
+            const s = String(raw).trim();
+            if (s === "") return null;
+            if (!/^\d+$/.test(s)) return null;
+            const n = Number(s);
+            if (!Number.isFinite(n)) return null;
+            return Math.trunc(n);
+        }
+
+        function to01Strict(raw) {
+            const s = String(raw).trim();
+            if (s === "0" || s === "1") return Number(s);
+            return null;
+        }
+
+        function labelsFor(step) {
+            if (currentLang === "hi") return step.labels_hi || step.labels_en || null;
+            if (currentLang === "mr") return step.labels_mr || step.labels_en || null;
+            return step.labels_en || null;
+        }
+
+        // --- Core Logic ---
+
+        function startSession(lang) {
+            currentLang = lang;
+            formData = { profile: {} };
+            startTime = Date.now();
+            currentStep = 0;
+
+            // Update UI buttons
+            document.querySelectorAll(".lang-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.getAttribute("onclick").includes("'" + lang + "'"));
+            });
+
+            // Switch views
+            document.getElementById("landing").classList.add("hidden");
+            document.getElementById("chatSection").classList.remove("hidden");
+
+            // Session Management
+            let sess = localStorage.getItem("saral_sess");
+            if (!sess) {
+                sess = Date.now().toString();
+                localStorage.setItem("saral_sess", sess);
+            }
+            formData.session_id = sess;
+
+            // Reset Chat
+            document.getElementById("chatBox").innerHTML = "";
+            document.getElementById("nextBtn").style.display = "block";
+            document.getElementById("nextBtn").innerText = STRINGS[lang].start;
+
+            addBubble(STRINGS[lang].intro, false);
+            renderInput(flow[0]);
+        }
+
+        function addBubble(text, isUser) {
+            const div = document.createElement("div");
+            div.className = "bubble " + (isUser ? "user" : "bot");
+            div.textContent = text;
+            const box = document.getElementById("chatBox");
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function renderInput(step) {
+            clearError();
+            const wrapper = document.getElementById("inputWrapper");
+            wrapper.innerHTML = "";
+
+            // Nudge box logic
+            const nudgeBox = document.getElementById("nudgeBox");
+            if (step.nudge) {
+                nudgeBox.style.display = "block";
+                document.getElementById("nudgeText").innerText = STRINGS[currentLang].nudge;
+            } else {
+                nudgeBox.style.display = "none";
+                document.getElementById("nudgeText").innerText = "";
+            }
+
+            // Helper text
+            const helper = document.createElement("div");
+            helper.className = "helper";
+            helper.style.display = "none";
+
+            // Create Input Elements
+            if (step.type === "select") {
+                const sel = document.createElement("select");
+                sel.id = "currInput";
+                const labs = labelsFor(step);
+
+                step.options.forEach((opt, idx) => {
+                    const op = document.createElement("option");
+                    op.value = opt;
+                    op.innerText = (labs && labs[idx]) ? labs[idx] : opt;
+                    sel.appendChild(op);
+                });
+                wrapper.appendChild(sel);
+            } else {
+                const inp = document.createElement("input");
+                inp.id = "currInput";
+                inp.type = step.type;
+                if (step.min != null) inp.min = String(step.min);
+                if (step.max != null) inp.max = String(step.max);
+
+                if (step.field === "citizen_hash") {
+                    inp.inputMode = "numeric";
+                    inp.placeholder = "9876543210";
+                }
+                if (step.field === "message_text") {
+                    inp.placeholder = currentLang === "hi" ? "वैकल्पिक" : (currentLang === "mr" ? "ऐच्छिक" : "Optional");
+                }
+
+                wrapper.appendChild(inp);
+                inp.focus();
+
+                const h = currentLang === "hi" ? step.helper_hi : (currentLang === "mr" ? step.helper_mr : step.helper_en);
+                if (h) {
+                    helper.textContent = h;
+                    helper.style.display = "block";
+                    wrapper.appendChild(helper);
+                }
+
+                inp.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") handleNext();
+                });
+            }
+        }
+
+        async function handleNext() {
+            clearError();
+
+            const step = flow[currentStep];
+            const el = document.getElementById("currInput");
+            let val = (el && el.value != null) ? String(el.value).trim() : "";
+
+            // Empty checks
+            if (!val) {
+                if (step.optional) {
+                    val = "";
+                } else {
+                    showError(STRINGS[currentLang].invalid);
+                    return;
+                }
+            }
+
+            let storedVal = val;
+
+            // Specific Validations
+            if (step.field === "citizen_hash") {
+                if (!isMobile10(val)) {
+                    showError("Mobile must be 10 digits.");
+                    return;
+                }
+                storedVal = val;
+            }
+
+            if (step.type === "number") {
+                const n = toIntStrict(val);
+                if (n === null) {
+                    showError(STRINGS[currentLang].invalid);
+                    return;
+                }
+                if (step.min != null && n < step.min) {
+                    showError("Too small.");
+                    return;
+                }
+                if (step.max != null && n > step.max) {
+                    showError("Too large.");
+                    return;
+                }
+                storedVal = n;
+            }
+
+            if (step.field === "rural" || step.field === "caste_marginalized") {
+                const b = to01Strict(val);
+                if (b === null) {
+                    showError(STRINGS[currentLang].invalid);
+                    return;
+                }
+                storedVal = b;
+            }
+
+            // Display user-friendly label for selects in chat bubble
+            let displayVal = val;
+            if (step.type === "select") {
+                const idx = step.options.indexOf(val);
+                const labs = labelsFor(step);
+                if (idx > -1 && labs && labs[idx]) displayVal = labs[idx];
+            }
+
+            addBubble(displayVal || "—", true);
+
+            // Write into payload
+            const profileFields = new Set(["age", "gender", "income_period", "income", "education_years", "rural", "caste_marginalized"]);
+            if (profileFields.has(step.field)) {
+                formData.profile[step.field] = storedVal;
+            } else {
+                formData[step.field] = storedVal;
+            }
+
+            currentStep++;
+            if (currentStep >= flow.length) {
+                submitForm();
+                return;
+            }
+
+            const nextStep = flow[currentStep];
+            addBubble(STRINGS[currentLang][nextStep.key] || nextStep.key, false);
+            renderInput(nextStep);
+            document.getElementById("nextBtn").innerText = STRINGS[currentLang].next;
+        }
+
+        function formatFastAPIError(detail) {
+            if (typeof detail === "string") return detail;
+            if (!Array.isArray(detail)) return "Request failed.";
+            return detail.map(e => {
+                const loc = Array.isArray(e.loc) ? e.loc.join(".") : "";
+                const msg = e.msg || "Invalid value";
+                return (loc ? (loc + ": ") : "") + msg;
+            }).join("\n");
+        }
+
+        async function submitForm() {
+            const wrapper = document.getElementById("inputWrapper");
+            wrapper.innerHTML = "<em>Processing...</em>";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("nudgeBox").style.display = "none";
+            clearError();
+
+            formData.source = "KIOSK_CHAT";
+            formData.locale = currentLang;
+            formData.meta_duration_seconds = Math.round((Date.now() - startTime) / 1000);
+
+            try {
+                const res = await fetch("/cases/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    const msg = (data && data.detail) ? formatFastAPIError(data.detail) : ("Request failed (" + res.status + ")");
+                    addBubble("Error:\n" + msg, false);
+
+                    const btn = document.createElement("button");
+                    btn.innerText = "Retry";
+                    btn.className = "primary-btn";
+                    btn.style.marginTop = "12px";
+                    btn.onclick = () => window.location.reload();
+                    document.querySelector(".input-area").appendChild(btn);
+                    return;
+                }
+
+                renderResult(data);
+            } catch (e) {
+                addBubble("Error:\nNetwork error. Retry.", false);
+            }
+        }
+
+        function renderResult(data) {
+            if (!data || !data.id) {
+                addBubble("Error:\nInvalid server response.", false);
+                return;
+            }
+
+            let htmlLines = [];
+            htmlLines.push(STRINGS[currentLang].caseLabel + " " + String(data.id).substring(0, 8));
+
+            if (data.flag_reason && String(data.flag_reason).includes("Near Miss")) {
+                const parts = String(data.flag_reason).split("Near Miss:");
+                if (parts.length > 1) {
+                    htmlLines.push("");
+                    htmlLines.push("Near Miss: " + parts[1].trim());
+                }
+            }
+
+            if (data.review_confidence !== null && data.review_confidence !== undefined) {
+                const pct = Math.round(Number(data.review_confidence) * 100);
+                if (pct >= 60 && !data.audit_flag) {
+                    htmlLines.push("");
+                    htmlLines.push("Eligible (" + pct + "%)");
+                } else {
+                    htmlLines.push("");
+                    htmlLines.push("Review needed");
+                }
+            } else {
+                htmlLines.push("");
+                htmlLines.push("Data recorded (blinded)");
+            }
+
+            if (data.documents && Array.isArray(data.documents) && data.documents.length) {
+                htmlLines.push("");
+                htmlLines.push(STRINGS[currentLang].docs);
+                data.documents.forEach(d => htmlLines.push("- " + d));
+            }
+
+            addBubble(htmlLines.join("\n"), false);
+
+            const btn = document.createElement("button");
+            btn.innerText = STRINGS[currentLang].newCase;
+            btn.className = "primary-btn";
+            btn.style.marginTop = "12px";
+            btn.onclick = () => window.location.reload();
+            document.querySelector(".input-area").appendChild(btn);
+        }
+    </script>
 </body>
 </html>

@@ -2,11 +2,13 @@ import os
 from functools import lru_cache
 
 class Settings:
-    # --- EXPERIMENT VERSIONING ---
-    APP_VERSION = "1.3.1-pilot-integrated"
-    RULESET_VERSION = "v1.3-audit-wired"
-    MODEL_VERSION = "v1-logit-nb-2025"
-    SCHEMA_VERSION = "v1-telemetry-full"
+    APP_VERSION: str = "1.3.1-pilot-integrated"
+    RULESET_VERSION: str = "v1.3-audit-wired"
+    MODEL_VERSION: str = "v1-logit-nb-2025"
+    SCHEMA_VERSION: str = "v1-telemetry-full"
+    DATABASE_URL: str = "sqlite:///./saral.db"
+    MOCK_OTP: str = "123456"
+
 
     # --- CONFIG ---
     ENV = os.getenv("SARAL_ENV", "production")

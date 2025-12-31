@@ -21,11 +21,7 @@ from .predictors import (
     IntentModelNotFound,
 )
 
-from app.engine.rules import (
-    assistive_decision,
-    AssistOut,
-)
-
+from app.engine.rules import assistive_decision
 
 # -------------------------------
 #  Public-facing wrapper functions
@@ -45,7 +41,7 @@ def classify_intent(text: str):
     return _classify_intent(text)
 
 
-def assistive_score(case_fields: Dict[str, Any], message_text: str | None) -> AssistOut:
+def assistive_score(case_fields: Dict[str, Any], message_text: str | None):
     """
     Wrapper for deterministic assistive logic.
     """

@@ -1,52 +1,36 @@
 # app/engine/scheme_config.py
 
-SCHEME_RULES = {
-    "UJJ": {
-        "name": "PM Ujjwala Yojana",
-        "description": "LPG connection for women in poor households.",
-        "criteria": {
-            "min_age": 18,
-            "gender": ["F"],
-            "max_income": 250000,
-            "must_be_rural": False,
-        },
-        "documents": {
-            "base": ["Aadhaar Card", "Bank Passbook", "Ration Card"],
-            # FIXED: Matches Test Assertion exactly
-            "caste_marginalized": ["Caste Certificate (SC/ST)"],
-            "rural": ["Gram Panchayat Certificate"]
-        },
-        "alternatives": ["PMAY"]
-    },
-    
+SCHEME_CONFIG = {
     "PMAY": {
-        "name": "PM Awas Yojana (Urban)",
-        "criteria": {
-            "min_age": 21,
-            "gender": ["F", "M", "O"],
-            "max_income": 600000,
-            "must_be_rural": False,
-        },
-        "documents": {
-            "base": ["Aadhaar Card", "Voter ID", "Bank Statement (6 months)"],
-            "income_proof": ["Income Certificate / ITR"],
-        },
-        "alternatives": ["UJJ"]
-    },
-    
-    "MGNREGA": {
-        "name": "Mahatma Gandhi NREGA",
         "criteria": {
             "min_age": 18,
+            "gender": [],  # no restriction
+            "must_be_rural": False,
+            "requires_marginalized": False,  # keep explicit for consistency
+
+            # income bands are config, not code
+            "income_bands": [
+                {"name": "EWS", "max": 300_000},
+                {"name": "LIG", "max": 600_000},
+                {"name": "MIG_I", "max": 1_200_000},
+                {"name": "MIG_II", "max": 1_800_000},
+            ],
+        },
+        "alternatives": ["STATE_HOUSING", "RENTAL_SUPPORT"],
+    },
+
+    "UJJ": {
+        "criteria": {
+            "min_age": 18,
+            "gender": [],                 # explicit
             "must_be_rural": True,
+            "requires_marginalized": False,
+            "income_bands": [],           # explicit
         },
-        "documents": {
-            "base": ["Aadhaar Card", "Job Card Application Form"],
-            "rural": ["Gram Panchayat Recommendation"]
-        },
-        "alternatives": []
-    }
+        "alternatives": [],
+    },
 }
 
+
 def get_scheme_config(code: str):
-    return SCHEME_RULES.get(code)
+    return SCHEME_CONFIG.get(code)
