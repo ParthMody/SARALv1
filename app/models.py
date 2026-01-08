@@ -24,9 +24,13 @@ from .db import Base
 
 
 # -------------------------
-# SQLite-safe JSON list
+# SQLite-safe JSON Types
 # -------------------------
 class JsonList(TypeDecorator):
+    """
+    Saves a list of strings/objects as a JSON array string in the DB.
+    Returns a Python list when queried.
+    """
     impl = TEXT
     cache_ok = True
 
@@ -49,6 +53,39 @@ class JsonList(TypeDecorator):
         except Exception:
             return []
 
+
+class JsonDict(TypeDecorator):
+    """
+    Saves a dictionary as a JSON object string in the DB.
+    Returns a Python dict when queried. 
+    Crucial for 'profile_data'.
+    """
+    impl = TEXT
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return "{}"
+        if isinstance(value, dict):
+            return json.dumps(value, ensure_ascii=False)
+        if isinstance(value, str):
+            s = value.strip()
+            return s if s else "{}"
+        return "{}"
+
+    def process_result_value(self, value, dialect):
+        if not value:
+            return {}
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, dict) else {}
+        except Exception:
+            return {}
+
+
+# -------------------------
+# Enums
+# -------------------------
 
 class StatusEnum(str, enum.Enum):
     NEW = "NEW"
@@ -79,7 +116,14 @@ class RuleResultEnum(str, enum.Enum):
     UNKNOWN_NEEDS_DOCS = "UNKNOWN_NEEDS_DOCS"
 
 
-# SOP decision states (publishable)
+# Verification Modality (The "Zero Docs" Logic)
+class VerificationStatusEnum(str, enum.Enum):
+    ID_PHOTO_UPLOADED = "ID_PHOTO_UPLOADED"
+    ID_SEEN_PHYSICAL = "ID_SEEN_PHYSICAL"
+    NO_ID_PRESENTED = "NO_ID_PRESENTED"
+
+
+# SOP decision states
 class FinalActionEnum(str, enum.Enum):
     APPROVE = "APPROVE"
     REQUEST_DOCS = "REQUEST_DOCS"
@@ -99,6 +143,10 @@ def _uuid() -> str:
     return str(uuid.uuid4())
 
 
+# -------------------------
+# Models
+# -------------------------
+
 class Scheme(Base):
     __tablename__ = "schemes"
     code = Column(String, primary_key=True, index=True)
@@ -117,45 +165,52 @@ class Case(Base):
     source = Column(SAEnum(SourceEnum), nullable=False)
     locale = Column(String, nullable=False)
 
-    # Session / telemetry (keep)
+    # Telemetry
     session_id = Column(String, index=True, nullable=True)
     meta_duration_seconds = Column(Integer, nullable=True)
 
-    # RCT
+    # RCT Configuration
     arm = Column(String, nullable=False)  # CONTROL / TREATMENT
     assignment_reason = Column(String, nullable=True)
-
-    # IMPORTANT: proves score existed but was/wasn't exposed
     decision_support_shown = Column(Boolean, default=False)
 
-    # BAU rules instrument (shown in BOTH arms)
+    # Input Data
+    profile_data = Column(JsonDict, default=dict, nullable=False) # Stores Age, Income, Gender
+    documents = Column(JsonList, default=list, nullable=False)    # Stores file paths
+
+    # Rules Engine (BAU)
     rule_result = Column(SAEnum(RuleResultEnum), nullable=True)
     rule_reasons = Column(JsonList, default=list, nullable=False)
-    documents = Column(JsonList, default=list, nullable=False)
 
-    # ML (computed for all; shown only for TREATMENT)
-    review_confidence = Column(Float, nullable=True)  # e.g., P(eligible)
+    # ML Output (Treatment Only)
+    review_confidence = Column(Float, nullable=True)  # P(eligible)
     risk_score = Column(Float, nullable=True)         # 1 - confidence
-    risk_band = Column(String, nullable=True)         # LOW / MED / HIGH
+    risk_band = Column(String, nullable=True)         # LOW / HIGH
     top_reasons = Column(JsonList, default=list, nullable=False)
-
-    # Safety gate (route to review), never auto-reject
     audit_flag = Column(Boolean, default=False)
 
-    # Operator process
+    # Verification (The "Zero Docs" fix)
+    verification_status = Column(
+        SAEnum(VerificationStatusEnum),
+        nullable=False,
+        default=VerificationStatusEnum.NO_ID_PRESENTED,
+    )
+    verification_note = Column(Text, nullable=True)
+
+    # Operator Process (The "Hidden Stopwatch")
+    # opened_at: Set by JS when the eye hits the row
+    # decided_at: Set by backend when the button is clicked
     opened_at = Column(DateTime(timezone=True), nullable=True)
     decided_at = Column(DateTime(timezone=True), nullable=True)
     operator_id = Column(String, nullable=True)
     sop_version = Column(String, nullable=True)
 
-    # Outcome
+    # Outcomes
     final_action = Column(SAEnum(FinalActionEnum), nullable=True)
     reason_code = Column(SAEnum(ReasonCodeEnum), nullable=True)
-
-    # Treatment-only metric (operator went against risk gate / recommendation)
     override_flag = Column(Boolean, nullable=True)
 
-    # Provenance (keep)
+    # Provenance
     app_version = Column(String, nullable=True)
     ruleset_version = Column(String, nullable=True)
     model_version = Column(String, nullable=True)

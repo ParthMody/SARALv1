@@ -2,35 +2,45 @@
 
 SCHEME_CONFIG = {
     "PMAY": {
+        "description": "Pradhan Mantri Awas Yojana (Urban)",
         "criteria": {
             "min_age": 18,
-            "gender": [],  # no restriction
-            "must_be_rural": False,
-            "requires_marginalized": False,  # keep explicit for consistency
+            "max_age": 70,
+            "gender": ["F", "M", "O"], 
+            "must_be_rural": False,  # PMAY-U is Urban
+            "requires_marginalized": False,
 
-            # income bands are config, not code
+            # CONFIG DECISION: 
+            # We strictly enforce EWS/LIG for the pilot.
+            # We exclude MIG (Middle Income) so that high-earners (>6L) are rejected.
             "income_bands": [
-                {"name": "EWS", "max": 300_000},
-                {"name": "LIG", "max": 600_000},
-                {"name": "MIG_I", "max": 1_200_000},
-                {"name": "MIG_II", "max": 1_800_000},
+                {"name": "EWS (Economically Weaker)", "max": 300_000},
+                {"name": "LIG (Low Income Group)", "max": 600_000},
+                # {"name": "MIG_I", "max": 1_200_000},  <-- Commented out for Pilot
+                # {"name": "MIG_II", "max": 1_800_000}, <-- Commented out for Pilot
             ],
         },
-        "alternatives": ["STATE_HOUSING", "RENTAL_SUPPORT"],
+        "alternatives": ["Rent Agreement Support", "Shelter Homes"],
     },
 
     "UJJ": {
+        "description": "Pradhan Mantri Ujjwala Yojana (LPG)",
         "criteria": {
             "min_age": 18,
-            "gender": [],                 # explicit
-            "must_be_rural": True,
+            "gender": ["F"],          # STRICT: Only women can be the primary applicant
+            "must_be_rural": False,   # Can be urban poor too
             "requires_marginalized": False,
-            "income_bands": [],           # explicit
+            
+            # FIX: Added a cap so rich people get rejected
+            "income_bands": [
+                {"name": "BPL / Ration Card Holder", "max": 250_000} 
+            ],
         },
-        "alternatives": [],
+        "alternatives": ["General LPG Connection", "State Subsidy"],
     },
 }
 
-
 def get_scheme_config(code: str):
-    return SCHEME_CONFIG.get(code)
+    if not code:
+        return None
+    return SCHEME_CONFIG.get(code.upper())

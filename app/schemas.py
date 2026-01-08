@@ -44,7 +44,11 @@ class CaseCreate(BaseModel):
     message_text: Optional[str] = None
     session_id: Optional[str] = None
     meta_duration_seconds: Optional[int] = 0
-
+    
+    # Updated to match Kiosk input
+    verification_status: Optional[str] = "NO_ID_PRESENTED"
+    verification_note: Optional[str] = None
+    
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -70,10 +74,18 @@ class CaseResponse(BaseModel):
     top_reasons: List[str] = Field(default_factory=list)
     decision_support_shown: Optional[bool] = None
     audit_flag: Optional[bool] = None
+    
+    # Verification
+    verification_status: Optional[str] = None
+    verification_note: Optional[str] = None
 
     # RCT meta
     assignment_reason: Optional[str] = None
     meta_duration_seconds: Optional[int] = None
+    
+    # Latency tracking
+    opened_at: Optional[datetime] = None
+    decided_at: Optional[datetime] = None
 
     # Operator disposition
     final_action: Optional[str] = None
