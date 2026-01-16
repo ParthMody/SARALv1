@@ -26,11 +26,10 @@ from ..models import (
 router = APIRouter(tags=["dashboard"])
 
 # -------------------------
-# SOP CONSTRAINTS (RELAXED FOR PILOT)
+# SOP CONSTRAINTS (PILOT v1.3)
 # -------------------------
 RISK_HIGH_THRESHOLD = 0.70
 
-# Defines what shows up in the dropdown
 ALLOWED_REASONS_BY_ACTION: dict[str, set[str]] = {
     "APPROVE": {"OTHER"},
     "REQUEST_DOCS": {"DOCS_MISSING", "MISMATCH", "OTHER"},
@@ -38,12 +37,12 @@ ALLOWED_REASONS_BY_ACTION: dict[str, set[str]] = {
     "REJECT": {"RULE_FAIL", "MISMATCH", "FRAUD_SUSPECTED", "DOCS_MISSING", "OTHER"},
 }
 
-# LOGIC MAP: Which actions are allowed for which Rule Result
 ALLOWED_ACTIONS_BY_RULE: dict[str, set[str]] = {
     "ELIGIBLE_BY_RULE": {"APPROVE", "REQUEST_DOCS", "ESCALATE", "REJECT"},
     "UNKNOWN_NEEDS_DOCS": {"REQUEST_DOCS", "ESCALATE", "REJECT"},
     "INELIGIBLE_BY_RULE": {"REJECT", "ESCALATE"},
 }
+
 
 class DispositionIn(BaseModel):
     id: str
@@ -52,8 +51,6 @@ class DispositionIn(BaseModel):
     operator_id: str
     rule_result: str | None = None
     opened_at: str | None = None
-    
-    # --- ETHNOGRAPHIC DATA ---
     operator_comment: str | None = None
     flagged: bool = False
 
@@ -114,6 +111,33 @@ def _verification_value(c: Case) -> str | None:
     return v.value if hasattr(v, "value") else str(v)
 
 
+# --- Centralized Logic for "Eligibility Conflict Indicator" ---
+# Checks for unstructured text indicating housing ineligibility (e.g., "pakka house")
+def _check_housing_risk(note: str | None) -> bool:
+    if not note:
+        return False
+
+    text = note.lower()
+
+    # DANGER WORDS: suggest possible ownership / conflict
+    danger_keywords = ["pakka", "owns", "owned", "flat", "apartment", "bungalow", "already has"]
+
+    # DANGER PHRASES: generic words only risky in specific phrases
+    danger_phrases = ["has a house", "has house", "has a home", "has home"]
+
+    # SAFETY BRAKES: likely clarifying eligibility
+    safety_keywords = ["not", "no ", "doesn", "rent", "kuccha", "kutcha", "temporary", "tin shed"]
+
+    has_danger = any(k in text for k in danger_keywords) or any(p in text for p in danger_phrases)
+    has_safety = any(s in text for s in safety_keywords)
+
+    return has_danger and not has_safety
+
+
+def _require_comment_min(comment: str | None, n: int) -> bool:
+    return bool(comment and len(comment.strip()) >= n)
+
+
 TEMPLATE = Template(
     r"""
 <!doctype html>
@@ -135,7 +159,7 @@ TEMPLATE = Template(
     }
     * { box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; background: var(--saral-bg); color: var(--text); }
-    
+
     .shell { max-width: 1400px; margin: 0 auto; padding: 22px 18px 40px; }
     .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.06); }
     .brand { display:flex; align-items:center; gap:12px; }
@@ -174,12 +198,21 @@ TEMPLATE = Template(
     .st-APPROVED { background:#dcfce7; color:#15803d; }
     .st-REJECTED { background:#fee2e2; color:#b91c1c; }
 
+    /* Pagination */
+    .pagination { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; margin-top: 10px; border-top: 1px solid var(--border); }
+    .page-info { font-size: 12px; color: var(--muted); }
+    .page-controls { display: flex; gap: 8px; align-items: center; }
+    .btn-page { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; text-decoration: none; color: var(--text); background: white; cursor: pointer; }
+    .btn-page:hover:not(.disabled) { background: #f1f5f9; }
+    .btn-page.disabled { opacity: 0.5; pointer-events: none; color: var(--muted); }
+    .page-current { font-size: 12px; font-weight: 600; }
+
     /* Modal */
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 100; backdrop-filter: blur(2px); }
-    .modal { 
-        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-        width: 90%; max-width: 1000px; height: 85vh; 
-        background: var(--surface); border-radius: 16px; 
+    .modal {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 90%; max-width: 1000px; height: 85vh;
+        background: var(--surface); border-radius: 16px;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         display: flex; flex-direction: column; overflow: hidden;
     }
@@ -201,23 +234,26 @@ TEMPLATE = Template(
     .sop-box ul { padding-left: 16px; margin: 8px 0 0; }
 
     .decision-area { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); }
-    .btn-group { display: flex; gap: 10px; margin-bottom: 12px; }
-    .btn { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; text-align: center; background: white; }
-    
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .btn { padding: 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; text-align: center; background: white; user-select: none; }
+
     .btn.approve:hover, .btn.approve.selected { background: var(--success); color: white; border-color: var(--success); }
     .btn.reject:hover, .btn.reject.selected { background: var(--danger); color: white; border-color: var(--danger); }
     .btn.review:hover, .btn.review.selected { background: var(--warn); color: white; border-color: var(--warn); }
+    .btn.escalate:hover, .btn.escalate.selected { background: #0f766e; color: white; border-color: #0f766e; }
 
     .input-row { margin-bottom: 10px; }
     .input-row select, .input-row input, .input-row textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; font-family: inherit; }
-    .submit-btn { width: 100%; padding: 14px; background: #334155; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-    
+    .submit-btn { width: 100%; padding: 14px; background: #334155; color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; margin-top: 10px; }
+
     .risk-badge { padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 10px; border: 1px solid transparent; }
     .risk-HIGH { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
     .risk-MED { background: #ffedd5; color: #9a3412; border-color: #fed7aa; }
     .risk-LOW { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
-    
+
     .mono { font-family: ui-monospace, monospace; }
+
+    .locked { pointer-events: none; opacity: 0.35; filter: grayscale(0.2); }
   </style>
 </head>
 <body>
@@ -263,22 +299,23 @@ TEMPLATE = Template(
         <td><strong>{{ c.scheme_code }}</strong></td>
         <td><span class="pill st-{{ c.status }}">{{ c.status }}</span></td>
         <td class="mono">{{ c.arm }}</td>
-        
-        <td>{{ c.docs_count }} Required</td>
-        
+
+        <td title="{{ c.docs_tooltip }}">{{ c.docs_count }} Required</td>
+
         <td>
             {% if c.verification_status == "ID_SEEN_PHYSICAL" %}
-                <span style="color:var(--success); font-weight:700;">✓ Verified</span>
+                <span style="color:var(--success); font-weight:800;">✓ Verified</span>
             {% elif c.verification_status == "NO_ID_PRESENTED" %}
-                <span style="color:var(--danger); font-weight:700;">✗ No ID</span>
+                <span style="color:var(--danger); font-weight:800;">✗ No ID</span>
             {% else %}
-                <span style="color:var(--muted);">—</span>
+                <span style="color:var(--muted); font-weight:800;">—</span>
             {% endif %}
-            
+
             {% if c.has_house_risk %}
-                <span title="Potential House Owner Detected in Notes" style="cursor:help; margin-left:6px; font-size:14px;">🏠⚠️</span>
+                <span title="Eligibility conflict indicator in notes (verify evidence)" style="cursor:help; margin-left:6px; font-size:14px;">⚑</span>
             {% endif %}
         </td>
+
         <td>
             {% if c.arm == "TREATMENT" %}
                 {{ c.risk_disp }} ({{ c.risk_band_disp }})
@@ -286,11 +323,33 @@ TEMPLATE = Template(
                 <span style="color:#cbd5e1;">(Blinded)</span>
             {% endif %}
         </td>
+
         <td><button class="btn" style="padding:4px 12px; font-size:11px; background:#f1f5f9;">Review</button></td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+
+  <div class="pagination">
+    <div class="page-info">
+        Showing <strong>{{ start_index }}</strong> - <strong>{{ end_index }}</strong> of <strong>{{ total_count }}</strong> cases
+    </div>
+    <div class="page-controls">
+        {% if page > 1 %}
+            <a href="?page={{ page - 1 }}{{ filter_qs }}" class="btn-page">← Previous</a>
+        {% else %}
+            <span class="btn-page disabled">← Previous</span>
+        {% endif %}
+
+        <span class="page-current">Page {{ page }} of {{ total_pages }}</span>
+
+        {% if page < total_pages %}
+            <a href="?page={{ page + 1 }}{{ filter_qs }}" class="btn-page">Next →</a>
+        {% else %}
+            <span class="btn-page disabled">Next →</span>
+        {% endif %}
+    </div>
+  </div>
 </div>
 
 <div class="modal-backdrop" id="backdrop">
@@ -299,14 +358,14 @@ TEMPLATE = Template(
       <div class="modal-title">Review Case <span id="m-id" class="mono" style="color:#666;"></span></div>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
-    
+
     <div class="modal-body">
       <div class="col-left">
         <div class="section">
             <div class="section-title">1. Document Checklist (System Requirements)</div>
             <div class="data-grid">
                 <div class="data-item full">
-                    <label>Required Documents for {{ scheme }}</label>
+                    <label>Required Documents (Scheme: {{ sel_scheme or "—" }})</label>
                     <ul id="m-docs-list" style="padding-left:16px; margin:4px 0; font-size:13px; color:#1e293b; line-height:1.5;"></ul>
                 </div>
             </div>
@@ -320,7 +379,7 @@ TEMPLATE = Template(
                     <span id="m-verif-status"></span>
                 </div>
                 <div class="data-item full">
-                    <label>Operator Notes (Crucial Context)</label>
+                    <label>Field Notes (From Kiosk/Op 0)</label>
                     <span id="m-verif-note" style="font-weight:400; color:#334155; background:#f1f5f9; padding:10px; border-radius:6px; display:block; border-left:3px solid #cbd5e1;"></span>
                 </div>
             </div>
@@ -351,33 +410,38 @@ TEMPLATE = Template(
         </div>
 
         <div class="sop-box">
-            <strong>⚖️ Protocol:</strong>
+            <strong>Protocol:</strong>
             <ul>
-                <li>Match "Required Docs" with "Operator Notes".</li>
-                <li>If Note says "Pakka House" → <strong>REJECT</strong>.</li>
-                <li>If Verification is "No ID" → <strong>REJECT</strong>.</li>
+                <li>Notes can indicate conflicts; they are not verdicts.</li>
+                <li>Conflict indicator (⚑) → REQUEST_DOCS or ESCALATE + record evidence needed.</li>
+                <li>No ID presented → do not APPROVE; REQUEST_DOCS or REJECT per evidence.</li>
+                <li>Control arm is blinded; ignore AI section.</li>
             </ul>
         </div>
 
         <div class="decision-area">
-            <div class="section-title">5. Disposition</div>
+            <div class="section-title">Disposition</div>
             <input type="hidden" id="d-case-id">
             <input type="hidden" id="d-rule-res">
-            
+            <input type="hidden" id="d-allowed-actions">
+            <input type="hidden" id="d-house-risk">
+            <input type="hidden" id="d-no-id-risk">
+
             <div class="input-row">
-                <label style="font-size:11px; font-weight:700;">Operator ID</label>
+                <label style="font-size:11px; font-weight:800;">Operator ID</label>
                 <input type="text" id="d-op-id" placeholder="OP_ID" value="VOLUNTEER_1">
             </div>
-            
-            <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px; font-size:13px; color:#b45309; font-weight:500;">
+
+            <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px; font-size:13px; color:#b45309; font-weight:600;">
                 <input type="checkbox" id="d-flag">
-                <label for="d-flag">Flag for discussion (Unsure)</label>
+                <label for="d-flag">Flag for discussion (Uncertain / needs verification)</label>
             </div>
 
             <div class="btn-group">
-                <div class="btn approve" onclick="selectAction('APPROVE')">APPROVE</div>
-                <div class="btn reject" onclick="selectAction('REJECT')">REJECT</div>
-                <div class="btn review" onclick="selectAction('REQUEST_DOCS')">DOCS</div>
+                <div class="btn approve" id="btn-approve" onclick="selectAction('APPROVE')">APPROVE</div>
+                <div class="btn reject" id="btn-reject" onclick="selectAction('REJECT')">REJECT</div>
+                <div class="btn review" id="btn-docs" onclick="selectAction('REQUEST_DOCS')">REQUEST DOCS</div>
+                <div class="btn escalate" id="btn-escalate" onclick="selectAction('ESCALATE')">ESCALATE</div>
             </div>
             <input type="hidden" id="d-action">
 
@@ -391,7 +455,7 @@ TEMPLATE = Template(
             </div>
 
             <div class="input-row">
-                <textarea id="d-comment" rows="2" placeholder="Research Note: Why did you reject? (e.g. 'Has home in Bihar', 'Income Mismatch')"></textarea>
+                <textarea id="d-comment" rows="3" placeholder="Evidence note (required for REJECT/ESCALATE and for conflict cases)."></textarea>
             </div>
 
             <button class="submit-btn" id="btn-submit" onclick="submitDisposition()">CONFIRM</button>
@@ -404,17 +468,33 @@ TEMPLATE = Template(
 <script>
   const ACTIONS_BY_RULE = {{ actions_by_rule_json | safe }};
   const REASONS_BY_ACTION = {{ reasons_by_action_json | safe }};
-  
+
   let caseTimers = {};
   let currentCaseId = null;
 
-  // Restore Operator ID from LocalStorage
   document.addEventListener("DOMContentLoaded", () => {
     const savedOp = localStorage.getItem("saral_operator_id");
-    if (savedOp) {
-        document.getElementById('d-op-id').value = savedOp;
-    }
+    if (savedOp) document.getElementById('d-op-id').value = savedOp;
   });
+
+  function _setLocked(el, locked) {
+    if (!el) return;
+    if (locked) el.classList.add('locked');
+    else el.classList.remove('locked');
+  }
+
+  function _resetActionUI() {
+    document.getElementById('d-action').value = "";
+    document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('selected'));
+  }
+
+  function _applyAllowedActions(allowed) {
+    const a = new Set(allowed || []);
+    _setLocked(document.getElementById('btn-approve'), !a.has('APPROVE'));
+    _setLocked(document.getElementById('btn-reject'), !a.has('REJECT'));
+    _setLocked(document.getElementById('btn-docs'), !a.has('REQUEST_DOCS'));
+    _setLocked(document.getElementById('btn-escalate'), !a.has('ESCALATE'));
+  }
 
   function openCase(c) {
     currentCaseId = c.id;
@@ -424,7 +504,11 @@ TEMPLATE = Template(
     document.getElementById('d-case-id').value = c.id;
     document.getElementById('d-rule-res').value = c.rule_result;
 
-    // 1. Requirements Checklist
+    const allowedActions = ACTIONS_BY_RULE[c.rule_result] || [];
+    document.getElementById('d-allowed-actions').value = JSON.stringify(allowedActions);
+    _applyAllowedActions(allowedActions);
+
+    // Docs
     const ul = document.getElementById('m-docs-list');
     ul.innerHTML = '';
     if (c.documents && c.documents.length > 0) {
@@ -437,32 +521,41 @@ TEMPLATE = Template(
         ul.innerHTML = '<li style="color:#94a3b8; font-style:italic;">No specific docs required by rule engine.</li>';
     }
 
-    // 2. Verification & WARNING SYSTEM
+    // Verification
     const vStat = document.getElementById('m-verif-status');
     const vNote = document.getElementById('m-verif-note');
-    
-    // Status Display
-    vStat.innerText = c.verification_status;
-    vStat.style.color = (c.verification_status === 'ID_SEEN_PHYSICAL') ? '#15803d' : '#ef4444';
-    vStat.style.fontWeight = '700';
 
-    // ---- NEW DANGER DETECTION LOGIC ----
-    const noteText = (c.verification_note || "").toLowerCase();
-    const housingRisk = ["pakka", "owns", "already has", "has a house", "home", "flat"].some(k => noteText.includes(k));
-    const noIdRisk = (c.verification_status === "NO_ID_PRESENTED" && c.rule_result === "ELIGIBLE_BY_RULE");
-    
+    vStat.innerText = c.verification_status;
+
+    if (c.verification_status === 'ID_SEEN_PHYSICAL') {
+        vStat.style.color = '#15803d';
+        vStat.style.fontWeight = '800';
+    } else if (c.verification_status === 'NO_ID_PRESENTED') {
+        vStat.style.color = '#ef4444';
+        vStat.style.fontWeight = '800';
+    } else {
+        vStat.style.color = '#64748b';
+        vStat.style.fontWeight = '800';
+    }
+
+    const housingRisk = !!c.has_house_risk;
+    const noIdRisk = (c.verification_status === "NO_ID_PRESENTED");
+
+    document.getElementById('d-house-risk').value = housingRisk ? "1" : "0";
+    document.getElementById('d-no-id-risk').value = noIdRisk ? "1" : "0";
+
     let warningHTML = "";
     if (housingRisk) {
-        warningHTML += "<div style='margin-top:8px; font-weight:700; color:#b91c1c; border-top:1px solid #fecaca; padding-top:4px;'>⚠️ STOP: Note mentions 'House'. Check PMAY eligibility.</div>";
+        warningHTML += "<div style='margin-top:10px; font-weight:800; color:#92400e; border-top:1px solid #fde68a; padding-top:8px;'>Verification required: notes suggest possible eligibility conflict (⚑). Use REQUEST_DOCS or ESCALATE; document evidence.</div>";
     }
     if (noIdRisk) {
-        warningHTML += "<div style='margin-top:8px; font-weight:700; color:#b91c1c; border-top:1px solid #fecaca; padding-top:4px;'>⛔ STOP: No ID Presented. Must REJECT (Even if Eligible).</div>";
+        warningHTML += "<div style='margin-top:10px; font-weight:800; color:#b91c1c; border-top:1px solid #fecaca; padding-top:8px;'>No ID presented: do not APPROVE. Use REQUEST_DOCS or REJECT with evidence.</div>";
     }
 
     if (housingRisk || noIdRisk) {
-        vNote.style.backgroundColor = "#fee2e2"; // Red Alert BG
-        vNote.style.borderLeftColor = "#ef4444"; 
-        vNote.style.color = "#7f1d1d";
+        vNote.style.backgroundColor = housingRisk ? "#fffbeb" : "#fee2e2";
+        vNote.style.borderLeftColor = housingRisk ? "#f59e0b" : "#ef4444";
+        vNote.style.color = housingRisk ? "#78350f" : "#7f1d1d";
         vNote.innerHTML = (c.verification_note || "No notes") + warningHTML;
     } else {
         vNote.innerText = c.verification_note || "No notes provided.";
@@ -470,12 +563,14 @@ TEMPLATE = Template(
         vNote.style.borderLeftColor = "#cbd5e1";
         vNote.style.color = "#334155";
     }
-    // -------------------------------------
-    
-    // 3. Rules
+
+    // Procedural lock: No ID → APPROVE not allowed (UI)
+    if (noIdRisk) _setLocked(document.getElementById('btn-approve'), true);
+
+    // Rules
     document.getElementById('m-rule-res').innerText = c.rule_result;
-    
-    // 4. AI Risk
+
+    // AI Risk
     const riskBox = document.getElementById('m-risk-box');
     if (c.arm === 'CONTROL') {
         riskBox.style.display = 'none';
@@ -483,8 +578,8 @@ TEMPLATE = Template(
         riskBox.style.display = 'block';
         document.getElementById('m-risk-score').innerText = c.risk_disp;
         document.getElementById('m-risk-band').innerText = c.risk_band_disp;
-        document.getElementById('m-risk-badge').className = 'risk-badge risk-' + c.risk_band_disp; 
-        
+        document.getElementById('m-risk-badge').className = 'risk-badge risk-' + c.risk_band_disp;
+
         const rul = document.getElementById('m-risk-factors');
         rul.innerHTML = '';
         if (c.top_reasons_disp && c.top_reasons_disp !== '—') {
@@ -496,13 +591,12 @@ TEMPLATE = Template(
         }
     }
 
-    // Reset Controls
-    document.getElementById('d-action').value = "";
-    document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('selected'));
+    // Reset controls
+    _resetActionUI();
     document.getElementById('d-reason').value = "";
     document.getElementById('d-comment').value = "";
     document.getElementById('d-flag').checked = false;
-    
+
     document.getElementById('backdrop').style.display = 'block';
   }
 
@@ -512,16 +606,25 @@ TEMPLATE = Template(
   }
 
   function selectAction(act) {
+    const btnMap = {
+      'APPROVE': document.getElementById('btn-approve'),
+      'REJECT': document.getElementById('btn-reject'),
+      'REQUEST_DOCS': document.getElementById('btn-docs'),
+      'ESCALATE': document.getElementById('btn-escalate'),
+    };
+    const btn = btnMap[act];
+    if (btn && btn.classList.contains('locked')) {
+        alert("This action is not allowed for the current rule result / verification status.");
+        return;
+    }
+
     document.getElementById('d-action').value = act;
     document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('selected'));
-    
-    if(act === 'APPROVE') document.querySelector('.btn.approve').classList.add('selected');
-    if(act === 'REJECT') document.querySelector('.btn.reject').classList.add('selected');
-    if(act === 'REQUEST_DOCS') document.querySelector('.btn.review').classList.add('selected');
+    if (btn) btn.classList.add('selected');
 
     const reasonSel = document.getElementById('d-reason');
     const allowed = REASONS_BY_ACTION[act] || [];
-    
+
     Array.from(reasonSel.options).forEach(opt => {
         if (opt.value === "") return;
         opt.hidden = !allowed.includes(opt.value);
@@ -535,14 +638,31 @@ TEMPLATE = Template(
     const reasonCode = document.getElementById('d-reason').value;
     const opId = document.getElementById('d-op-id').value;
     const rr = document.getElementById('d-rule-res').value;
-    
+
     const comment = document.getElementById('d-comment').value;
     const flagged = document.getElementById('d-flag').checked;
+
+    const housingRisk = document.getElementById('d-house-risk').value === "1";
+    const noIdRisk = document.getElementById('d-no-id-risk').value === "1";
 
     if (!finalAction) { alert("Select Action"); return; }
     if (!reasonCode) { alert("Select Reason"); return; }
     if (!opId) { alert("Enter Operator ID"); return; }
-    
+
+    // Client-side guardrails to match server rules
+    if ((finalAction === "REJECT" || finalAction === "ESCALATE") && (!comment || comment.trim().length < 12)) {
+        alert("Comment required (min 12 chars) for REJECT/ESCALATE.");
+        return;
+    }
+    if (housingRisk && (finalAction === "APPROVE") && (!flagged || !comment || comment.trim().length < 20)) {
+        alert("Conflict indicator present: APPROVE requires Flag + evidence comment (min 20 chars).");
+        return;
+    }
+    if (noIdRisk && finalAction === "APPROVE") {
+        alert("No ID presented: cannot APPROVE.");
+        return;
+    }
+
     localStorage.setItem("saral_operator_id", opId);
 
     const btn = document.getElementById('btn-submit');
@@ -575,6 +695,8 @@ TEMPLATE = Template(
         }
     } catch (e) {
         alert("Network Error");
+        btn.disabled = false;
+        btn.innerText = "CONFIRM";
     }
   }
 </script>
@@ -594,34 +716,40 @@ def dashboard(
     arm: str | None = Query(None),
     since: str | None = Query(None),
     err: str | None = Query(None),
+    page: int = Query(1, ge=1),
 ):
     since_dt = _parse_since(since)
 
     base = db.query(Case)
     base = _apply_filters(base, scheme, status, arm, since_dt)
 
+    total_count = base.count()
+    limit = 50
+    total_pages = (total_count + limit - 1) // limit
+    start_index = (page - 1) * limit + 1
+    end_index = min(page * limit, total_count)
+
+    # Apply pagination and sorting
     items = (
         base.order_by(
-            desc(Case.arm == "TREATMENT"),
-            desc(Case.risk_score).nullslast(),
-            desc(sa_case((Case.rule_result == RuleResultEnum.UNKNOWN_NEEDS_DOCS, 1), else_=0)),
+            desc(Case.status == StatusEnum.IN_REVIEW),
             asc(Case.created_at),
         )
-        .limit(160)
+        .offset((page - 1) * limit)
+        .limit(limit)
         .all()
     )
 
     view: list[dict[str, Any]] = []
-    
     for c in items:
         docs = c.documents or []
-        ver = _verification_value(c)
         docs_count = len(docs)
+        docs_tooltip = "\n".join(docs) if docs else ""
+
+        ver = _verification_value(c)
         rr = c.rule_result.value if c.rule_result else "-"
-        
-        # PRE-CALC RISK FLAGS FOR TEMPLATE
-        note_text = (c.verification_note or "").lower()
-        has_house_risk = any(k in note_text for k in ["pakka", "owns", "has a house", "home", "flat"])
+
+        has_house_risk = _check_housing_risk(getattr(c, "verification_note", None))
 
         if c.arm == "CONTROL":
             risk_disp = "—"
@@ -644,8 +772,9 @@ def dashboard(
                 "rule_result": rr,
                 "documents": docs,
                 "docs_count": docs_count,
+                "docs_tooltip": docs_tooltip,
                 "verification_status": ver or "—",
-                "verification_note": c.verification_note or "",
+                "verification_note": getattr(c, "verification_note", "") or "",
                 "risk_disp": risk_disp,
                 "risk_band_disp": risk_band_disp,
                 "top_reasons_disp": top_reasons_disp,
@@ -653,11 +782,11 @@ def dashboard(
                 "final_action": (c.final_action.value if c.final_action else ""),
                 "reason_code": (c.reason_code.value if c.reason_code else ""),
                 "operator_id": getattr(c, "operator_id", None),
-                # New Flag for UI
                 "has_house_risk": has_house_risk,
             }
         )
 
+    # Filter counts reuse the filtered query, but not the paginated one
     filtered = db.query(Case)
     filtered = _apply_filters(filtered, scheme, status, arm, since_dt)
 
@@ -683,13 +812,24 @@ def dashboard(
 
     actions_by_rule_json = json.dumps({k: sorted(list(v)) for k, v in ALLOWED_ACTIONS_BY_RULE.items()}, ensure_ascii=False)
     reasons_by_action_json = json.dumps({k: sorted(list(v)) for k, v in ALLOWED_REASONS_BY_ACTION.items()}, ensure_ascii=False)
-    
+
     err_msg = None
     if err:
         try:
             err_msg = json.loads(err).get("msg")
         except Exception:
             err_msg = err
+
+    # Construct query params string for pagination links
+    # (preserving current filters)
+    params = []
+    if scheme: params.append(f"scheme={scheme}")
+    if status: params.append(f"status={status}")
+    if arm: params.append(f"arm={arm}")
+    if since: params.append(f"since={since}")
+    filter_qs = "&".join(params)
+    if filter_qs:
+        filter_qs = "&" + filter_qs
 
     return TEMPLATE.render(
         cases=view,
@@ -710,16 +850,23 @@ def dashboard(
         actions_by_rule_json=actions_by_rule_json,
         reasons_by_action_json=reasons_by_action_json,
         err_msg=err_msg,
+        page=page,
+        total_pages=total_pages,
+        total_count=total_count,
+        start_index=start_index,
+        end_index=end_index,
+        filter_qs=filter_qs,
     )
 
 
 @router.post("/dashboard/disposition")
-def dashboard_disposition(payload: DispositionIn, db: Session = Depends(get_db)):
+def dashboard_disposition(payload: DispositionIn, request: Request, db: Session = Depends(get_db)):
     case_id = (payload.id or "").strip()
     final_action = (payload.final_action or "").strip()
     reason_code = (payload.reason_code or "").strip()
     operator_id = (payload.operator_id or "").strip()
     rule_result_str = (payload.rule_result or "").strip()
+    comment = payload.operator_comment or ""
 
     if not case_id:
         raise HTTPException(400, "Missing case id")
@@ -732,6 +879,10 @@ def dashboard_disposition(payload: DispositionIn, db: Session = Depends(get_db))
     if not obj:
         raise HTTPException(404, "Case not found")
 
+    # prevent overwrite for integrity
+    if obj.decided_at is not None:
+        raise HTTPException(409, "Case already decided")
+
     if final_action not in _enum_values(FinalActionEnum):
         raise HTTPException(400, "Invalid final_action")
     if reason_code not in _enum_values(ReasonCodeEnum):
@@ -741,9 +892,38 @@ def dashboard_disposition(payload: DispositionIn, db: Session = Depends(get_db))
     if rr_db == "-":
         rr_db = "UNKNOWN_NEEDS_DOCS"
 
+    # Enforce action allowed by rule_result
+    allowed_actions = ALLOWED_ACTIONS_BY_RULE.get(rr_db, set())
+    if allowed_actions and final_action not in allowed_actions:
+        raise HTTPException(400, f"Action {final_action} not allowed for rule_result {rr_db}")
+
+    # Enforce reason allowed by action
+    allowed_reasons = ALLOWED_REASONS_BY_ACTION.get(final_action, set())
+    if allowed_reasons and reason_code not in allowed_reasons:
+        raise HTTPException(400, f"Reason {reason_code} not allowed for action {final_action}")
+
+    # Derive procedural/indicator flags
+    ver = _verification_value(obj) or "—"
+    house_risk = _check_housing_risk(getattr(obj, "verification_note", None))
+
+    # Procedural hard stop only: no ID -> cannot approve
+    if ver == "NO_ID_PRESENTED" and final_action == FinalActionEnum.APPROVE.value:
+        raise HTTPException(400, "No ID presented → cannot APPROVE")
+
+    # Guardrails to keep conflict cases non-binary and evidence-based
+    if final_action in {FinalActionEnum.REJECT.value, FinalActionEnum.ESCALATE.value}:
+        if not _require_comment_min(comment, 12):
+            raise HTTPException(400, "Comment required (min 12 chars) for REJECT/ESCALATE")
+
+    # If conflict indicator and APPROVE, require flagged + stronger evidence note
+    if house_risk and final_action == FinalActionEnum.APPROVE.value:
+        if not payload.flagged or not _require_comment_min(comment, 20):
+            raise HTTPException(400, "Conflict indicator present: APPROVE requires Flag + evidence comment (min 20 chars)")
+
+    # timestamps
     if payload.opened_at:
         try:
-            obj.opened_at = datetime.fromisoformat(payload.opened_at.replace('Z', '+00:00'))
+            obj.opened_at = datetime.fromisoformat(payload.opened_at.replace("Z", "+00:00"))
         except ValueError:
             obj.opened_at = _utcnow()
     elif obj.opened_at is None:
@@ -755,10 +935,9 @@ def dashboard_disposition(payload: DispositionIn, db: Session = Depends(get_db))
     obj.decided_at = _utcnow()
     obj.sop_version = obj.sop_version or "SOP_v1"
 
-    # --- SAVE NEW FIELDS ---
-    if hasattr(obj, 'operator_comment'):
+    if hasattr(obj, "operator_comment"):
         obj.operator_comment = payload.operator_comment
-    if hasattr(obj, 'flagged'):
+    if hasattr(obj, "flagged"):
         obj.flagged = payload.flagged
 
     if final_action == FinalActionEnum.REQUEST_DOCS.value:
@@ -781,6 +960,8 @@ def dashboard_disposition(payload: DispositionIn, db: Session = Depends(get_db))
 
     db.commit()
 
+    ua = request.headers.get("user-agent")
+
     evt = Event(
         case_id=obj.id,
         action=ActionEnum.OP_DISPOSITION,
@@ -791,14 +972,18 @@ def dashboard_disposition(payload: DispositionIn, db: Session = Depends(get_db))
                 "final_action": final_action,
                 "reason_code": reason_code,
                 "operator_id": operator_id,
-                # Research Data
                 "operator_comment": payload.operator_comment,
                 "flagged": payload.flagged,
                 "decision_support_shown": bool(getattr(obj, "decision_support_shown", False)),
                 "risk_score": obj.risk_score,
                 "override_flag": obj.override_flag,
                 "sop_version": obj.sop_version,
-                "latency_seconds": (obj.decided_at - obj.opened_at).total_seconds() if obj.opened_at else None
+                "latency_seconds": (obj.decided_at - obj.opened_at).total_seconds() if obj.opened_at else None,
+                "verification_status": ver,
+                "house_conflict_indicator": house_risk,
+                "allowed_actions_for_rule": sorted(list(ALLOWED_ACTIONS_BY_RULE.get(rr_db, set()))),
+                "allowed_reasons_for_action": sorted(list(ALLOWED_REASONS_BY_ACTION.get(final_action, set()))),
+                "user_agent": ua,
             },
             ensure_ascii=False,
         ),
