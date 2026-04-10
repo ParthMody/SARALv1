@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SARAL v2 — Survey</title>
+  <style>
+    :root{
+      --bg: #f3f5f8;
+      --panel: #ffffff;
+      --ink: #102a56;
+      --ink-2: #21406d;
+      --text: #213247;
+      --muted: #6e7f97;
+      --line: #dbe3ee;
+      --line-soft: #e9eef5;
+
+      --focus: 0 0 0 4px rgba(16, 42, 86, 0.12);
+
+      --danger-bg: #fff1f1;
+      --danger-line: #efb1b1;
+      --danger-text: #9f2f2f;
+
+      --btn: #163764;
+      --btn-hover: #214a85;
+
+      --selected-bg: #163764;
+      --selected-text: #ffffff;
+      --selected-line: #163764;
+
+      --shadow: 0 18px 45px rgba(16, 42, 86, 0.08);
+
+      --radius-xl: 20px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(22,55,100,0.05), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(22,55,100,0.04), transparent 22%),
+        var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+      color: var(--text);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 30px 28px 24px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 70px;
+      margin-bottom: 12px;
+    }
+
+    .logo-img {
+      max-width: 190px;
+      max-height: 60px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.75rem;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .subtitle {
+      margin: 10px auto 0;
+      max-width: 500px;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .question {
+      margin-bottom: 22px;
+      padding: 18px 18px 16px;
+      background: #fbfcfe;
+      border: 1px solid var(--line-soft);
+      border-radius: 16px;
+    }
+
+    .q-text {
+      font-size: 0.98rem;
+      line-height: 1.55;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .q-note {
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .likert {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .likert-item {
+      text-align: center;
+      min-width: 0;
+    }
+
+    .likert-item input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .likert-item label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #ffffff;
+      color: var(--ink);
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.04s ease;
+      user-select: none;
+    }
+
+    .likert-item label:hover {
+      background: #f7fafe;
+      border-color: #bfd0e7;
+    }
+
+    .likert-item label:active {
+      transform: translateY(1px);
+    }
+
+    .likert-item input:focus + label {
+      outline: none;
+      box-shadow: var(--focus);
+      border-color: var(--ink-2);
+    }
+
+    .likert-item input:checked + label {
+      background: var(--selected-bg);
+      color: var(--selected-text);
+      border-color: var(--selected-line);
+    }
+
+    .likert-ends {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      line-height: 1.35;
+      color: #8493a8;
+      font-weight: 600;
+    }
+
+    .divider {
+      border: 0;
+      border-top: 1px solid var(--line-soft);
+      margin: 18px 0 16px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      height: 52px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--btn);
+      color: #ffffff;
+      font-size: 0.98rem;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(22,55,100,0.16);
+      transition: background 0.15s ease;
+    }
+
+    .submit-btn:hover {
+      background: var(--btn-hover);
+    }
+
+    .submit-btn:disabled {
+      background: #9caabf;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .error-msg {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--danger-line);
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      font-size: 0.86rem;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 24px 18px 20px;
+        border-radius: 18px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .logo-img {
+        max-width: 170px;
+        max-height: 54px;
+      }
+
+      .question {
+        padding: 16px 14px 14px;
+      }
+
+      .likert {
+        gap: 6px;
+      }
+
+      .likert-item label {
+        min-height: 44px;
+        font-size: 0.9rem;
+      }
+
+      .likert-ends {
+        font-size: 0.72rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="card">
+    <div class="brand">
+      <div class="logo-wrap">
+        <img src="/static/assets/saral.png" class="logo-img" alt="SARAL" onerror="this.style.display='none'">
+      </div>
+      <h1>{% if locale == "mr" %}सत्र सर्वेक्षण{% else %}Session Survey{% endif %}</h1>
+      <p class="subtitle">
+        {% if locale == "mr" %}
+          कृपया खालील तीन प्रश्नांची उत्तरे द्या. तुमची उत्तरे गोपनीय राहतील.
+        {% else %}
+          Please answer the three questions below. Your responses are confidential.
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="question">
+      <div class="q-text">
+        {% if locale == "mr" %}
+          एकूण, आजच्या तुमच्या निर्णयांवर फील्ड नोटमधील माहितीचा किती प्रभाव पडला?
+        {% else %}
+          Overall, how much did the information in the field notes influence your decisions today?
+        {% endif %}
+      </div>
+      <div class="q-note">
+        {% if locale == "mr" %}
+          1 = अजिबात नाही &nbsp;·&nbsp; 5 = खूप जास्त
+        {% else %}
+          1 = Not at all &nbsp;·&nbsp; 5 = Very strongly
+        {% endif %}
+      </div>
+      <div class="likert" role="group" aria-label="Q1">
+        {% for i in range(1, 6) %}
+        <div class="likert-item">
+          <input type="radio" name="q1" id="q1-{{ i }}" value="{{ i }}" />
+          <label for="q1-{{ i }}">{{ i }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="likert-ends">
+        <span>{% if locale == "mr" %}अजिबात नाही{% else %}Not at all{% endif %}</span>
+        <span>{% if locale == "mr" %}खूप जास्त{% else %}Very strongly{% endif %}</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">
+        {% if locale == "mr" %}
+          प्रकरण नोटमध्ये काही विशिष्ट निरीक्षणे तुमच्या लक्षात आली का?
+        {% else %}
+          Were there any specific observations in the case notes that stood out to you?
+        {% endif %}
+      </div>
+      <div class="q-note">
+        {% if locale == "mr" %}
+          1 = काहीही नाही &nbsp;·&nbsp; 5 = अनेक स्पष्टपणे
+        {% else %}
+          1 = None stood out &nbsp;·&nbsp; 5 = Several stood out clearly
+        {% endif %}
+      </div>
+      <div class="likert" role="group" aria-label="Q2">
+        {% for i in range(1, 6) %}
+        <div class="likert-item">
+          <input type="radio" name="q2" id="q2-{{ i }}" value="{{ i }}" />
+          <label for="q2-{{ i }}">{{ i }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="likert-ends">
+        <span>{% if locale == "mr" %}काहीही नाही{% else %}None stood out{% endif %}</span>
+        <span>{% if locale == "mr" %}अनेक स्पष्टपणे{% else %}Several clearly{% endif %}</span>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-text">
+        {% if locale == "mr" %}
+          तुमच्या एकूण निर्णयांबद्दल तुम्हाला किती आत्मविश्वास वाटला?
+        {% else %}
+          How confident were you in your decisions overall?
+        {% endif %}
+      </div>
+      <div class="q-note">
+        {% if locale == "mr" %}
+          1 = अजिबात नाही &nbsp;·&nbsp; 5 = खूप आत्मविश्वास
+        {% else %}
+          1 = Not confident &nbsp;·&nbsp; 5 = Very confident
+        {% endif %}
+      </div>
+      <div class="likert" role="group" aria-label="Q3">
+        {% for i in range(1, 6) %}
+        <div class="likert-item">
+          <input type="radio" name="q3" id="q3-{{ i }}" value="{{ i }}" />
+          <label for="q3-{{ i }}">{{ i }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="likert-ends">
+        <span>{% if locale == "mr" %}अजिबात नाही{% else %}Not confident{% endif %}</span>
+        <span>{% if locale == "mr" %}खूप आत्मविश्वास{% else %}Very confident{% endif %}</span>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <button class="submit-btn" id="btn-submit" type="button" onclick="submitSurvey()" disabled>
+      {% if locale == "mr" %}सर्वेक्षण सबमिट करा{% else %}Submit Survey{% endif %}
+    </button>
+
+    <div class="error-msg" id="err-msg"></div>
+  </div>
+</div>
+
+<script>
+  const SESSION_ID = {{ session_id | tojson }};
+  const LOCALE = {{ locale | tojson }};
+
+  function t(en, mr) {
+    return LOCALE === "mr" ? mr : en;
+  }
+
+  function updateSubmitState() {
+    const q1 = document.querySelector('input[name="q1"]:checked');
+    const q2 = document.querySelector('input[name="q2"]:checked');
+    const q3 = document.querySelector('input[name="q3"]:checked');
+    document.getElementById('btn-submit').disabled = !(q1 && q2 && q3);
+    hideError();
+  }
+
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', updateSubmitState);
+  });
+
+  async function submitSurvey() {
+    const q1 = document.querySelector('input[name="q1"]:checked');
+    const q2 = document.querySelector('input[name="q2"]:checked');
+    const q3 = document.querySelector('input[name="q3"]:checked');
+
+    if (!q1 || !q2 || !q3) {
+      showError(t('Please answer all three questions.', 'कृपया तिन्ही प्रश्नांची उत्तरे द्या.'));
+      return;
+    }
+
+    const btn = document.getElementById('btn-submit');
+    const defaultText = t('Submit Survey', 'सर्वेक्षण सबमिट करा');
+
+    btn.disabled = true;
+    btn.textContent = t('Submitting...', 'सबमिट करत आहे...');
+
+    try {
+      const res = await fetch(`/session/${SESSION_ID}/survey`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          salience_rating: parseInt(q1.value, 10),
+          standout_rating: parseInt(q2.value, 10),
+          confidence_rating: parseInt(q3.value, 10),
+        }),
+      });
+
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        showError(d.detail || t('Submission failed. Please try again.', 'सबमिशन अयशस्वी झाले. कृपया पुन्हा प्रयत्न करा.'));
+        btn.disabled = false;
+        btn.textContent = defaultText;
+        return;
+      }
+
+      const data = await res.json();
+      window.location.href = data.redirect || `/session/${SESSION_ID}/complete`;
+
+    } catch (e) {
+      showError(t('Network error. Please try again.', 'नेटवर्क त्रुटी. कृपया पुन्हा प्रयत्न करा.'));
+      btn.disabled = false;
+      btn.textContent = defaultText;
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('err-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function hideError() {
+    const el = document.getElementById('err-msg');
+    el.textContent = '';
+    el.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
