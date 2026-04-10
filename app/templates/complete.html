@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="{{ operator.locale.value if operator and operator.locale else 'en' }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SARAL v2 — Session Complete</title>
+  <style>
+    :root{
+      --bg: #f3f5f8;
+      --panel: #ffffff;
+      --ink: #102a56;
+      --text: #213247;
+      --muted: #6e7f97;
+      --line-soft: #e9eef5;
+      --success-bg: #ecf9f1;
+      --success-line: #a7d9ba;
+      --success-text: #166534;
+      --shadow: 0 18px 45px rgba(16, 42, 86, 0.08);
+      --radius-xl: 20px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(22,55,100,0.05), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(22,55,100,0.04), transparent 22%),
+        var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+      color: var(--text);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 34px 28px 28px;
+      text-align: center;
+    }
+
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 72px;
+      margin-bottom: 14px;
+    }
+
+    .logo-img {
+      max-width: 190px;
+      max-height: 60px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .success-badge {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 18px;
+      border-radius: 999px;
+      background: var(--success-bg);
+      border: 1px solid var(--success-line);
+      color: var(--success-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 1.8rem;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .lead {
+      margin: 0 auto;
+      max-width: 420px;
+      font-size: 0.98rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .session-box {
+      margin: 22px auto 0;
+      max-width: 320px;
+      background: #fbfcfe;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+    }
+
+    .session-label {
+      font-size: 0.74rem;
+      line-height: 1.4;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .operator-id {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: var(--radius-md);
+      background: #f1f5f9;
+      border: 1px solid #dbe3ee;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #475569;
+      word-break: break-all;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: #8b98ab;
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 28px 20px 22px;
+        border-radius: 18px;
+      }
+
+      .logo-img {
+        max-width: 170px;
+        max-height: 54px;
+      }
+
+      .success-badge {
+        width: 64px;
+        height: 64px;
+        font-size: 1.8rem;
+      }
+
+      h1 {
+        font-size: 1.55rem;
+      }
+
+      .lead {
+        font-size: 0.93rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="card">
+      <div class="logo-wrap">
+        <img src="/static/assets/saral.png" class="logo-img" alt="SARAL" onerror="this.style.display='none'">
+      </div>
+
+      <div class="success-badge">✓</div>
+
+      <h1>
+        {% if operator.locale.value == "mr" %}
+          सत्र पूर्ण झाले
+        {% else %}
+          Session Complete
+        {% endif %}
+      </h1>
+
+      <p class="lead">
+        {% if operator.locale.value == "mr" %}
+          तुमचे सर्व प्रतिसाद यशस्वीरीत्या नोंदवले गेले आहेत. कृपया संशोधकाला कळवा.
+        {% else %}
+          Your responses have been recorded successfully. Please notify the researcher.
+        {% endif %}
+      </p>
+
+      <div class="session-box">
+        <div class="session-label">
+          {% if operator.locale.value == "mr" %}
+            सत्र ओळख
+          {% else %}
+            Session Reference
+          {% endif %}
+        </div>
+        <div class="operator-id">{{ operator.session_id[:12] }}…</div>
+      </div>
+
+      <div class="footer-note">
+        {% if operator.locale.value == "mr" %}
+          ही विंडो बंद करण्यापूर्वी संशोधकाच्या सूचनेची वाट पाहा.
+        {% else %}
+          Please wait for the researcher’s instruction before closing this window.
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
