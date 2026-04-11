@@ -173,7 +173,7 @@
     .col-left  { padding: 22px; overflow-y: auto; border-right: 1px solid var(--line-soft); }
     .col-right { padding: 22px; overflow-y: auto; background: #fcfdff; display: flex; flex-direction: column; gap: 18px; }
 
-    .section { margin-bottom: 22px; }
+    .section { margin-bottom: 22px; position: relative; z-index: 1; overflow: hidden; }
     .section:last-child { margin-bottom: 0; }
     .section-title {
       font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
@@ -192,8 +192,10 @@
     .field-note {
       background: #fbfcfe; border: 1px solid var(--line-soft);
       border-left: 4px solid #8ea8cc; border-radius: 0 12px 12px 0;
-      padding: 15px 16px; font-size: 0.9rem; line-height: 1.7;
-      color: #31465f; white-space: pre-wrap;
+      padding: 15px 16px; font-size: 0.84rem; line-height: 1.9;
+      color: #31465f; white-space: pre;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: 0.01em;
     }
 
     .algo-box { border-radius: 14px; border: 1px solid transparent; padding: 16px; text-align: center; }
@@ -356,9 +358,20 @@
           <div class="profile-grid" id="m-profile"></div>
         </div>
         <div class="section">
-          <div class="section-title">Field Note</div>
+          <div class="section-title">Field Record</div>
           <div class="field-note" id="m-field-note"></div>
         </div>
+        <div class="section">
+          <div class="section-title">
+            Officer Remarks
+            <span style="font-size:0.65rem;font-weight:700;color:var(--muted);margin-left:6px;font-style:italic;">unstructured</span>
+          </div>
+          <div class="officer-remarks" id="m-officer-remarks">
+            <div class="officer-remarks-label">Informal</div>
+            <div id="m-officer-remarks-text"></div>
+          </div>
+        </div>
+
         <div class="section">
           <div class="section-title">Rule Result</div>
           <span class="rule-badge" id="m-rule-badge"></span>
@@ -435,7 +448,24 @@
     });
 
     // Field note + rule result
-    document.getElementById('m-field-note').textContent = c.field_note || '—';
+    const _raw = c.field_note || '';
+    const _fieldRecordEl = document.getElementById('m-field-note');
+    const _remarksEl     = document.getElementById('m-officer-remarks-text');
+    _fieldRecordEl.textContent = '';
+    _remarksEl.textContent     = '';
+    if (_raw.includes('Field Remark') || _raw.includes('क्षेत्र निरीक्षण')) {
+      const _splitKey   = _raw.includes('Field Remark') ? 'Field Remark' : 'क्षेत्र निरीक्षण';
+      const _splitIdx   = _raw.lastIndexOf(_splitKey);
+      const _record     = _raw.substring(0, _splitIdx).trim();
+      const _remarkFull = _raw.substring(_splitIdx);
+      const _colonIdx   = _remarkFull.indexOf(':');
+      const _remark     = _colonIdx >= 0 ? _remarkFull.substring(_colonIdx + 1).trim() : '';
+      _fieldRecordEl.textContent = _record || '—';
+      _remarksEl.textContent     = _remark || '—';
+    } else {
+      _fieldRecordEl.textContent = _raw || '—';
+      _remarksEl.textContent     = '—';
+    }
     const ruleEl = document.getElementById('m-rule-badge');
     ruleEl.textContent = c.rule_result;
     ruleEl.className   = `rule-badge rule-${c.rule_result}`;

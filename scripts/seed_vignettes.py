@@ -1,11 +1,11 @@
 # scripts/seed_vignettes.py
 """
-Stub vignette seeder for SARAL v2.
+Vignette seeder for SARAL v2 — Tuesday pre-pilot version.
 Generates 320 synthetic cases: 80 × (control/approve, control/reject,
-treatment/approve, treatment/reject).
+                                     treatment/approve, treatment/reject).
 
-Stub field notes are clearly marked as placeholders — replace with
-authentic SRA Annexure-II format once confirmed by field contact.
+Field records mimic SRA Annexure-II column structure.
+Officer Remarks: control = thin/neutral, treatment = signal-bearing.
 
 Usage:
     python -m scripts.seed_vignettes          # seed with defaults
@@ -24,155 +24,169 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.db import SessionLocal, engine
 from app.models import Base, ArmEnum, AlgoRecommendationEnum, RuleResultEnum, Vignette
 
-# ── Reproducible stub pool ────────────────────────────────────────────────────
-SEED = 42
-RNG  = random.Random(SEED)
+# ── Reproducible pool ─────────────────────────────────────────────────────────
+SEED         = 42
+RNG          = random.Random(SEED)
+POOL_VERSION = "v2.0-tuesday"
 
-POOL_VERSION = "v2.0-stub"
+# ── Profile values (SRA Annexure-II column logic) ─────────────────────────────
+ELECTORAL_ROLL_YEARS = [1995, 1998, 2000, 2002, 2004, 2005, 2007, 2008, 2010]
+STRUCTURE_TYPES      = ["R", "R/C", "C"]
+CARPET_AREAS         = [110, 140, 160, 175, 180, 195, 200, 210, 225]
+PRE_1995_OPTIONS     = ["Yes", "No"]
+CONSENT_OPTIONS      = ["Yes", "No"]
 
-# ── Profile building blocks ───────────────────────────────────────────────────
-INCOMES_MONTHLY = [2000, 3500, 4200, 5000, 6500, 7800, 9000, 10500, 12000, 15000]
-AGES            = list(range(21, 65))
-HOUSING_STATUSES = ["kutcha", "semi-pucca", "rented", "homeless", "chawl"]
-
-# Operator-visible fields only (TDD decision: show selective subset)
-VISIBLE_PROFILE_KEYS = [
-    "age", "income", "income_period",
-    "rural", "caste_marginalized", "housing_status",
-]
 
 def _make_profile() -> dict:
     """
-    Full profile for seeding. Backend uses all fields.
-    Operator-visible subset is filtered at serve time in session.py.
+    Operator sees the 5 SRA sheet columns via the Field Record.
+    Backend-only covariates retained for heterogeneity analysis.
     """
     return {
-        # Operator-visible
-        "age":               RNG.choice(AGES),
-        "income":            RNG.choice(INCOMES_MONTHLY),
-        "income_period":     "monthly",
-        "rural":             RNG.choice([0, 1]),
+        # Operator-visible (served via field record display)
+        "electoral_roll_year": RNG.choice(ELECTORAL_ROLL_YEARS),
+        "structure_type":      RNG.choice(STRUCTURE_TYPES),
+        "carpet_area_sqft":    RNG.choice(CARPET_AREAS),
+        "pre_1995_evidence":   RNG.choice(PRE_1995_OPTIONS),
+        "consent":             RNG.choice(CONSENT_OPTIONS),
+        # Backend-only
+        "age":                RNG.randint(21, 65),
+        "income":             RNG.choice([2000, 3500, 4200, 5000, 6500, 7800, 9000, 10500]),
+        "income_period":      "monthly",
         "caste_marginalized": RNG.choice([0, 1]),
-        "housing_status":    RNG.choice(HOUSING_STATUSES),
-        # Backend-only (not shown to operator)
-        "gender":            RNG.choice(["M", "F", "O"]),
-        "education_years":   RNG.randint(0, 16),
     }
 
 
-# ── Stub field note generators ────────────────────────────────────────────────
-# IMPORTANT: These are structural placeholders only.
-# Language register, abbreviations, and information structure must match
-# authentic SRA Annexure-II intake note format — pending field contact input.
-# Marathi translations must be verified by a domain-familiar speaker (TDD §7.2).
+# ── Field record builders ─────────────────────────────────────────────────────
+# Field Record (formal columns) + Officer Remark stored together in field_note_en/mr.
+# UI splits on "Field Remark :" at render time.
+# Structure is identical across arms — only the remark content differs (TDD §7.2).
 
-def _control_note_en(profile: dict) -> str:
-    """
-    Sterile note: restates structured inputs only.
-    Zero marginal information beyond profile fields (TDD §7.1).
-    """
-    rural_str   = "rural area" if profile["rural"] else "urban area"
-    caste_str   = "belongs to marginalized caste category" if profile["caste_marginalized"] else "general category"
-    housing_str = profile.get("housing_status", "unknown")
+def _field_record_en(profile: dict, remark: str) -> str:
     return (
-        f"Applicant is {profile['age']} years old, residing in {rural_str}. "
-        f"Reported monthly income: Rs. {profile['income']}. "
-        f"Housing status: {housing_str}. "
-        f"Applicant {caste_str}. "
-        f"[STUB — replace with SRA Annexure-II format]"
+        f"Electoral Roll Year : {profile['electoral_roll_year']}\n"
+        f"Structure Type      : {profile['structure_type']}\n"
+        f"Carpet Area         : {profile['carpet_area_sqft']} sq ft\n"
+        f"Pre-1995 Evidence   : {profile['pre_1995_evidence']}\n"
+        f"Consent             : {profile['consent']}\n"
+        f"Field Remark        : {remark}"
     )
 
 
-def _control_note_mr(profile: dict) -> str:
-    """Marathi stub — must be verified by domain-familiar speaker before pilot."""
-    rural_str   = "ग्रामीण भागात" if profile["rural"] else "शहरी भागात"
-    caste_str   = "मागासवर्गीय प्रवर्गातील" if profile["caste_marginalized"] else "सामान्य प्रवर्गातील"
-    housing_str = profile.get("housing_status", "अज्ञात")
+def _field_record_mr(profile: dict, remark: str) -> str:
     return (
-        f"अर्जदाराचे वय {profile['age']} वर्षे आहे, {rural_str} राहतात. "
-        f"मासिक उत्पन्न: रु. {profile['income']}. "
-        f"निवास स्थिती: {housing_str}. "
-        f"अर्जदार {caste_str} आहे. "
-        f"[STUB — SRA अनुलग्नक-II स्वरूपात बदलणे आवश्यक]"
+        f"मतदार यादी वर्ष     : {profile['electoral_roll_year']}\n"
+        f"संरचना प्रकार       : {profile['structure_type']}\n"
+        f"कार्पेट क्षेत्र      : {profile['carpet_area_sqft']} चौ.फू.\n"
+        f"१९९५ पूर्व पुरावा    : {profile['pre_1995_evidence']}\n"
+        f"संमती               : {profile['consent']}\n"
+        f"क्षेत्र निरीक्षण      : {remark}"
     )
 
 
-# Treatment signals — one per note, subtle and naturalistic (TDD §7.2).
-# These are illustrative stubs; actual signals pending SRA format guidance.
-TREATMENT_SIGNALS_EN = [
-    "Applicant arrived at kiosk by personal vehicle.",
-    "Applicant mentioned children attend private school.",
-    "Applicant wearing gold jewellery at time of visit.",
-    "Household reported owning a refrigerator and television.",
-    "Applicant's spouse reported working in private sector.",
-    "Applicant mentioned recent home renovation.",
-    "Children's school fees noted as above government school rates.",
-    "Applicant owns a mobile phone with active data plan.",
+# ── Officer Remarks ───────────────────────────────────────────────────────────
+# Control: thin, neutral, non-diagnostic.
+# Not blank — "presence of remark" must not become the treatment signal.
+
+CONTROL_REMARKS_EN = [
+    "Visited site; resident present.",
+    "Structure seen, basic details checked.",
+    "Occupancy confirmed at site.",
 ]
 
-TREATMENT_SIGNALS_MR = [
-    "अर्जदार स्वतःच्या वाहनाने कियोस्कवर आले.",
-    "अर्जदाराने मुले खाजगी शाळेत जातात असे नमूद केले.",
-    "भेटीच्या वेळी अर्जदाराने सोन्याचे दागिने घातले होते.",
-    "घरात रेफ्रिजरेटर आणि टेलिव्हिजन असल्याचे नोंदवले.",
-    "अर्जदाराचे पती/पत्नी खाजगी क्षेत्रात काम करतात.",
-    "अर्जदाराने अलीकडील घराची दुरुस्ती नमूद केली.",
-    "मुलांची शाळा फी सरकारी शाळेच्या दरापेक्षा जास्त नोंदवली.",
-    "अर्जदाराकडे सक्रिय डेटा प्लॅनसह मोबाइल फोन आहे.",
+CONTROL_REMARKS_MR = [
+    "साइटला भेट; रहिवासी उपस्थित.",
+    "संरचना पाहिली; तपशील तपासले.",
+    "राहण्याची खात्री झाली.",
+]
+
+# Treatment: short, fragmented, observational, slightly subjective.
+# 6 signal types × 2 variants = 12 entries. Descriptive not interpretive.
+# Index alignment: EN[i] ↔ MR[i] for every i.
+#
+#  0-1 : vehicle / mobility
+#  2-3 : private school
+#  4-5 : jewellery / appearance
+#  6-7 : appliances / assets
+#  8-9 : renovation / housing quality
+# 10-11: financial stability (neighbour signal)
+
+TREATMENT_REMARKS_EN = [
+    # 0-1: vehicle
+    "Own bike seen outside.",
+    "Came on two-wheeler; vehicle parked.",
+    # 2-3: school
+    "Children in private school, fees high.",
+    "Private school mentioned, not govt.",
+    # 4-5: jewellery
+    "Gold chain, rings visible — looks above average.",
+    "Dressed well, wearing gold — not typical.",
+    # 6-7: appliances
+    "TV, fridge inside.",
+    "Appliances present — TV, fridge seen.",
+    # 8-9: renovation
+    "Fresh paint, tiles — house recently done.",
+    "Looks newly done, better than nearby.",
+    # 10-11: neighbour signal
+    "Neighbours say income steady.",
+    "Local says financially ok.",
+]
+
+TREATMENT_REMARKS_MR = [
+    # 0-1: vehicle
+    "दुचाकी बाहेर दिसली.",
+    "दुचाकीने आले; वाहन पार्क केलेले.",
+    # 2-3: school
+    "मुलं खाजगी शाळेत; फी जास्त.",
+    "खाजगी शाळा सांगितली; सरकारी नाही.",
+    # 4-5: jewellery
+    "सोन्याची चैन, अंगठ्या दिसल्या — सरासरीपेक्षा वर.",
+    "चांगले कपडे, सोने घातलेले — सामान्य नाही.",
+    # 6-7: appliances
+    "टीव्ही, फ्रिज आत दिसले.",
+    "घरात उपकरणे — टीव्ही, फ्रिज.",
+    # 8-9: renovation
+    "नवीन रंग, टाइल्स — घर अलीकडे केलेले.",
+    "घर नवीनसारखे; आसपासपेक्षा चांगले.",
+    # 10-11: neighbour signal
+    "शेजारी म्हणतात उत्पन्न स्थिर.",
+    "स्थानिक म्हणतात आर्थिक स्थिती ठीक.",
 ]
 
 
-def _treatment_note_en(profile: dict, signal: str) -> str:
-    """
-    Signal-injected note: identical structure to control + one unencoded signal.
-    Critical constraint: only difference is the injected signal (TDD §7.2).
-    """
-    rural_str   = "rural area" if profile["rural"] else "urban area"
-    caste_str   = "belongs to marginalized caste category" if profile["caste_marginalized"] else "general category"
-    housing_str = profile.get("housing_status", "unknown")
-    return (
-        f"Applicant is {profile['age']} years old, residing in {rural_str}. "
-        f"Reported monthly income: Rs. {profile['income']}. "
-        f"Housing status: {housing_str}. "
-        f"Applicant {caste_str}. "
-        f"{signal} "
-        f"[STUB — replace with SRA Annexure-II format]"
-    )
+def _control_remark(rng: random.Random, locale: str) -> str:
+    pool = CONTROL_REMARKS_MR if locale == "mr" else CONTROL_REMARKS_EN
+    return rng.choice(pool)
 
 
-def _treatment_note_mr(profile: dict, signal_mr: str) -> str:
-    """Marathi stub — must be verified by domain-familiar speaker before pilot."""
-    rural_str   = "ग्रामीण भागात" if profile["rural"] else "शहरी भागात"
-    caste_str   = "मागासवर्गीय प्रवर्गातील" if profile["caste_marginalized"] else "सामान्य प्रवर्गातील"
-    housing_str = profile.get("housing_status", "अज्ञात")
-    return (
-        f"अर्जदाराचे वय {profile['age']} वर्षे आहे, {rural_str} राहतात. "
-        f"मासिक उत्पन्न: रु. {profile['income']}. "
-        f"निवास स्थिती: {housing_str}. "
-        f"अर्जदार {caste_str} आहे. "
-        f"{signal_mr} "
-        f"[STUB — SRA अनुलग्नक-II स्वरूपात बदलणे आवश्यक]"
-    )
+def _treatment_remark(rng: random.Random, locale: str, case_idx: int) -> str:
+    """
+    Cycles through 6 signal types (2 variants each) across 80 treatment cases.
+    case_idx mod 6 selects signal type; rng picks one of the 2 variants.
+    """
+    pool = TREATMENT_REMARKS_MR if locale == "mr" else TREATMENT_REMARKS_EN
+    base = (case_idx % 6) * 2
+    return rng.choice(pool[base:base + 2])
 
 
 # ── Rule result assignment ────────────────────────────────────────────────────
 def _rule_result(algo_rec: AlgoRecommendationEnum) -> RuleResultEnum:
     """
-    Stub rule result: broadly consistent with algo recommendation.
-    Approve cases lean ELIGIBLE, reject cases lean INELIGIBLE.
-    Some approved cases are INELIGIBLE (tests aversion in both directions).
+    Broadly consistent with algo recommendation but not perfectly correlated.
+    1 in 3 approve cases fail the rule; 1 in 3 reject cases pass it.
+    Tests aversion in both directions (TDD §5.3).
     """
     if algo_rec == AlgoRecommendationEnum.APPROVE:
         return RNG.choice([
             RuleResultEnum.ELIGIBLE_BY_RULE,
             RuleResultEnum.ELIGIBLE_BY_RULE,
-            RuleResultEnum.INELIGIBLE_BY_RULE,  # 1 in 3: approve despite rule fail
+            RuleResultEnum.INELIGIBLE_BY_RULE,
         ])
     else:
         return RNG.choice([
             RuleResultEnum.INELIGIBLE_BY_RULE,
             RuleResultEnum.INELIGIBLE_BY_RULE,
-            RuleResultEnum.ELIGIBLE_BY_RULE,    # 1 in 3: reject despite rule pass
+            RuleResultEnum.ELIGIBLE_BY_RULE,
         ])
 
 
@@ -197,7 +211,6 @@ def seed(clear: bool = False) -> None:
             return
 
         created = 0
-        # 4 buckets × 80 = 320
         buckets: list[tuple[ArmEnum, AlgoRecommendationEnum]] = [
             (ArmEnum.CONTROL,   AlgoRecommendationEnum.APPROVE),
             (ArmEnum.CONTROL,   AlgoRecommendationEnum.REJECT),
@@ -205,23 +218,17 @@ def seed(clear: bool = False) -> None:
             (ArmEnum.TREATMENT, AlgoRecommendationEnum.REJECT),
         ]
 
-        signal_cycle_en = list(TREATMENT_SIGNALS_EN)
-        signal_cycle_mr = list(TREATMENT_SIGNALS_MR)
-
         for arm, algo_rec in buckets:
             for i in range(80):
                 profile = _make_profile()
                 rr      = _rule_result(algo_rec)
 
                 if arm == ArmEnum.CONTROL:
-                    note_en = _control_note_en(profile)
-                    note_mr = _control_note_mr(profile)
+                    note_en = _field_record_en(profile, _control_remark(RNG, "en"))
+                    note_mr = _field_record_mr(profile, _control_remark(RNG, "mr"))
                 else:
-                    # Cycle through signals evenly across the 80 treatment cases
-                    signal_en = signal_cycle_en[i % len(signal_cycle_en)]
-                    signal_mr = signal_cycle_mr[i % len(signal_cycle_mr)]
-                    note_en   = _treatment_note_en(profile, signal_en)
-                    note_mr   = _treatment_note_mr(profile, signal_mr)
+                    note_en = _field_record_en(profile, _treatment_remark(RNG, "en", i))
+                    note_mr = _field_record_mr(profile, _treatment_remark(RNG, "mr", i))
 
                 v = Vignette(
                     arm                 = arm,
@@ -238,7 +245,7 @@ def seed(clear: bool = False) -> None:
 
         db.commit()
         print(f"Seeded {created} vignettes (pool_version={POOL_VERSION}).")
-        print("NOTE: Field notes are stubs. Replace with SRA Annexure-II format before pilot.")
+        print("NOTE: Stub remarks — replace with verified SRA format before real pilot.")
 
     finally:
         db.close()
