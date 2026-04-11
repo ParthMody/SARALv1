@@ -125,6 +125,53 @@ def login(
         value=operator.session_id,
         httponly=True,
         samesite="strict",
-        max_age=7200,  # 2 hours — more than enough for a 16-case session
+        max_age=14400,  # 4 hours — covers breaks and slow sessions
+    )
+    return response
+
+# ─────────────────────────────────────────────
+# GET /admin/resume/{session_id}
+# Admin-only crash recovery: reissues the session cookie
+# and redirects the operator back into their session.
+# ─────────────────────────────────────────────
+
+ADMIN_COOKIE = "saral_admin"
+
+
+@router.get("/admin/resume/{session_id}")
+def admin_resume_session(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    # Admin auth check
+    if request.cookies.get(ADMIN_COOKIE) != settings.ADMIN_SECRET:
+        raise HTTPException(403, "Admin access required")
+
+    op = db.query(Operator).filter(Operator.session_id == session_id).first()
+    if not op:
+        raise HTTPException(404, f"Session {session_id} not found")
+
+    if op.status == SessionStatusEnum.COMPLETED:
+        raise HTTPException(409, "Session already completed — cannot resume")
+
+    log_event(
+        db,
+        AuditActionEnum.LOGIN,
+        actor_id   = op.operator_id,
+        session_id = session_id,
+        payload    = {"action": "admin_resume", "initiated_by": "admin"},
+    )
+
+    response = RedirectResponse(
+        url=f"/session/{session_id}",
+        status_code=303,
+    )
+    response.set_cookie(
+        key="session_id",
+        value=session_id,
+        httponly=True,
+        samesite="strict",
+        max_age=7200,
     )
     return response

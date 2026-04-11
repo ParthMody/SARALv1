@@ -86,6 +86,21 @@ def _assign_cases(operator: Operator, db: Session) -> list[str]:
     return [v.case_id for v in combined]
 
 
+# Keys exposed to the operator interface (TDD design decision)
+OPERATOR_VISIBLE_PROFILE_KEYS = [
+    "age", "income", "income_period",
+    "rural", "caste_marginalized", "housing_status",
+]
+PROFILE_LABELS = {
+    "age":               "Age",
+    "income":            "Monthly Income (Rs.)",
+    "income_period":     "Income Period",
+    "rural":             "Rural",
+    "caste_marginalized": "Marginalized Category",
+    "housing_status":    "Housing Status",
+}
+
+
 def _build_case_view(
     vignette: Vignette,
     evaluation: Evaluation,
@@ -93,25 +108,35 @@ def _build_case_view(
 ) -> dict[str, Any]:
     """
     Build the dict served to the Jinja2 template / JS openCase().
-    Never exposes arm — operator must not know (TDD §6.3).
+    - Never exposes arm (TDD §6.3).
+    - Profile filtered to operator-visible keys only.
     """
     field_note = (
         vignette.field_note_mr if locale == "mr" else vignette.field_note_en
     )
-    profile = vignette.profile_data or {}
+    full_profile = vignette.profile_data or {}
+
+    visible_profile = {
+        k: full_profile[k]
+        for k in OPERATOR_VISIBLE_PROFILE_KEYS
+        if k in full_profile
+    }
+    for bool_key in ("rural", "caste_marginalized"):
+        if bool_key in visible_profile:
+            visible_profile[bool_key] = "Yes" if visible_profile[bool_key] else "No"
 
     return {
-        "case_id":            vignette.case_id,
-        "case_sequence":      evaluation.case_sequence,
-        "rule_result":        vignette.rule_result.value,
+        "case_id":             vignette.case_id,
+        "case_sequence":       evaluation.case_sequence,
+        "rule_result":         vignette.rule_result.value,
         "algo_recommendation": vignette.algo_recommendation.value,
-        "field_note":         field_note,
-        "profile":            profile,
-        # Evaluation state
-        "decision":           evaluation.decision.value if evaluation.decision else None,
-        "reasoning":          evaluation.reasoning or "",
-        "override":           evaluation.override,
-        "submitted":          evaluation.timestamp_submit is not None,
+        "field_note":          field_note,
+        "profile":             visible_profile,
+        "profile_labels":      PROFILE_LABELS,
+        "decision":            evaluation.decision.value if evaluation.decision else None,
+        "reasoning":           evaluation.reasoning or "",
+        "override":            evaluation.override,
+        "submitted":           evaluation.timestamp_submit is not None,
     }
 
 

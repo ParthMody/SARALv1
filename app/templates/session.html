@@ -140,7 +140,7 @@
     }
 
     .progress-bar-outer {
-      width: 150px;
+      width: 170px;
       height: 10px;
       border-radius: 999px;
       overflow: hidden;
@@ -154,6 +154,16 @@
       background: linear-gradient(90deg, #1c3f72 0%, #3768ab 100%);
       width: {{ (completed / total_cases * 100) | int }}%;
       transition: width 0.25s ease;
+    }
+
+    .recovery-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      opacity: 0.4;
+      letter-spacing: 0.08em;
+      flex: 0 0 auto;
+      user-select: all;
     }
 
     .shell {
@@ -260,7 +270,6 @@
 
     tbody tr:hover {
       background: #f9fbfe;
-      cursor: pointer;
     }
 
     tbody tr.done-row {
@@ -371,7 +380,7 @@
       position: fixed;
       inset: 0;
       z-index: 100;
-      background: rgba(12, 23, 38, 0.52);
+      background: rgba(12,23,38,0.52);
       backdrop-filter: blur(4px);
       padding: 24px;
     }
@@ -380,7 +389,7 @@
       position: fixed;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%,-50%);
       width: min(1120px, calc(100vw - 32px));
       height: min(88vh, 900px);
       background: var(--panel);
@@ -434,7 +443,7 @@
     .modal-body {
       flex: 1;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
+      grid-template-columns: minmax(0,1fr) 360px;
       min-height: 0;
     }
 
@@ -474,7 +483,7 @@
 
     .profile-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0,1fr));
       gap: 12px;
     }
 
@@ -517,7 +526,7 @@
     .algo-box {
       border-radius: 14px;
       border: 1px solid transparent;
-      padding: 16px 16px;
+      padding: 16px;
       text-align: center;
     }
 
@@ -595,19 +604,19 @@
 
     .dec-btn.sel-approve {
       background: var(--green-text);
-      color: #ffffff;
+      color: #fff;
       border-color: var(--green-text);
     }
 
     .dec-btn.sel-reject {
       background: var(--red-text);
-      color: #ffffff;
+      color: #fff;
       border-color: var(--red-text);
     }
 
     .dec-btn.sel-escalate {
       background: var(--teal-text);
-      color: #ffffff;
+      color: #fff;
       border-color: var(--teal-text);
     }
 
@@ -676,68 +685,24 @@
     }
 
     @media (max-width: 1080px) {
-      .modal-body {
-        grid-template-columns: 1fr;
-      }
-
-      .col-left {
-        border-right: none;
-        border-bottom: 1px solid var(--line-soft);
-      }
-
-      .col-right {
-        background: #ffffff;
-      }
-
-      .profile-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+      .modal-body { grid-template-columns: 1fr; }
+      .col-left { border-right: none; border-bottom: 1px solid var(--line-soft); }
+      .col-right { background: #ffffff; }
+      .profile-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
 
     @media (max-width: 760px) {
-      .topbar-inner {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .progress-wrap {
-        justify-content: space-between;
-      }
-
-      .progress-bar-outer {
-        flex: 1 1 auto;
-        width: auto;
-      }
-
-      .shell {
-        padding: 18px 14px 30px;
-      }
-
-      .summary {
-        padding: 12px 14px;
-      }
-
-      .table-wrap {
-        overflow-x: auto;
-      }
-
-      table {
-        min-width: 760px;
-      }
-
-      .profile-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .modal {
-        width: calc(100vw - 16px);
-        height: calc(100vh - 16px);
-        border-radius: 18px;
-      }
-
-      .backdrop {
-        padding: 8px;
-      }
+      .topbar-inner { flex-direction: column; align-items: stretch; }
+      .progress-wrap { justify-content: space-between; }
+      .progress-bar-outer { flex: 1 1 auto; width: auto; }
+      .recovery-code { display: none; }
+      .shell { padding: 18px 14px 30px; }
+      .summary { padding: 12px 14px; }
+      .table-wrap { overflow-x: auto; }
+      table { min-width: 760px; }
+      .profile-grid { grid-template-columns: 1fr; }
+      .modal { width: calc(100vw - 16px); height: calc(100vh - 16px); border-radius: 18px; }
+      .backdrop { padding: 8px; }
     }
   </style>
 </head>
@@ -766,6 +731,8 @@
         <div class="progress-bar-inner" id="progress-bar"></div>
       </div>
     </div>
+
+    <span class="recovery-code" title="Session recovery code — researcher use only">{{ session_id[:8] }}</span>
   </div>
 </div>
 
@@ -805,21 +772,11 @@
       </thead>
       <tbody id="case-tbody">
         {% for c in cases %}
-        <tr
-          id="row-{{ c.case_id }}"
-          class="{% if c.submitted %}done-row{% endif %}"
-          onclick="openCase({{ c | tojson | safe }})"
-        >
+        <tr id="row-{{ c.case_id }}" class="{% if c.submitted %}done-row{% endif %}">
           <td class="case-seq">{{ c.case_sequence }}</td>
           <td class="case-id">{{ c.case_id[:8] }}…</td>
-          <td>
-            <span class="rule-badge rule-{{ c.rule_result }}">{{ c.rule_result }}</span>
-          </td>
-          <td>
-            <span class="rec-{{ c.algo_recommendation }}">
-              {{ c.algo_recommendation | upper }}
-            </span>
-          </td>
+          <td><span class="rule-badge rule-{{ c.rule_result }}">{{ c.rule_result }}</span></td>
+          <td><span class="rec-{{ c.algo_recommendation }}">{{ c.algo_recommendation | upper }}</span></td>
           <td id="decision-{{ c.case_id }}">
             {% if c.submitted %}
               <span class="pill pill-{{ c.decision }}">{{ c.decision | upper }}</span>
@@ -830,7 +787,12 @@
             {% endif %}
           </td>
           <td>
-            <button class="row-review-btn" type="button">
+            <button
+              class="row-review-btn"
+              type="button"
+              data-case='{{ c | tojson }}'
+              onclick="openCaseFromButton(this)"
+            >
               {% if locale == "mr" %}पुनरावलोकन{% else %}Review{% endif %}
             </button>
           </td>
@@ -844,76 +806,50 @@
 
 <div class="backdrop" id="backdrop">
   <div class="modal">
-
     <div class="modal-header">
       <div class="modal-title-wrap">
-        <span class="modal-title">
-          {% if locale == "mr" %}प्रकरण पुनरावलोकन{% else %}Case Review{% endif %}
-        </span>
+        <span class="modal-title">{% if locale == "mr" %}प्रकरण पुनरावलोकन{% else %}Case Review{% endif %}</span>
         <span class="modal-seq" id="m-seq"></span>
       </div>
       <button class="modal-close" type="button" onclick="closeModal()">×</button>
     </div>
 
     <div class="modal-body">
-
       <div class="col-left">
-
         <div class="section">
-          <div class="section-title">
-            {% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}
-          </div>
+          <div class="section-title">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
           <div class="profile-grid" id="m-profile"></div>
         </div>
 
         <div class="section">
-          <div class="section-title">
-            {% if locale == "mr" %}फील्ड नोट{% else %}Field Note{% endif %}
-          </div>
+          <div class="section-title">{% if locale == "mr" %}फील्ड नोट{% else %}Field Note{% endif %}</div>
           <div class="field-note" id="m-field-note"></div>
         </div>
 
         <div class="section">
-          <div class="section-title">
-            {% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}
-          </div>
+          <div class="section-title">{% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}</div>
           <span class="rule-badge" id="m-rule-badge"></span>
         </div>
-
       </div>
 
       <div class="col-right">
-
         <div>
-          <div class="section-title">
-            {% if locale == "mr" %}प्रणाली शिफारस{% else %}System Recommendation{% endif %}
-          </div>
+          <div class="section-title">{% if locale == "mr" %}प्रणाली शिफारस{% else %}System Recommendation{% endif %}</div>
           <div class="algo-box" id="m-algo-box">
-            <div class="algo-label">
-              {% if locale == "mr" %}अल्गोरिदम शिफारस{% else %}Algorithm Recommendation{% endif %}
-            </div>
+            <div class="algo-label">{% if locale == "mr" %}अल्गोरिदम शिफारस{% else %}Algorithm Recommendation{% endif %}</div>
             <div class="algo-value" id="m-algo-value"></div>
           </div>
         </div>
 
         <div class="decision-panel" id="m-decision-panel">
-          <div class="decision-title">
-            {% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}
-          </div>
-
+          <div class="decision-title">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
           <input type="hidden" id="d-case-id" />
           <input type="hidden" id="d-opened-at" />
 
           <div class="btn-group">
-            <div class="dec-btn" id="btn-approve" onclick="selectDecision('approve')">
-              {% if locale == "mr" %}मंजूर करा{% else %}APPROVE{% endif %}
-            </div>
-            <div class="dec-btn" id="btn-reject" onclick="selectDecision('reject')">
-              {% if locale == "mr" %}नाकारा{% else %}REJECT{% endif %}
-            </div>
-            <div class="dec-btn" id="btn-escalate" onclick="selectDecision('escalate')" style="grid-column: span 2;">
-              {% if locale == "mr" %}वरिष्ठांकडे पाठवा{% else %}ESCALATE{% endif %}
-            </div>
+            <div class="dec-btn" id="btn-approve" onclick="selectDecision('approve')">{% if locale == "mr" %}मंजूर करा{% else %}APPROVE{% endif %}</div>
+            <div class="dec-btn" id="btn-reject" onclick="selectDecision('reject')">{% if locale == "mr" %}नाकारा{% else %}REJECT{% endif %}</div>
+            <div class="dec-btn" id="btn-escalate" onclick="selectDecision('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे पाठवा{% else %}ESCALATE{% endif %}</div>
           </div>
 
           <textarea
@@ -926,27 +862,15 @@
 
           <div class="char-hint" id="char-hint">0 / 1000</div>
 
-          <button
-            class="submit-btn"
-            id="btn-submit"
-            type="button"
-            onclick="submitDecision()"
-            disabled
-          >
+          <button class="submit-btn" id="btn-submit" type="button" onclick="submitDecision()" disabled>
             {% if locale == "mr" %}निर्णय सबमिट करा{% else %}Submit Decision{% endif %}
           </button>
         </div>
 
         <div class="done-notice" id="m-done-notice" style="display:none;">
-          {% if locale == "mr" %}
-            हे प्रकरण आधीच सबमिट केले आहे.
-          {% else %}
-            This case has already been submitted.
-          {% endif %}
+          {% if locale == "mr" %}हे प्रकरण आधीच सबमिट केले आहे.{% else %}This case has already been submitted.{% endif %}
         </div>
-
       </div>
-
     </div>
   </div>
 </div>
@@ -964,6 +888,21 @@
     return LOCALE === "mr" ? mr : en;
   }
 
+  function openCaseFromButton(button) {
+    const raw = button.getAttribute("data-case");
+    if (!raw) {
+      console.error("Missing data-case payload.");
+      return;
+    }
+
+    try {
+      openCase(JSON.parse(raw));
+    } catch (err) {
+      console.error("Failed to parse case payload:", err, raw);
+      alert("Could not open case review.");
+    }
+  }
+
   function openCase(c) {
     if (!openedAtMap[c.case_id]) {
       openedAtMap[c.case_id] = new Date().toISOString();
@@ -979,10 +918,8 @@
     const profile = c.profile || {};
     const profileLabels = {
       age: t('Age', 'वय'),
-      gender: t('Gender', 'लिंग'),
       income: t('Income', 'उत्पन्न'),
       income_period: t('Income Period', 'उत्पन्न कालावधी'),
-      education_years: t('Education (yrs)', 'शिक्षण (वर्षे)'),
       rural: t('Rural', 'ग्रामीण'),
       caste_marginalized: t('Marginalized Caste', 'वंचित जात'),
       housing_status: t('Housing Status', 'निवास स्थिती'),
@@ -1150,11 +1087,11 @@
       `${t('Pending', 'प्रलंबित')}: ${TOTAL_CASES - completedCount}`;
   }
 
-  document.getElementById('backdrop').addEventListener('click', function (e) {
+  document.getElementById('backdrop').addEventListener('click', e => {
     if (e.target.id === 'backdrop') closeModal();
   });
 
-  document.addEventListener('keydown', function (e) {
+  document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
   });
 </script>
