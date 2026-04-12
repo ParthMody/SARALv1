@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SARAL v2 — Waiting for Assignment</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6f9; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      color: #1f2933;
+    }
+    .card {
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+      width: 100%; max-width: 440px;
+      padding: 3rem 2rem; text-align: center;
+    }
+    .spinner {
+      width: 40px; height: 40px; margin: 0 auto 1.5rem;
+      border: 3px solid #e5e7eb;
+      border-top-color: #1a2b4a;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h1   { font-size: 1.3rem; font-weight: 700; color: #1a2b4a; margin-bottom: 0.5rem; }
+    p    { font-size: 0.88rem; color: #6b7280; line-height: 1.6; margin-bottom: 0.5rem; }
+    .session-code {
+      display: inline-block; margin-top: 1.5rem;
+      background: #f1f5f9; border: 1px solid #e2e8f0;
+      border-radius: 6px; padding: 6px 14px;
+      font-family: monospace; font-size: 0.82rem; color: #475569;
+    }
+    .check-btn {
+      display: inline-block; margin-top: 1.5rem;
+      padding: 0.6rem 1.5rem;
+      background: #1a2b4a; color: #fff;
+      border: none; border-radius: 6px;
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.15s;
+    }
+    .check-btn:hover { background: #253d6a; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner"></div>
+    <h1>Waiting for Assignment</h1>
+    <p>
+      Your reviewer session has been registered.<br>
+      Please wait — the researcher will assign cases to you shortly.
+    </p>
+    <p>
+      Do not close this tab. You will be redirected automatically when cases are ready,
+      or you can check manually using the button below.
+    </p>
+    <div class="session-code">{{ session_id[:12] }}…</div>
+    <br>
+    <!-- Polling: check every 15s if reviews have been assigned -->
+    <a href="/reviewer-waiting/{{ session_id }}" class="check-btn">Check for Assignment</a>
+  </div>
+
+  <script>
+    // Auto-refresh every 15 seconds to check if reviews have been assigned
+    setTimeout(function() {
+      window.location.reload();
+    }, 15000);
+  </script>
+</body>
+</html>

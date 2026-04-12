@@ -6,258 +6,108 @@
   <title>SARAL v2 — Second Review</title>
   <style>
     :root {
-      --bg: #f3f5f8;
-      --panel: #ffffff;
-      --panel-soft: #f8fafc;
-      --ink: #102a56;
-      --ink-2: #21406d;
-      --text: #213247;
-      --muted: #6e7f97;
-      --line: #dbe3ee;
-      --line-soft: #e9eef5;
-
-      --green-bg: #e9f8ef;
-      --green-line: #8ed5a7;
-      --green-text: #166534;
-
-      --red-bg: #fff0f0;
-      --red-line: #f0aaaa;
-      --red-text: #991b1b;
-
-      --amber-bg: #fff8e6;
-      --amber-line: #efd28b;
-      --amber-text: #9a6700;
-
-      --teal-bg: #ebfbf8;
-      --teal-line: #99ddd3;
-      --teal-text: #0f766e;
-
-      --blue-bg: #edf4ff;
-      --blue-line: #a9c6f5;
-      --blue-text: #1d4f91;
-
-      --shadow: 0 18px 40px rgba(16, 42, 86, 0.07);
-      --shadow-strong: 0 24px 60px rgba(16, 42, 86, 0.16);
-
-      --radius-xl: 20px;
-      --radius-lg: 14px;
-      --radius-md: 10px;
-      --focus: 0 0 0 4px rgba(16, 42, 86, 0.12);
+      --bg: #f3f5f8; --panel: #ffffff; --panel-soft: #f8fafc;
+      --ink: #102a56; --ink-2: #21406d; --text: #213247; --muted: #6e7f97;
+      --line: #dbe3ee; --line-soft: #e9eef5;
+      --green-bg: #e9f8ef; --green-line: #8ed5a7; --green-text: #166534;
+      --red-bg: #fff0f0; --red-line: #f0aaaa; --red-text: #991b1b;
+      --amber-bg: #fff8e6; --amber-line: #efd28b; --amber-text: #9a6700;
+      --teal-bg: #ebfbf8; --teal-line: #99ddd3; --teal-text: #0f766e;
+      --blue-bg: #edf4ff; --blue-line: #a9c6f5; --blue-text: #1d4f91;
+      --shadow: 0 18px 40px rgba(16,42,86,0.07);
+      --shadow-strong: 0 24px 60px rgba(16,42,86,0.16);
+      --focus: 0 0 0 4px rgba(16,42,86,0.12);
     }
-
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
-
     body {
-      min-height: 100vh;
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(22,55,100,0.05), transparent 26%),
-        radial-gradient(circle at bottom right, rgba(22,55,100,0.04), transparent 22%),
-        var(--bg);
+      min-height: 100vh; font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top left, rgba(22,55,100,0.05), transparent 26%), radial-gradient(circle at bottom right, rgba(22,55,100,0.04), transparent 22%), var(--bg);
       color: var(--text);
     }
-
-    .topbar {
-      position: sticky; top: 0; z-index: 40;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line-soft);
-    }
-    .topbar-inner {
-      max-width: 1320px; margin: 0 auto;
-      padding: 14px 20px;
-      display: flex; align-items: center; justify-content: space-between; gap: 20px;
-    }
+    .topbar { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line-soft); }
+    .topbar-inner { max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
     .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .brand-logo {
-      width: 44px; height: 44px; border-radius: 12px;
-      background: #fff; border: 1px solid var(--line-soft);
-      display: flex; align-items: center; justify-content: center;
-      flex: 0 0 auto; overflow: hidden;
-    }
+    .brand-logo { width: 44px; height: 44px; border-radius: 12px; background: #fff; border: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden; }
     .brand-logo img { width: 78%; height: 78%; object-fit: contain; display: block; }
     .brand-copy { min-width: 0; }
-    .brand-title { margin: 0; font-size: 1.08rem; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
+    .brand-title { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
     .brand-subtitle { margin: 2px 0 0; font-size: 0.84rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .summary-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
-    .chip {
-      display: inline-flex; align-items: center;
-      border-radius: 999px; padding: 6px 12px;
-      font-size: 0.74rem; font-weight: 800; letter-spacing: 0.02em;
-      border: 1px solid transparent;
-    }
+    .progress-wrap { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+    .progress-label { font-size: 0.82rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
+    .progress-bar-outer { width: 170px; height: 10px; border-radius: 999px; overflow: hidden; background: #e4ebf5; border: 1px solid #dae3ef; }
+    .progress-bar-inner { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #1c3f72 0%, #3768ab 100%); width: {{ (completed / total * 100) | int if total > 0 else 0 }}%; transition: width 0.25s ease; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 26px 20px 40px; }
+    .notice { background: var(--blue-bg); border: 1px solid var(--blue-line); color: var(--blue-text); border-radius: 16px; box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 18px; font-size: 0.92rem; line-height: 1.55; }
+    .summary { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    .summary strong { font-size: 0.82rem; color: var(--ink); }
+    .chip { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 12px; font-size: 0.74rem; font-weight: 800; letter-spacing: 0.02em; border: 1px solid transparent; }
     .chip-done    { background: var(--green-bg); color: var(--green-text); border-color: var(--green-line); }
     .chip-pending { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-line); }
-
-    .shell { max-width: 1320px; margin: 0 auto; padding: 26px 20px 40px; }
-
-    .notice {
-      background: var(--blue-bg); border: 1px solid var(--blue-line);
-      color: var(--blue-text); border-radius: 16px; box-shadow: var(--shadow);
-      padding: 16px 18px; margin-bottom: 18px;
-      font-size: 0.92rem; line-height: 1.55;
-    }
-
-    .table-wrap {
-      background: var(--panel); border: 1px solid var(--line-soft);
-      border-radius: 18px; box-shadow: var(--shadow); overflow: hidden;
-    }
+    .table-wrap { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
     table { width: 100%; border-collapse: collapse; background: transparent; font-size: 0.86rem; }
-    thead th {
-      background: #f9fbfe; color: #60738f;
-      font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.08em; text-align: left;
-      padding: 14px; border-bottom: 1px solid var(--line-soft);
-    }
+    thead th { background: #f9fbfe; color: #60738f; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; text-align: left; padding: 14px; border-bottom: 1px solid var(--line-soft); }
     tbody td { padding: 14px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
     tbody tr { transition: background 0.15s ease; }
     tbody tr:hover { background: #f9fbfe; }
     tbody tr.done-row { opacity: 0.62; }
     tbody tr:last-child td { border-bottom: none; }
-
     .case-seq { color: var(--muted); font-weight: 700; width: 44px; }
     .case-id { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82rem; color: var(--ink); }
-
-    .rule-badge, .pill {
-      display: inline-flex; align-items: center; justify-content: center;
-      border-radius: 999px; padding: 6px 11px;
-      font-size: 0.71rem; font-weight: 800; letter-spacing: 0.04em;
-      text-transform: uppercase; border: 1px solid transparent; white-space: nowrap;
-    }
+    .rule-badge, .pill { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 6px 11px; font-size: 0.71rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid transparent; white-space: nowrap; }
     .rule-ELIGIBLE_BY_RULE, .pill-approve { background: var(--green-bg); color: var(--green-text); border-color: var(--green-line); }
     .rule-INELIGIBLE_BY_RULE, .pill-reject { background: var(--red-bg); color: var(--red-text); border-color: var(--red-line); }
     .pill-escalate { background: var(--teal-bg); color: var(--teal-text); border-color: var(--teal-line); }
     .pill-pending  { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-line); }
-
-    .rec-approve, .rec-reject {
-      display: inline-flex; align-items: center;
-      border-radius: 999px; padding: 6px 11px;
-      font-size: 0.71rem; font-weight: 800; letter-spacing: 0.04em;
-      text-transform: uppercase; border: 1px solid transparent;
-    }
+    .rec-approve, .rec-reject { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 11px; font-size: 0.71rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid transparent; }
     .rec-approve { background: var(--green-bg); color: var(--green-text); border-color: var(--green-line); }
     .rec-reject  { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-line); }
-
-    .row-review-btn {
-      border: 1px solid var(--line); background: #ffffff; color: var(--ink);
-      border-radius: 10px; padding: 8px 12px;
-      font-size: 0.76rem; font-weight: 800; cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease;
-    }
+    .row-review-btn { border: 1px solid var(--line); background: #ffffff; color: var(--ink); border-radius: 10px; padding: 8px 12px; font-size: 0.76rem; font-weight: 800; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; }
     .row-review-btn:hover { background: #f8fafc; border-color: #bfd0e7; }
-
-    /* ── Modal ── */
-    .backdrop {
-      display: none; position: fixed; inset: 0; z-index: 100;
-      background: rgba(12,23,38,0.52); backdrop-filter: blur(4px); padding: 24px;
-    }
-    .modal {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: min(1120px, calc(100vw - 32px)); height: min(88vh, 900px);
-      background: var(--panel); border-radius: 22px;
-      border: 1px solid var(--line-soft); box-shadow: var(--shadow-strong);
-      display: flex; flex-direction: column; overflow: hidden;
-    }
-    .modal-header {
-      display: flex; align-items: center; justify-content: space-between; gap: 14px;
-      padding: 18px 22px; background: #fbfcfe; border-bottom: 1px solid var(--line-soft);
-    }
+    .backdrop { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(12,23,38,0.52); backdrop-filter: blur(4px); padding: 24px; }
+    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(1120px, calc(100vw - 32px)); height: min(88vh, 900px); background: var(--panel); border-radius: 22px; border: 1px solid var(--line-soft); box-shadow: var(--shadow-strong); display: flex; flex-direction: column; overflow: hidden; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 22px; background: #fbfcfe; border-bottom: 1px solid var(--line-soft); }
+    .modal-title-wrap { min-width: 0; }
     .modal-title { font-size: 1rem; font-weight: 800; color: var(--ink); }
-    .modal-close {
-      width: 38px; height: 38px; border: 1px solid var(--line);
-      border-radius: 10px; background: #ffffff; color: #60738f;
-      font-size: 1.3rem; line-height: 1; cursor: pointer; flex: 0 0 auto;
-    }
+    .modal-seq   { font-size: 0.82rem; color: var(--muted); margin-left: 8px; }
+    .modal-close { width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; color: #60738f; font-size: 1.3rem; line-height: 1; cursor: pointer; flex: 0 0 auto; }
     .modal-body { flex: 1; display: grid; grid-template-columns: minmax(0,1fr) 360px; min-height: 0; }
     .col-left  { padding: 22px; overflow-y: auto; border-right: 1px solid var(--line-soft); }
     .col-right { padding: 22px; overflow-y: auto; background: #fcfdff; display: flex; flex-direction: column; gap: 18px; }
-
     .section { margin-bottom: 22px; position: relative; z-index: 1; overflow: hidden; }
     .section:last-child { margin-bottom: 0; }
-    .section-title {
-      font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.1em; color: var(--muted);
-      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft);
-    }
-
+    .section-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); }
     .profile-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-    .profile-item {
-      background: #fbfcfe; border: 1px solid var(--line-soft);
-      border-radius: 12px; padding: 12px; min-width: 0;
-    }
+    .profile-item { background: #fbfcfe; border: 1px solid var(--line-soft); border-radius: 12px; padding: 12px; min-width: 0; }
     .profile-item label { display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
     .profile-item span  { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text); word-break: break-word; }
-
-    .field-note {
-      background: #fbfcfe; border: 1px solid var(--line-soft);
-      border-left: 4px solid #8ea8cc; border-radius: 0 12px 12px 0;
-      padding: 15px 16px; font-size: 0.84rem; line-height: 1.9;
-      color: #31465f; white-space: pre;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      letter-spacing: 0.01em;
-    }
-
+    .field-note { background: #fbfcfe; border: 1px solid var(--line-soft); border-left: 4px solid #8ea8cc; border-radius: 0 12px 12px 0; padding: 15px 16px; font-size: 0.84rem; line-height: 1.9; color: #31465f; white-space: pre; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.01em; }
+    .officer-remarks { background: #fffaf0; border: 1px dashed #e6c98f; border-radius: 12px; padding: 14px 16px; color: #4a5568; font-style: italic; line-height: 1.65; }
+    .officer-remarks-label { display: inline-flex; align-items: center; justify-content: center; padding: 4px 9px; border-radius: 999px; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: var(--amber-bg); color: var(--amber-text); border: 1px solid var(--amber-line); font-style: normal; }
     .algo-box { border-radius: 14px; border: 1px solid transparent; padding: 16px; text-align: center; }
     .algo-approve { background: var(--green-bg); border-color: var(--green-line); color: var(--green-text); }
     .algo-reject  { background: var(--red-bg);   border-color: var(--red-line);   color: var(--red-text); }
     .algo-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; opacity: 0.9; }
     .algo-value { font-size: 1.22rem; font-weight: 900; letter-spacing: 0.02em; }
-
     .decision-panel { margin-top: auto; }
-    .decision-title {
-      font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.1em; color: var(--muted);
-      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft);
-    }
+    .decision-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); }
     .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .dec-btn {
-      border: 1px solid var(--line); background: #ffffff; color: var(--ink);
-      border-radius: 12px; padding: 13px 14px;
-      font-size: 0.83rem; font-weight: 800; cursor: pointer;
-      user-select: none; text-align: center;
-      transition: border-color 0.15s ease, background 0.15s ease, transform 0.04s ease;
-    }
+    .dec-btn { border: 1px solid var(--line); background: #ffffff; color: var(--ink); border-radius: 12px; padding: 13px 14px; font-size: 0.83rem; font-weight: 800; cursor: pointer; user-select: none; text-align: center; transition: border-color 0.15s ease, background 0.15s ease, transform 0.04s ease; }
     .dec-btn:hover  { background: #f9fbfe; border-color: #bfd0e7; }
     .dec-btn:active { transform: translateY(1px); }
     .dec-btn.sel-approve  { background: var(--green-text); color: #fff; border-color: var(--green-text); }
     .dec-btn.sel-reject   { background: var(--red-text);   color: #fff; border-color: var(--red-text); }
     .dec-btn.sel-escalate { background: var(--teal-text);  color: #fff; border-color: var(--teal-text); }
-
-    .reasoning-area {
-      width: 100%; min-height: 110px; resize: vertical;
-      border: 1px solid var(--line); border-radius: 12px;
-      background: #ffffff; color: var(--text);
-      padding: 13px 14px; font-size: 0.9rem; line-height: 1.5; font-family: inherit;
-    }
+    .reasoning-area { width: 100%; min-height: 110px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; background: #ffffff; color: var(--text); padding: 13px 14px; font-size: 0.9rem; line-height: 1.5; font-family: inherit; }
     .reasoning-area:focus { outline: none; border-color: var(--ink-2); box-shadow: var(--focus); }
-
     .char-hint { margin-top: 6px; font-size: 0.75rem; color: var(--muted); text-align: right; font-weight: 700; }
-
-    .submit-btn {
-      width: 100%; margin-top: 14px; height: 50px; border: 0;
-      border-radius: 12px; background: #163764; color: #ffffff;
-      font-size: 0.92rem; font-weight: 900; cursor: pointer;
-      box-shadow: 0 10px 24px rgba(22,55,100,0.16);
-      transition: background 0.15s ease;
-    }
+    .submit-btn { width: 100%; margin-top: 14px; height: 50px; border: 0; border-radius: 12px; background: #163764; color: #ffffff; font-size: 0.92rem; font-weight: 900; cursor: pointer; box-shadow: 0 10px 24px rgba(22,55,100,0.16); transition: background 0.15s ease; }
     .submit-btn:hover    { background: #214a85; }
     .submit-btn:disabled { background: #9caabf; box-shadow: none; cursor: not-allowed; }
-
-    .done-notice {
-      background: var(--green-bg); border: 1px solid var(--green-line);
-      border-radius: 14px; padding: 16px; text-align: center;
-      color: var(--green-text); font-size: 0.9rem; font-weight: 800;
-    }
-
-    .reveal-box {
-      display: none; border-radius: 14px; padding: 16px; text-align: center;
-      font-size: 0.9rem; line-height: 1.45; font-weight: 800;
-      margin-top: 8px; border: 1px solid transparent;
-    }
+    .done-notice { background: var(--green-bg); border: 1px solid var(--green-line); border-radius: 14px; padding: 16px; text-align: center; color: var(--green-text); font-size: 0.9rem; font-weight: 800; }
+    .reveal-box { display: none; border-radius: 14px; padding: 16px; text-align: center; font-size: 0.9rem; line-height: 1.45; font-weight: 800; margin-top: 8px; border: 1px solid transparent; }
     .reveal-agree    { background: var(--green-bg); color: var(--green-text); border-color: var(--green-line); }
     .reveal-disagree { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-line); }
-
     @media (max-width: 1080px) {
       .modal-body { grid-template-columns: 1fr; }
       .col-left   { border-right: none; border-bottom: 1px solid var(--line-soft); }
@@ -266,8 +116,10 @@
     }
     @media (max-width: 760px) {
       .topbar-inner { flex-direction: column; align-items: stretch; }
-      .summary-wrap { justify-content: flex-start; }
+      .progress-wrap { justify-content: space-between; }
+      .progress-bar-outer { flex: 1 1 auto; width: auto; }
       .shell { padding: 18px 14px 30px; }
+      .summary { padding: 12px 14px; }
       .table-wrap { overflow-x: auto; }
       table { min-width: 760px; }
       .profile-grid { grid-template-columns: 1fr; }
@@ -285,21 +137,37 @@
         <img src="/static/assets/saral.png" alt="SARAL" onerror="this.style.display='none'">
       </div>
       <div class="brand-copy">
-        <div class="brand-title">SARAL v2 — Second Review</div>
-        <div class="brand-subtitle">Independent evaluation</div>
+        <div class="brand-title">SARAL v2</div>
+        <div class="brand-subtitle">
+          {% if locale == "mr" %}द्वितीय पुनरावलोकन — स्वतंत्र निर्णय{% else %}Second Review — Independent Evaluation{% endif %}
+        </div>
       </div>
     </div>
-    <div class="summary-wrap">
-      <span class="chip chip-done"    id="chip-done">Done: {{ completed }}</span>
-      <span class="chip chip-pending" id="chip-pending">Pending: {{ total - completed }}</span>
+    <div class="progress-wrap">
+      <span class="progress-label" id="progress-label">
+        {{ completed }} / {{ total }}
+        {% if locale == "mr" %}पूर्ण{% else %}completed{% endif %}
+      </span>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="shell">
   <div class="notice">
-    You are conducting an <strong>independent second review</strong>.
-    Evaluate each case on its own merits. The primary reviewer's decision is not visible to you.
+    {% if locale == "mr" %}
+      तुम्ही <strong>स्वतंत्र द्वितीय पुनरावलोकन</strong> करत आहात. प्रत्येक प्रकरण स्वतंत्रपणे तपासा. प्राथमिक पुनरावलोकनकर्त्याचा निर्णय तुम्हाला दिसणार नाही.
+    {% else %}
+      You are conducting an <strong>independent second review</strong>. Evaluate each case on its own merits. The primary reviewer's decision is not visible to you.
+    {% endif %}
+  </div>
+
+  <div class="summary">
+    <strong>{% if locale == "mr" %}प्रगती{% else %}Progress{% endif %}</strong>
+    <span class="chip chip-done"    id="chip-done">{% if locale == "mr" %}पूर्ण{% else %}Done{% endif %}: {{ completed }}</span>
+    <span class="chip chip-pending" id="chip-pending">{% if locale == "mr" %}प्रलंबित{% else %}Pending{% endif %}: {{ total - completed }}</span>
   </div>
 
   <div class="table-wrap">
@@ -307,11 +175,11 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Case ID</th>
-          <th>Rule Result</th>
-          <th>Recommendation</th>
-          <th>Your Decision</th>
-          <th>Action</th>
+          <th>{% if locale == "mr" %}प्रकरण ID{% else %}Case ID{% endif %}</th>
+          <th>{% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}</th>
+          <th>{% if locale == "mr" %}शिफारस{% else %}Recommendation{% endif %}</th>
+          <th>{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</th>
+          <th>{% if locale == "mr" %}क्रिया{% else %}Action{% endif %}</th>
         </tr>
       </thead>
       <tbody id="case-tbody">
@@ -325,16 +193,15 @@
             {% if c.submitted %}
               <span class="pill pill-{{ c.secondary_decision }}">{{ c.secondary_decision | upper }}</span>
             {% else %}
-              <span class="pill pill-pending">Pending</span>
+              <span class="pill pill-pending">{% if locale == "mr" %}प्रलंबित{% else %}Pending{% endif %}</span>
             {% endif %}
           </td>
           <td>
-            <button
-              class="row-review-btn"
-              type="button"
-              data-case='{{ c | tojson }}'
-              onclick="openCase(JSON.parse(this.dataset.case))"
-            >Review</button>
+            <button class="row-review-btn" type="button"
+                    data-case='{{ c | tojson }}'
+                    onclick="openCaseFromButton(this)">
+              {% if locale == "mr" %}पुनरावलोकन{% else %}Review{% endif %}
+            </button>
           </td>
         </tr>
         {% endfor %}
@@ -343,78 +210,80 @@
   </div>
 </div>
 
-<!-- ── Modal ── -->
+<!-- Modal -->
 <div class="backdrop" id="backdrop">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">Second Review</span>
+      <div class="modal-title-wrap">
+        <span class="modal-title">{% if locale == "mr" %}द्वितीय पुनरावलोकन{% else %}Second Review{% endif %}</span>
+        <span class="modal-seq" id="m-seq"></span>
+      </div>
       <button class="modal-close" type="button" onclick="closeModal()">×</button>
     </div>
 
     <div class="modal-body">
       <div class="col-left">
         <div class="section">
-          <div class="section-title">Applicant Profile</div>
+          <div class="section-title">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
           <div class="profile-grid" id="m-profile"></div>
         </div>
+
         <div class="section">
-          <div class="section-title">Field Record</div>
+          <div class="section-title">{% if locale == "mr" %}क्षेत्र नोंद{% else %}Field Record{% endif %}</div>
           <div class="field-note" id="m-field-note"></div>
         </div>
+
         <div class="section">
           <div class="section-title">
-            Officer Remarks
-            <span style="font-size:0.65rem;font-weight:700;color:var(--muted);margin-left:6px;font-style:italic;">unstructured</span>
+            {% if locale == "mr" %}पूर्वीचे शेरे{% else %}Prior Remarks{% endif %}
+            <span style="font-size:0.65rem;font-weight:700;color:var(--muted);margin-left:6px;font-style:italic;">
+              {% if locale == "mr" %}अनौपचारिक{% else %}informal{% endif %}
+            </span>
           </div>
           <div class="officer-remarks" id="m-officer-remarks">
-            <div class="officer-remarks-label">Informal</div>
-            <div id="m-officer-remarks-text"></div>
+            <span class="officer-remarks-label">
+              {% if locale == "mr" %}पूर्व / अप्रमाणित{% else %}Prior / Unverified{% endif %}
+            </span>
+            <div id="m-officer-remarks-text" style="margin-top:8px;"></div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-title">Rule Result</div>
+          <div class="section-title">{% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}</div>
           <span class="rule-badge" id="m-rule-badge"></span>
         </div>
       </div>
 
       <div class="col-right">
         <div>
-          <div class="section-title">System Recommendation</div>
+          <div class="section-title">{% if locale == "mr" %}प्रणाली शिफारस{% else %}System Recommendation{% endif %}</div>
           <div class="algo-box" id="m-algo-box">
-            <div class="algo-label">Algorithm Recommendation</div>
+            <div class="algo-label">{% if locale == "mr" %}अल्गोरिदम शिफारस{% else %}Algorithm Recommendation{% endif %}</div>
             <div class="algo-value" id="m-algo-value"></div>
           </div>
         </div>
 
         <div class="decision-panel" id="m-decision-panel">
-          <div class="decision-title">Your Independent Decision</div>
+          <div class="decision-title">{% if locale == "mr" %}तुमचा स्वतंत्र निर्णय{% else %}Your Independent Decision{% endif %}</div>
           <input type="hidden" id="d-review-id" />
           <input type="hidden" id="d-case-id" />
-
           <div class="btn-group">
-            <div class="dec-btn" id="btn-approve"  onclick="selectDecision('approve')">APPROVE</div>
-            <div class="dec-btn" id="btn-reject"   onclick="selectDecision('reject')">REJECT</div>
-            <div class="dec-btn" id="btn-escalate" onclick="selectDecision('escalate')" style="grid-column:span 2;">ESCALATE</div>
+            <div class="dec-btn" id="btn-approve"  onclick="selectDecision('approve')">{% if locale == "mr" %}मंजूर करा{% else %}APPROVE{% endif %}</div>
+            <div class="dec-btn" id="btn-reject"   onclick="selectDecision('reject')">{% if locale == "mr" %}नाकारा{% else %}REJECT{% endif %}</div>
+            <div class="dec-btn" id="btn-escalate" onclick="selectDecision('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे पाठवा{% else %}ESCALATE{% endif %}</div>
           </div>
-
-          <textarea
-            class="reasoning-area"
-            id="d-reasoning"
-            placeholder="Briefly explain your reasoning (required)"
-            maxlength="1000"
-            oninput="updateCharHint()"
-          ></textarea>
+          <textarea class="reasoning-area" id="d-reasoning"
+            placeholder="{% if locale == 'mr' %}तुमच्या निर्णयाचे थोडक्यात कारण सांगा (आवश्यक){% else %}Briefly explain your reasoning (required){% endif %}"
+            maxlength="1000" oninput="updateCharHint()"></textarea>
           <div class="char-hint" id="char-hint">0 / 1000</div>
-
           <button class="submit-btn" id="btn-submit" type="button" onclick="submitDecision()" disabled>
-            Submit Decision
+            {% if locale == "mr" %}निर्णय सबमिट करा{% else %}Submit Decision{% endif %}
           </button>
           <div class="reveal-box" id="reveal-box"></div>
         </div>
 
         <div class="done-notice" id="m-done-notice" style="display:none;">
-          This case has already been reviewed.
+          {% if locale == "mr" %}हे प्रकरण आधीच पुनरावलोकन केले आहे.{% else %}This case has already been reviewed.{% endif %}
         </div>
       </div>
     </div>
@@ -422,73 +291,91 @@
 </div>
 
 <script>
-  const SESSION_ID   = {{ session_id | tojson }};
-  let selectedDecision = null;
+  const SESSION_ID = {{ session_id | tojson }};
+  const TOTAL      = {{ total }};
+  const LOCALE     = {{ locale | tojson }};
   let completedCount   = {{ completed }};
-  const TOTAL          = {{ total }};
+  let selectedDecision = null;
 
-  const LABELS = {
-    age: 'Age', income: 'Monthly Income (Rs.)', income_period: 'Income Period',
-    rural: 'Rural', caste_marginalized: 'Marginalized Category', housing_status: 'Housing Status',
+  function t(en, mr) { return LOCALE === "mr" ? mr : en; }
+
+  // SRA Annexure-II column labels — matches session.html
+  const PROFILE_LABELS = {
+    electoral_roll_year: t('Electoral Roll Year', 'मतदार यादी वर्ष'),
+    structure_type:      t('Structure Type',      'संरचना प्रकार'),
+    carpet_area_sqft:    t('Carpet Area (sq ft)', 'कार्पेट क्षेत्र (चौ.फू.)'),
+    pre_1995_evidence:   t('Pre-1995 Evidence',   '१९९५ पूर्व पुरावा'),
+    consent:             t('Consent',             'संमती'),
   };
+
+  function openCaseFromButton(button) {
+    const raw = button.getAttribute("data-case");
+    if (!raw) { console.error("Missing data-case payload."); return; }
+    try {
+      openCase(JSON.parse(raw));
+    } catch (err) {
+      console.error("Failed to parse case payload:", err, raw);
+      alert(t("Could not open case review.", "प्रकरण उघडता आले नाही."));
+    }
+  }
 
   function openCase(c) {
     document.getElementById('d-review-id').value = c.review_id;
     document.getElementById('d-case-id').value   = c.case_id;
+    document.getElementById('m-seq').textContent = `(${c.case_sequence || ''})`;
 
-    // Profile
+    // Profile — SRA columns only
     const profileEl = document.getElementById('m-profile');
     profileEl.innerHTML = '';
     Object.entries(c.profile || {}).forEach(([k, v]) => {
-      profileEl.innerHTML += `
-        <div class="profile-item">
-          <label>${LABELS[k] || k}</label>
-          <span>${v ?? '—'}</span>
-        </div>`;
+      const label = PROFILE_LABELS[k] || k.replace(/_/g, ' ');
+      profileEl.innerHTML += `<div class="profile-item"><label>${label}</label><span>${v ?? '—'}</span></div>`;
     });
 
-    // Field note + rule result
-    const _raw = c.field_note || '';
-    const _fieldRecordEl = document.getElementById('m-field-note');
-    const _remarksEl     = document.getElementById('m-officer-remarks-text');
-    _fieldRecordEl.textContent = '';
-    _remarksEl.textContent     = '';
+    // Field record + Prior remarks split
+    const _raw          = c.field_note || '';
+    const fieldRecordEl = document.getElementById('m-field-note');
+    const remarksEl     = document.getElementById('m-officer-remarks-text');
+    fieldRecordEl.textContent = '';
+    remarksEl.textContent     = '';
+
     if (_raw.includes('Field Remark') || _raw.includes('क्षेत्र निरीक्षण')) {
-      const _splitKey   = _raw.includes('Field Remark') ? 'Field Remark' : 'क्षेत्र निरीक्षण';
-      const _splitIdx   = _raw.lastIndexOf(_splitKey);
-      const _record     = _raw.substring(0, _splitIdx).trim();
+      const _splitKey = _raw.includes('Field Remark') ? 'Field Remark' : 'क्षेत्र निरीक्षण';
+      const _splitIdx = _raw.lastIndexOf(_splitKey);
+      const _record   = _raw.substring(0, _splitIdx).trim();
       const _remarkFull = _raw.substring(_splitIdx);
       const _colonIdx   = _remarkFull.indexOf(':');
       const _remark     = _colonIdx >= 0 ? _remarkFull.substring(_colonIdx + 1).trim() : '';
-      _fieldRecordEl.textContent = _record || '—';
-      _remarksEl.textContent     = _remark || '—';
+      fieldRecordEl.textContent = _record || '—';
+      remarksEl.textContent     = _remark || '—';
     } else {
-      _fieldRecordEl.textContent = _raw || '—';
-      _remarksEl.textContent     = '—';
+      fieldRecordEl.textContent = _raw || '—';
+      remarksEl.textContent     = '—';
     }
+
+    // Rule result
     const ruleEl = document.getElementById('m-rule-badge');
     ruleEl.textContent = c.rule_result;
     ruleEl.className   = `rule-badge rule-${c.rule_result}`;
 
-    // Algo recommendation
+    // Algo
     document.getElementById('m-algo-value').textContent = c.algo_recommendation.toUpperCase();
     document.getElementById('m-algo-box').className     = `algo-box algo-${c.algo_recommendation}`;
 
-    // Decision panel vs done notice
-    const panel  = document.getElementById('m-decision-panel');
-    const done   = document.getElementById('m-done-notice');
-    const reveal = document.getElementById('reveal-box');
+    // Panel state
+    const panel     = document.getElementById('m-decision-panel');
+    const doneNotice = document.getElementById('m-done-notice');
+    const reveal     = document.getElementById('reveal-box');
 
     if (c.submitted) {
-      panel.style.display  = 'none';
-      done.style.display   = 'block';
-      reveal.style.display = 'none';
+      panel.style.display      = 'none';
+      doneNotice.style.display = 'block';
+      reveal.style.display     = 'none';
     } else {
       panel.style.display         = 'flex';
       panel.style.flexDirection   = 'column';
-      done.style.display          = 'none';
+      doneNotice.style.display    = 'none';
       reveal.style.display        = 'none';
-
       selectedDecision = null;
       ['btn-approve','btn-reject','btn-escalate'].forEach(id => {
         document.getElementById(id).className = 'dec-btn';
@@ -510,7 +397,8 @@
     ['btn-approve','btn-reject','btn-escalate'].forEach(id => {
       document.getElementById(id).className = 'dec-btn';
     });
-    document.getElementById(`btn-${dec}`).className = `dec-btn sel-${dec}`;
+    const map = { approve:'btn-approve', reject:'btn-reject', escalate:'btn-escalate' };
+    if (map[dec]) document.getElementById(map[dec]).className = `dec-btn sel-${dec}`;
     validateSubmit();
   }
 
@@ -530,64 +418,57 @@
     const reviewId  = document.getElementById('d-review-id').value;
     const caseId    = document.getElementById('d-case-id').value;
     const reasoning = document.getElementById('d-reasoning').value.trim();
+    if (!selectedDecision) { alert(t('Please select a decision.','कृपया निर्णय निवडा.')); return; }
+    if (!reasoning)         { alert(t('Please enter your reasoning.','कृपया कारण लिहा.')); return; }
 
     const btn = document.getElementById('btn-submit');
+    const defaultText = t('Submit Decision','निर्णय सबमिट करा');
     btn.disabled    = true;
-    btn.textContent = 'Submitting...';
+    btn.textContent = t('Submitting...','सबमिट करत आहे...');
 
     try {
       const res = await fetch(`/review/${SESSION_ID}/submit`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ review_id: reviewId, decision: selectedDecision, reasoning }),
       });
-
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        alert('Error: ' + (d.detail || 'Submission failed'));
-        btn.disabled    = false;
-        btn.textContent = 'Submit Decision';
-        return;
+        const d = await res.json().catch(()=>({}));
+        alert(t('Error: ','त्रुटी: ') + (d.detail || t('Submission failed','सबमिशन अयशस्वी झाले')));
+        btn.disabled = false; btn.textContent = defaultText; return;
       }
-
       const data = await res.json();
-
-      // Update table row
       const cell = document.getElementById(`decision-${caseId}`);
       if (cell) cell.innerHTML = `<span class="pill pill-${selectedDecision}">${selectedDecision.toUpperCase()}</span>`;
       const row = document.getElementById(`row-${caseId}`);
       if (row) row.classList.add('done-row');
-
       completedCount++;
-      document.getElementById('chip-done').textContent    = `Done: ${completedCount}`;
-      document.getElementById('chip-pending').textContent = `Pending: ${TOTAL - completedCount}`;
-
-      // Reveal agreement
+      updateProgress();
       const revealBox = document.getElementById('reveal-box');
       if (data.agreement) {
         revealBox.className   = 'reveal-box reveal-agree';
-        revealBox.textContent = `Agreement ✓ — Primary decision was also: ${data.primary_decision.toUpperCase()}`;
+        revealBox.textContent = t(`Agreement — Primary decision was also: ${data.primary_decision.toUpperCase()}`, `सहमती — प्राथमिक निर्णयही हाच होता: ${data.primary_decision.toUpperCase()}`);
       } else {
         revealBox.className   = 'reveal-box reveal-disagree';
-        revealBox.textContent = `Disagreement — Primary decision was: ${data.primary_decision.toUpperCase()}`;
+        revealBox.textContent = t(`Disagreement — Primary decision was: ${data.primary_decision.toUpperCase()}`, `असहमती — प्राथमिक निर्णय होता: ${data.primary_decision.toUpperCase()}`);
       }
       revealBox.style.display = 'block';
-      btn.textContent = 'Submitted';
-
-    } catch (e) {
-      alert('Network error. Please try again.');
-      btn.disabled    = false;
-      btn.textContent = 'Submit Decision';
+      btn.textContent = t('Submitted','सबमिट झाले');
+    } catch(e) {
+      alert(t('Network error. Please try again.','नेटवर्क त्रुटी. कृपया पुन्हा प्रयत्न करा.'));
+      btn.disabled = false; btn.textContent = defaultText;
     }
   }
 
-  // Close on backdrop click or Escape
-  document.getElementById('backdrop').addEventListener('click', e => {
-    if (e.target.id === 'backdrop') closeModal();
-  });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
-  });
+  function updateProgress() {
+    const pct = Math.round((completedCount / TOTAL) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = `${completedCount} / ${TOTAL} ${t('completed','पूर्ण')}`;
+    document.getElementById('chip-done').textContent    = `${t('Done','पूर्ण')}: ${completedCount}`;
+    document.getElementById('chip-pending').textContent = `${t('Pending','प्रलंबित')}: ${TOTAL - completedCount}`;
+  }
+
+  document.getElementById('backdrop').addEventListener('click', e => { if (e.target.id === 'backdrop') closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 </script>
 </body>
 </html>

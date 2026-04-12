@@ -175,3 +175,137 @@ def admin_resume_session(
         max_age=7200,
     )
     return response
+
+# ─────────────────────────────────────────────
+# GET /reviewer-login  →  Secondary reviewer login
+# No vignette draw — creates operator row and
+# redirects to holding page until admin assigns reviews.
+# ─────────────────────────────────────────────
+
+@router.get("/reviewer-login", response_class=HTMLResponse)
+def reviewer_login_page(request: Request):
+    return templates.TemplateResponse(
+        "reviewer_login.html",
+        {"request": request, "error": None},
+    )
+
+
+@router.post("/reviewer-login", response_class=HTMLResponse)
+def reviewer_login(
+    request: Request,
+    initials:         str = Form(...),
+    age:              int = Form(...),
+    role:             str = Form(...),
+    experience_years: int = Form(...),
+    locale:           str = Form("en"),
+    db: Session = Depends(get_db),
+):
+    errors = []
+
+    initials = initials.strip().upper()
+    if not initials or len(initials) > 8:
+        errors.append("Initials must be 1–8 characters.")
+    if not (18 <= age <= 80):
+        errors.append("Age must be between 18 and 80.")
+    role = role.strip()
+    if not role:
+        errors.append("Role is required.")
+    if not (0 <= experience_years <= 60):
+        errors.append("Experience years must be between 0 and 60.")
+    if locale not in ("en", "mr"):
+        locale = "en"
+
+    if errors:
+        return templates.TemplateResponse(
+            "reviewer_login.html",
+            {"request": request, "error": " ".join(errors)},
+            status_code=422,
+        )
+
+    try:
+        locale_enum = LocaleEnum(locale)
+    except ValueError:
+        locale_enum = LocaleEnum.EN
+
+    # Create operator row — no cases assigned, status IN_PROGRESS
+    # Cases will be assigned by admin after primary sessions complete
+    operator = Operator(
+        operator_id      = str(uuid.uuid4()),
+        session_id       = str(uuid.uuid4()),
+        initials         = initials,
+        age              = age,
+        role             = role,
+        experience_years = experience_years,
+        locale           = locale_enum,
+        status           = SessionStatusEnum.IN_PROGRESS,
+        cases_assigned   = [],
+        cases_completed  = 0,
+        created_at       = datetime.now(timezone.utc),
+    )
+
+    db.add(operator)
+    db.commit()
+    db.refresh(operator)
+
+    log_event(
+        db,
+        AuditActionEnum.LOGIN,
+        actor_id   = operator.operator_id,
+        session_id = operator.session_id,
+        payload    = {
+            "role":             role,
+            "experience_years": experience_years,
+            "locale":           locale,
+            "reviewer":         True,
+        },
+    )
+
+    response = RedirectResponse(
+        url=f"/reviewer-waiting/{operator.session_id}",
+        status_code=303,
+    )
+    response.set_cookie(
+        key="session_id",
+        value=operator.session_id,
+        httponly=True,
+        samesite="strict",
+        max_age=14400,
+    )
+    return response
+
+
+@router.get("/reviewer-waiting/{session_id}", response_class=HTMLResponse)
+def reviewer_waiting(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    # Cookie check
+    if request.cookies.get("session_id") != session_id:
+        return RedirectResponse(url="/reviewer-login", status_code=303)
+
+    op = db.query(Operator).filter(Operator.session_id == session_id).first()
+    if not op:
+        raise HTTPException(404, "Session not found")
+
+    # If reviews have been assigned, redirect directly to the queue
+    from app.models import SecondReview
+    has_reviews = (
+        db.query(SecondReview)
+        .filter(SecondReview.secondary_operator_id == op.operator_id)
+        .first()
+    )
+    if has_reviews:
+        return RedirectResponse(
+            url=f"/review/{session_id}",
+            status_code=303,
+        )
+
+    return templates.TemplateResponse(
+        "reviewer_waiting.html",
+        {
+            "request":    request,
+            "operator":   op,
+            "session_id": session_id,
+        },
+    )

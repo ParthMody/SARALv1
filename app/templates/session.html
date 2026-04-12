@@ -85,6 +85,30 @@
     .profile-item label { display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
     .profile-item span  { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text); word-break: break-word; }
     .field-note { background: #fbfcfe; border: 1px solid var(--line-soft); border-left: 4px solid #8ea8cc; border-radius: 0 12px 12px 0; padding: 15px 16px; font-size: 0.9rem; line-height: 1.7; color: #31465f; white-space: pre-wrap; }
+    .officer-remarks{
+      background:#fffaf0;
+      border:1px dashed #e6c98f;
+      border-radius:12px;
+      padding:14px 16px;
+      color:#4a5568;
+      font-style:italic;
+      line-height:1.65;
+    }
+    .officer-remarks-label{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:4px 9px;
+      border-radius:999px;
+      font-size:0.68rem;
+      font-weight:800;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      background:var(--amber-bg);
+      color:var(--amber-text);
+      border:1px solid var(--amber-line);
+      font-style:normal;
+    }
     .algo-box { border-radius: 14px; border: 1px solid transparent; padding: 16px; text-align: center; }
     .algo-approve { background: var(--green-bg); border-color: var(--green-line); color: var(--green-text); }
     .algo-reject  { background: var(--red-bg);   border-color: var(--red-line);   color: var(--red-text); }
@@ -153,7 +177,6 @@
       </div>
     </div>
 
-    <!-- Recovery code: shown to researcher only — use /admin/resume/{session_id} to restore -->
     <span class="recovery-code" title="Session recovery code — researcher use only">{{ session_id[:8] }}</span>
   </div>
 </div>
@@ -242,18 +265,24 @@
           <div class="section-title">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
           <div class="profile-grid" id="m-profile"></div>
         </div>
+
         <div class="section">
           <div class="section-title">{% if locale == "mr" %}क्षेत्र नोंद{% else %}Field Record{% endif %}</div>
           <div class="field-note" id="m-field-note"></div>
         </div>
+
         <div class="section">
           <div class="section-title">
-            {% if locale == "mr" %}अधिकाऱ्याची निरीक्षणे{% else %}Officer Remarks{% endif %}
-            <span style="font-size:0.65rem;font-weight:700;color:var(--muted);margin-left:6px;font-style:italic;">unstructured</span>
+            {% if locale == "mr" %}सक्षम प्राधिकरण शेरे{% else %}Prior Remarks{% endif %}
+            <span style="font-size:0.65rem;font-weight:700;color:var(--muted);margin-left:6px;font-style:italic;">
+              {% if locale == "mr" %}अनौपचारिक{% else %}informal{% endif %}
+            </span>
           </div>
           <div class="officer-remarks" id="m-officer-remarks">
-            <div class="officer-remarks-label">{% if locale == "mr" %}अनौपचारिक{% else %}Informal{% endif %}</div>
-            <div id="m-officer-remarks-text"></div>
+            <span class="officer-remarks-label">
+              {% if locale == "mr" %}पूर्व / अप्रमाणित{% else %}Prior / Unverified{% endif %}
+            </span>
+            <div id="m-officer-remarks-text" style="margin-top:8px;"></div>
           </div>
         </div>
 
@@ -276,15 +305,19 @@
           <div class="decision-title">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
           <input type="hidden" id="d-case-id" />
           <input type="hidden" id="d-opened-at" />
+
           <div class="btn-group">
-            <div class="dec-btn" id="btn-approve"  onclick="selectDecision('approve')">{% if locale == "mr" %}मंजूर करा{% else %}APPROVE{% endif %}</div>
-            <div class="dec-btn" id="btn-reject"   onclick="selectDecision('reject')">{% if locale == "mr" %}नाकारा{% else %}REJECT{% endif %}</div>
+            <div class="dec-btn" id="btn-approve" onclick="selectDecision('approve')">{% if locale == "mr" %}मंजूर करा{% else %}APPROVE{% endif %}</div>
+            <div class="dec-btn" id="btn-reject" onclick="selectDecision('reject')">{% if locale == "mr" %}नाकारा{% else %}REJECT{% endif %}</div>
             <div class="dec-btn" id="btn-escalate" onclick="selectDecision('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे पाठवा{% else %}ESCALATE{% endif %}</div>
           </div>
+
           <textarea class="reasoning-area" id="d-reasoning"
             placeholder="{% if locale == 'mr' %}तुमच्या निर्णयाचे थोडक्यात कारण सांगा (आवश्यक){% else %}Briefly explain your reasoning (required){% endif %}"
             maxlength="1000" oninput="updateCharHint()"></textarea>
+
           <div class="char-hint" id="char-hint">0 / 1000</div>
+
           <button class="submit-btn" id="btn-submit" type="button" onclick="submitDecision()" disabled>
             {% if locale == "mr" %}निर्णय सबमिट करा{% else %}Submit Decision{% endif %}
           </button>
@@ -327,65 +360,69 @@
 
     const profileEl = document.getElementById('m-profile');
     profileEl.innerHTML = '';
-    const profileLabels = {
-      age: t('Age','वय'), income: t('Income','उत्पन्न'),
-      income_period: t('Income Period','उत्पन्न कालावधी'),
-      rural: t('Rural','ग्रामीण'),
-      caste_marginalized: t('Marginalized Caste','वंचित जात'),
-      housing_status: t('Housing Status','निवास स्थिती'),
+
+    const profileLabels = c.profile_labels || {
+      age: t('Age', 'वय'),
+      income: t('Income', 'उत्पन्न'),
+      income_period: t('Income Period', 'उत्पन्न कालावधी'),
+      caste_marginalized: t('Marginalized Caste', 'वंचित जात'),
     };
+
     Object.entries(c.profile || {}).forEach(([k, v]) => {
-      const label = profileLabels[k] || k.replace(/_/g,' ');
-      profileEl.innerHTML += `<div class="profile-item"><label>${label}</label><span>${v??'—'}</span></div>`;
+      const label = profileLabels[k] || k.replace(/_/g, ' ');
+      profileEl.innerHTML += `<div class="profile-item"><label>${label}</label><span>${v ?? '—'}</span></div>`;
     });
 
-    // Split field note into formal record + officer remark
-    // Field record lines end before "Field Remark :" — remark is always the last line
-    const _raw = c.field_note || '';
-    const _fieldRecordEl = document.getElementById('m-field-note');
-    const _remarksEl     = document.getElementById('m-officer-remarks-text');
+    const raw = c.field_note || '';
+    const fieldRecordEl = document.getElementById('m-field-note');
+    const remarksEl = document.getElementById('m-officer-remarks-text');
 
-    // Clear both targets first — prevents stale content on re-open
-    _fieldRecordEl.textContent = '';
-    _remarksEl.textContent     = '';
+    fieldRecordEl.textContent = '';
+    remarksEl.textContent = '';
 
-    if (_raw.includes('Field Remark') || _raw.includes('क्षेत्र निरीक्षण')) {
-      const _splitKey = _raw.includes('Field Remark') ? 'Field Remark' : 'क्षेत्र निरीक्षण';
-      const _splitIdx = _raw.lastIndexOf(_splitKey);
-      const _record   = _raw.substring(0, _splitIdx).trim();
-      const _remarkFull = _raw.substring(_splitIdx);
-      const _colonIdx   = _remarkFull.indexOf(':');
-      const _remark     = _colonIdx >= 0 ? _remarkFull.substring(_colonIdx + 1).trim() : '';
+    if (raw.includes('Field Remark') || raw.includes('क्षेत्र निरीक्षण')) {
+      const splitKey = raw.includes('Field Remark') ? 'Field Remark' : 'क्षेत्र निरीक्षण';
+      const splitIdx = raw.lastIndexOf(splitKey);
+      const record = raw.substring(0, splitIdx).trim();
+      const remarkFull = raw.substring(splitIdx);
+      const colonIdx = remarkFull.indexOf(':');
+      const remark = colonIdx >= 0 ? remarkFull.substring(colonIdx + 1).trim() : '';
 
-      _fieldRecordEl.textContent = _record || '—';
-      _remarksEl.textContent     = _remark || '—';
+      fieldRecordEl.textContent = record || '—';
+      remarksEl.textContent = remark || '—';
     } else {
-      _fieldRecordEl.textContent = _raw || '—';
-      _remarksEl.textContent     = '—';
+      fieldRecordEl.textContent = raw || '—';
+      remarksEl.textContent = '—';
     }
+
     const ruleEl = document.getElementById('m-rule-badge');
     ruleEl.textContent = c.rule_result;
-    ruleEl.className   = `rule-badge rule-${c.rule_result}`;
-    document.getElementById('m-algo-value').textContent = c.algo_recommendation.toUpperCase();
-    document.getElementById('m-algo-box').className     = `algo-box algo-${c.algo_recommendation}`;
+    ruleEl.className = `rule-badge rule-${c.rule_result}`;
 
-    const panel     = document.getElementById('m-decision-panel');
+    document.getElementById('m-algo-value').textContent = c.algo_recommendation.toUpperCase();
+    document.getElementById('m-algo-box').className = `algo-box algo-${c.algo_recommendation}`;
+
+    const panel = document.getElementById('m-decision-panel');
     const doneNotice = document.getElementById('m-done-notice');
+
     if (c.submitted) {
-      panel.style.display      = 'none';
+      panel.style.display = 'none';
       doneNotice.style.display = 'block';
     } else {
-      panel.style.display         = 'flex';
-      panel.style.flexDirection   = 'column';
-      doneNotice.style.display    = 'none';
+      panel.style.display = 'flex';
+      panel.style.flexDirection = 'column';
+      doneNotice.style.display = 'none';
       selectedDecision = null;
+
       ['btn-approve','btn-reject','btn-escalate'].forEach(id => {
         document.getElementById(id).className = 'dec-btn';
       });
-      document.getElementById('d-reasoning').value    = '';
+
+      document.getElementById('d-reasoning').value = '';
       document.getElementById('char-hint').textContent = '0 / 1000';
-      document.getElementById('btn-submit').disabled  = true;
+      document.getElementById('btn-submit').disabled = true;
     }
+
     document.getElementById('backdrop').style.display = 'block';
   }
 
@@ -408,48 +445,57 @@
   }
 
   function validateSubmit() {
-    const hasDecision  = !!selectedDecision;
+    const hasDecision = !!selectedDecision;
     const hasReasoning = document.getElementById('d-reasoning').value.trim().length > 0;
     document.getElementById('btn-submit').disabled = !(hasDecision && hasReasoning);
   }
 
   async function submitDecision() {
-    const caseId    = document.getElementById('d-case-id').value;
-    const openedAt  = document.getElementById('d-opened-at').value;
+    const caseId = document.getElementById('d-case-id').value;
+    const openedAt = document.getElementById('d-opened-at').value;
     const reasoning = document.getElementById('d-reasoning').value.trim();
+
     if (!selectedDecision) { alert(t('Please select a decision.','कृपया निर्णय निवडा.')); return; }
-    if (!reasoning)         { alert(t('Please enter your reasoning.','कृपया कारण लिहा.')); return; }
+    if (!reasoning) { alert(t('Please enter your reasoning.','कृपया कारण लिहा.')); return; }
 
     const btn = document.getElementById('btn-submit');
     const defaultText = t('Submit Decision','निर्णय सबमिट करा');
-    btn.disabled    = true;
+    btn.disabled = true;
     btn.textContent = t('Submitting...','सबमिट करत आहे...');
 
     try {
       const res = await fetch(`/session/${SESSION_ID}/evaluate`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ case_id:caseId, decision:selectedDecision, reasoning, opened_at:openedAt }),
       });
+
       if (!res.ok) {
         const d = await res.json().catch(()=>({}));
         alert(t('Error: ','त्रुटी: ') + (d.detail || t('Submission failed','सबमिशन अयशस्वी झाले')));
-        btn.disabled=false; btn.textContent=defaultText; return;
+        btn.disabled = false;
+        btn.textContent = defaultText;
+        return;
       }
+
       const data = await res.json();
       const cell = document.getElementById(`decision-${caseId}`);
       if (cell) cell.innerHTML = `<span class="pill pill-${selectedDecision}">${selectedDecision.toUpperCase()}</span>`;
       const row = document.getElementById(`row-${caseId}`);
       if (row) row.classList.add('done-row');
+
       completedCount++;
       updateProgress();
       closeModal();
+
       if (data.all_done) {
         document.getElementById('all-done-banner').style.display = 'block';
         window.scrollTo({top:0, behavior:'smooth'});
       }
     } catch(e) {
       alert(t('Network error. Please try again.','नेटवर्क त्रुटी. कृपया पुन्हा प्रयत्न करा.'));
-      btn.disabled=false; btn.textContent=defaultText;
+      btn.disabled = false;
+      btn.textContent = defaultText;
     }
   }
 
@@ -457,7 +503,7 @@
     const pct = Math.round((completedCount / TOTAL_CASES) * 100);
     document.getElementById('progress-bar').style.width = pct + '%';
     document.getElementById('progress-label').textContent = `${completedCount} / ${TOTAL_CASES} ${t('completed','पूर्ण')}`;
-    document.getElementById('chip-done').textContent    = `${t('Done','पूर्ण')}: ${completedCount}`;
+    document.getElementById('chip-done').textContent = `${t('Done','पूर्ण')}: ${completedCount}`;
     document.getElementById('chip-pending').textContent = `${t('Pending','प्रलंबित')}: ${TOTAL_CASES - completedCount}`;
   }
 
