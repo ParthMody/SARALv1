@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SARAL v2 — Practice</title>
+  <style>
+    :root{
+      --bg:#f3f5f8;--panel:#fff;--ink:#102a56;--text:#213247;--muted:#6e7f97;
+      --line:#dbe3ee;--line-soft:#e9eef5;
+      --green-bg:#e9f8ef;--green-line:#8ed5a7;--green-text:#166534;
+      --red-bg:#fff0f0;--red-line:#f0aaaa;--red-text:#991b1b;
+      --teal-bg:#ebfbf8;--teal-line:#99ddd3;--teal-text:#0f766e;
+      --amber-bg:#fff8e6;--amber-line:#efd28b;--amber-text:#9a6700;
+      --blue-bg:#edf4ff;--blue-line:#a9c6f5;--blue-text:#1d4f91;
+      --shadow:0 12px 32px rgba(16,42,86,0.06);
+      --focus:0 0 0 4px rgba(16,42,86,0.12);
+    }
+    *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+    body{min-height:100vh;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);}
+
+    .topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft);}
+    .topbar-inner{max-width:1060px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:10px;}
+    .brand-logo{width:36px;height:36px;border-radius:8px;background:#fff;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .brand-logo img{width:74%;height:74%;object-fit:contain;}
+    .brand-title{font-size:0.95rem;font-weight:800;color:var(--ink);}
+
+    .shell{max-width:1060px;margin:0 auto;padding:24px 20px 40px;}
+
+    .notice{background:var(--blue-bg);border:1px solid var(--blue-line);color:var(--blue-text);border-radius:14px;padding:16px 18px;margin-bottom:20px;font-size:0.88rem;line-height:1.6;}
+    .notice strong{font-weight:800;}
+
+    .phase-label{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;}
+    .phase-practice{background:var(--amber-bg);color:var(--amber-text);border:1px solid var(--amber-line);}
+    .phase-check{background:var(--blue-bg);color:var(--blue-text);border:1px solid var(--blue-line);}
+
+    .case-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+    .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;}
+    .card+.card{margin-top:16px;}
+    .section-label{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;}
+
+    .profile-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+    .profile-table td{padding:6px 0;vertical-align:top;}
+    .profile-table td:first-child{color:var(--muted);font-weight:700;width:45%;padding-right:12px;}
+    .profile-table td:last-child{font-weight:600;}
+    .profile-table tr+tr td{border-top:1px solid #f0f3f7;}
+
+    .remarks-box{background:#fdfcf8;border:1px dashed #d4cbb8;border-radius:10px;padding:12px 14px;margin-top:16px;}
+    .remarks-tag{display:inline-block;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#a0896b;background:#f5efe4;border:1px solid #d4cbb8;border-radius:3px;padding:1px 6px;margin-bottom:6px;}
+    .remarks-text{font-size:0.84rem;color:#6b5e4a;font-style:italic;line-height:1.6;}
+
+    .rule-badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 10px;font-size:0.68rem;font-weight:800;text-transform:uppercase;border:1px solid transparent;}
+    .rule-ELIGIBLE_BY_RULE{background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
+
+    .algo-box{border-radius:12px;padding:14px;text-align:center;}
+    .algo-approve{background:var(--green-bg);border:1px solid var(--green-line);color:var(--green-text);}
+    .algo-label{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;opacity:0.85;}
+    .algo-value{font-size:1.15rem;font-weight:900;}
+
+    .btn-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+    .dec-btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:12px;font-size:0.82rem;font-weight:800;cursor:pointer;text-align:center;transition:background 0.15s;}
+    .dec-btn:hover{background:#f9fbfe;}
+    .dec-btn.sel-approve{background:var(--green-text);color:#fff;border-color:var(--green-text);}
+    .dec-btn.sel-reject{background:var(--red-text);color:#fff;border-color:var(--red-text);}
+    .dec-btn.sel-escalate{background:var(--teal-text);color:#fff;border-color:var(--teal-text);}
+
+    .reasoning-area{width:100%;min-height:70px;resize:vertical;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 12px;font-size:0.85rem;font-family:inherit;}
+    .reasoning-area:focus{outline:none;border-color:#3b82f6;box-shadow:var(--focus);}
+
+    .submit-btn{width:100%;margin-top:12px;height:44px;border:0;border-radius:10px;background:#163764;color:#fff;font-size:0.88rem;font-weight:900;cursor:pointer;}
+    .submit-btn:hover{background:#214a85;}
+    .submit-btn:disabled{background:#9caabf;cursor:not-allowed;}
+
+    .feedback-box{margin-top:16px;padding:14px;border-radius:12px;font-size:0.85rem;line-height:1.5;font-weight:700;border:1px solid transparent;display:none;}
+    .feedback-correct{background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
+    .feedback-incorrect{background:var(--red-bg);color:var(--red-text);border-color:var(--red-line);}
+    .feedback-flagged{background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber-line);}
+
+    .proceed-btn{width:100%;margin-top:16px;height:46px;border:0;border-radius:10px;background:#166534;color:#fff;font-size:0.9rem;font-weight:900;cursor:pointer;display:none;}
+    .proceed-btn:hover{background:#15803d;}
+
+    @media(max-width:860px){.case-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-logo"><img src="/static/assets/saral.png" alt="" onerror="this.style.display='none'"></div>
+    <div class="brand-title">SARAL v2 — {% if locale == "mr" %}सराव{% else %}Practice{% endif %}</div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <!-- Phase indicator -->
+  <div id="phase-label"></div>
+
+  <!-- Instructions -->
+  <div class="notice" id="instructions"></div>
+
+  <div class="case-grid">
+    <div>
+      <div class="card">
+        <div class="section-label" id="lbl-profile">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
+        <table class="profile-table" id="p-profile"></table>
+      </div>
+      <div class="card">
+        <div class="section-label">{% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}</div>
+        <span class="rule-badge rule-ELIGIBLE_BY_RULE" id="p-rule">ELIGIBLE_BY_RULE</span>
+      </div>
+      <div class="remarks-box">
+        <div class="remarks-tag">{% if locale == "mr" %}पूर्व / अप्रमाणित{% else %}Prior / Unverified{% endif %}</div>
+        <div class="remarks-text" id="p-remarks"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="section-label">{% if locale == "mr" %}प्रणाली शिफारस{% else %}System Recommendation{% endif %}</div>
+        <div class="algo-box algo-approve">
+          <div class="algo-label">{% if locale == "mr" %}अल्गोरिदम{% else %}Algorithm Recommendation{% endif %}</div>
+          <div class="algo-value" id="p-algo">APPROVE</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
+        <div class="btn-group">
+          <div class="dec-btn" id="btn-approve" onclick="pick('approve')">{% if locale == "mr" %}मंजूर{% else %}APPROVE{% endif %}</div>
+          <div class="dec-btn" id="btn-reject" onclick="pick('reject')">{% if locale == "mr" %}नाकार{% else %}REJECT{% endif %}</div>
+          <div class="dec-btn" id="btn-escalate" onclick="pick('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे{% else %}ESCALATE{% endif %}</div>
+        </div>
+        <textarea class="reasoning-area" id="d-reason"
+          placeholder="{% if locale == 'mr' %}कारण (आवश्यक){% else %}Reasoning (required){% endif %}"
+          maxlength="300" oninput="chk()"></textarea>
+        <button class="submit-btn" id="btn-sub" onclick="submit()" disabled>
+          {% if locale == "mr" %}सबमिट{% else %}Submit{% endif %}
+        </button>
+
+        <div class="feedback-box" id="feedback"></div>
+        <button class="proceed-btn" id="btn-proceed" onclick="proceed()">
+          {% if locale == "mr" %}पुढे जा{% else %}Continue to Cases →{% endif %}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SID = {{ session_id | tojson }};
+const LOC = {{ locale | tojson }};
+function t(e,m){return LOC==='mr'?m:e;}
+
+// Phase 1: Practice (not logged, structurally different)
+// Phase 2: Comprehension check (logged as flag, max 2 attempts)
+let phase = 'practice';  // 'practice' → 'check'
+let dec = null;
+let checkAttempts = 0;
+const MAX_CHECK_ATTEMPTS = 2;
+
+const PRACTICE_CASE = {
+  profile: {
+    'Electoral Roll Year': '1995',
+    'Structure Type': 'kuccha',
+    'Carpet Area': '120 sq ft',
+    'Pre-Cutoff Status': 'Yes',
+    'Documents': 'Aadhaar, Ration card',
+    'Declared Income': 'low',
+    'Household Size': '3',
+  },
+  remark: t(
+    'Field visit: applicant lives in temporary shelter near railway tracks; no permanent structure.',
+    'क्षेत्रभेट: अर्जदार रेल्वे ट्रॅकजवळ तात्पुरत्या आश्रयात राहतो; कायमस्वरूपी संरचना नाही.'
+  ),
+  algo: 'APPROVE',
+  rule: 'ELIGIBLE_BY_RULE',
+};
+
+const CHECK_CASE = {
+  profile: {
+    'Electoral Roll Year': '2014',
+    'Structure Type': 'pakka',
+    'Carpet Area': '250 sq ft',
+    'Pre-Cutoff Status': 'No',
+    'Documents': 'Aadhaar',
+    'Declared Income': 'medium',
+    'Household Size': '2',
+  },
+  remark: t(
+    'Verification: applicant owns the structure; purchased two years ago per neighbours.',
+    'सत्यापन: अर्जदार संरचनेचा मालक आहे; शेजाऱ्यांच्या म्हणण्यानुसार दोन वर्षांपूर्वी विकत घेतले.'
+  ),
+  algo: 'REJECT',
+  rule: 'INELIGIBLE_BY_RULE',
+  correct_answer: 'reject',  // the comprehension check expects this
+};
+
+function renderCase(c) {
+  const pt = document.getElementById('p-profile');
+  pt.innerHTML = '';
+  Object.entries(c.profile).forEach(([k,v]) => {
+    pt.innerHTML += `<tr><td>${k}</td><td>${v}</td></tr>`;
+  });
+  document.getElementById('p-remarks').textContent = c.remark;
+  document.getElementById('p-algo').textContent = c.algo;
+  document.getElementById('p-rule').textContent = c.rule;
+  document.getElementById('p-rule').className = `rule-badge rule-${c.rule}`;
+
+  // Reset
+  dec = null;
+  ['btn-approve','btn-reject','btn-escalate'].forEach(id => document.getElementById(id).className='dec-btn');
+  document.getElementById('d-reason').value = '';
+  document.getElementById('btn-sub').disabled = true;
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('btn-proceed').style.display = 'none';
+}
+
+function updatePhaseUI() {
+  const label = document.getElementById('phase-label');
+  const instr = document.getElementById('instructions');
+
+  if (phase === 'practice') {
+    label.innerHTML = `<span class="phase-label phase-practice">${t('Practice Case','सराव प्रकरण')}</span>`;
+    instr.innerHTML = t(
+      '<strong>This is a practice case.</strong> It will not be recorded. Use it to familiarise yourself with the interface. Make any decision and submit to continue.',
+      '<strong>हे सराव प्रकरण आहे.</strong> हे नोंदवले जाणार नाही. इंटरफेसशी परिचित होण्यासाठी याचा वापर करा.'
+    );
+    renderCase(PRACTICE_CASE);
+  } else {
+    label.innerHTML = `<span class="phase-label phase-check">${t('Comprehension Check','आकलन तपासणी')}</span>`;
+    instr.innerHTML = t(
+      '<strong>Comprehension check.</strong> Review this case carefully. The structured record and field note should guide your decision. You have 2 attempts.',
+      '<strong>आकलन तपासणी.</strong> हे प्रकरण काळजीपूर्वक पहा. संरचित नोंद आणि क्षेत्र नोंदीनुसार निर्णय घ्या. तुम्हाला २ प्रयत्न आहेत.'
+    );
+    renderCase(CHECK_CASE);
+  }
+}
+
+function pick(d) {
+  dec = d;
+  ['btn-approve','btn-reject','btn-escalate'].forEach(id => document.getElementById(id).className='dec-btn');
+  document.getElementById(`btn-${d}`).className = `dec-btn sel-${d}`;
+  chk();
+}
+
+function chk() {
+  document.getElementById('btn-sub').disabled = !(dec && document.getElementById('d-reason').value.trim());
+}
+
+function submit() {
+  const fb = document.getElementById('feedback');
+  const proceedBtn = document.getElementById('btn-proceed');
+
+  if (phase === 'practice') {
+    // Practice: any answer is fine
+    fb.className = 'feedback-box feedback-correct';
+    fb.textContent = t(
+      'Practice complete. Click "Continue" to begin the comprehension check.',
+      'सराव पूर्ण. आकलन तपासणीसाठी "पुढे जा" दाबा.'
+    );
+    fb.style.display = 'block';
+    proceedBtn.style.display = 'block';
+    proceedBtn.textContent = t('Continue to Check →', 'तपासणीकडे पुढे जा →');
+    document.getElementById('btn-sub').disabled = true;
+  } else {
+    // Comprehension check
+    checkAttempts++;
+    if (dec === CHECK_CASE.correct_answer) {
+      fb.className = 'feedback-box feedback-correct';
+      fb.textContent = t(
+        'Correct. The structured record shows ineligibility and the field note reinforces this. You may now proceed to the actual cases.',
+        'बरोबर. संरचित नोंद अपात्रता दर्शवते आणि क्षेत्र नोंद याची पुष्टी करते. आता प्रकरणांकडे जा.'
+      );
+      fb.style.display = 'block';
+      proceedBtn.style.display = 'block';
+      proceedBtn.textContent = t('Begin Cases →', 'प्रकरणे सुरू करा →');
+      document.getElementById('btn-sub').disabled = true;
+
+      // Log comprehension pass
+      fetch(`/session/${SID}/comprehension`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({passed: true, attempts: checkAttempts}),
+      }).catch(()=>{});
+
+    } else if (checkAttempts >= MAX_CHECK_ATTEMPTS) {
+      // Failed twice — flag but allow continuation
+      fb.className = 'feedback-box feedback-flagged';
+      fb.textContent = t(
+        'The expected answer was REJECT based on the structured record. You may still proceed — your responses will be flagged for researcher review.',
+        'संरचित नोंदीनुसार अपेक्षित उत्तर नाकारणे होते. तुम्ही पुढे जाऊ शकता — तुमची उत्तरे संशोधक पुनरावलोकनासाठी चिन्हांकित केली जातील.'
+      );
+      fb.style.display = 'block';
+      proceedBtn.style.display = 'block';
+      proceedBtn.textContent = t('Proceed to Cases →', 'प्रकरणांकडे जा →');
+      document.getElementById('btn-sub').disabled = true;
+
+      fetch(`/session/${SID}/comprehension`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({passed: false, attempts: checkAttempts}),
+      }).catch(()=>{});
+
+    } else {
+      fb.className = 'feedback-box feedback-incorrect';
+      fb.textContent = t(
+        `Incorrect. Look at the structured record carefully — does this applicant meet the eligibility criteria? You have ${MAX_CHECK_ATTEMPTS - checkAttempts} attempt(s) remaining.`,
+        `चुकीचे. संरचित नोंद काळजीपूर्वक पहा — हा अर्जदार पात्रता निकष पूर्ण करतो का? तुम्हाला ${MAX_CHECK_ATTEMPTS - checkAttempts} प्रयत्न शिल्लक आहे.`
+      );
+      fb.style.display = 'block';
+      // Reset for retry
+      dec = null;
+      ['btn-approve','btn-reject','btn-escalate'].forEach(id => document.getElementById(id).className='dec-btn');
+      document.getElementById('d-reason').value = '';
+      document.getElementById('btn-sub').disabled = true;
+    }
+  }
+}
+
+function proceed() {
+  if (phase === 'practice') {
+    phase = 'check';
+    updatePhaseUI();
+  } else {
+    // Go to actual session
+    window.location.href = `/session/${SID}`;
+  }
+}
+
+// Init
+updatePhaseUI();
+</script>
+</body>
+</html>

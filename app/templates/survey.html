@@ -3,466 +3,249 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SARAL v2 — Survey</title>
+  <title>SARAL v2 — Post-Task Survey</title>
   <style>
-    :root{
-      --bg: #f3f5f8;
-      --panel: #ffffff;
-      --ink: #102a56;
-      --ink-2: #21406d;
-      --text: #213247;
-      --muted: #6e7f97;
-      --line: #dbe3ee;
-      --line-soft: #e9eef5;
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:Inter,"Segoe UI",Arial,sans-serif;
+      background:#f4f6f9;min-height:100vh;
+      display:flex;align-items:center;justify-content:center;padding:2rem;
+      color:#213247;
+    }
+    .card{
+      background:#fff;border-radius:12px;
+      box-shadow:0 2px 16px rgba(0,0,0,0.08);
+      width:100%;max-width:560px;padding:2.5rem 2rem;
+    }
+    h1{font-size:1.3rem;font-weight:800;color:#102a56;margin-bottom:0.3rem;text-align:center;}
+    .subtitle{font-size:0.85rem;color:#6e7f97;margin-bottom:2rem;text-align:center;line-height:1.5;}
 
-      --focus: 0 0 0 4px rgba(16, 42, 86, 0.12);
-
-      --danger-bg: #fff1f1;
-      --danger-line: #efb1b1;
-      --danger-text: #9f2f2f;
-
-      --btn: #163764;
-      --btn-hover: #214a85;
-
-      --selected-bg: #163764;
-      --selected-text: #ffffff;
-      --selected-line: #163764;
-
-      --shadow: 0 18px 45px rgba(16, 42, 86, 0.08);
-
-      --radius-xl: 20px;
-      --radius-lg: 14px;
-      --radius-md: 10px;
+    .section-label{
+      font-size:0.72rem;font-weight:800;text-transform:uppercase;
+      letter-spacing:0.1em;color:#6e7f97;margin-bottom:12px;padding-bottom:8px;
+      border-bottom:1px solid #e9eef5;
     }
 
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-
-    body {
-      min-height: 100vh;
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(22,55,100,0.05), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(22,55,100,0.04), transparent 22%),
-        var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 28px 18px;
-      color: var(--text);
+    .form-group{margin-bottom:1.2rem;}
+    label{display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:0.35rem;}
+    label .req{color:#ef4444;margin-left:2px;}
+    input[type="text"],input[type="number"],select,textarea{
+      width:100%;padding:0.55rem 0.75rem;font-size:0.92rem;
+      border:1px solid #d1d5db;border-radius:6px;background:#fafafa;
+      color:#111827;transition:border-color 0.15s,box-shadow 0.15s;
+      font-family:inherit;
     }
-
-    .shell {
-      width: 100%;
-      max-width: 640px;
+    input:focus,select:focus,textarea:focus{
+      outline:none;border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,0.12);background:#fff;
     }
+    textarea{min-height:80px;resize:vertical;}
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .divider{border:none;border-top:1px solid #e5e7eb;margin:1.8rem 0;}
 
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--line-soft);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow);
-      padding: 30px 28px 24px;
+    /* Likert scale */
+    .likert-group{margin-bottom:1.4rem;}
+    .likert-label{font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:10px;line-height:1.5;}
+    .likert-scale{display:flex;gap:6px;}
+    .likert-btn{
+      flex:1;padding:10px 4px;border:2px solid #e5e7eb;border-radius:8px;
+      background:#fff;color:#374151;font-size:0.85rem;font-weight:700;
+      cursor:pointer;text-align:center;transition:border-color 0.15s,background 0.15s;
     }
+    .likert-btn:hover{border-color:#93c5fd;background:#f0f7ff;}
+    .likert-btn.selected{border-color:#102a56;background:#edf4ff;color:#102a56;}
+    .likert-anchors{display:flex;justify-content:space-between;font-size:0.72rem;color:#9ca3af;margin-top:4px;padding:0 2px;}
 
-    .brand {
-      text-align: center;
-      margin-bottom: 22px;
+    .submit-btn{
+      width:100%;padding:14px;font-size:1rem;font-weight:700;
+      color:#fff;background:#1a2b4a;border:none;border-radius:8px;
+      cursor:pointer;transition:background 0.15s;margin-top:0.5rem;
     }
+    .submit-btn:hover{background:#253d6a;}
+    .submit-btn:disabled{background:#9caabf;cursor:not-allowed;}
 
-    .logo-wrap {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 70px;
-      margin-bottom: 12px;
-    }
-
-    .logo-img {
-      max-width: 190px;
-      max-height: 60px;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      display: block;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 1.75rem;
-      line-height: 1.1;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-    }
-
-    .subtitle {
-      margin: 10px auto 0;
-      max-width: 500px;
-      font-size: 0.95rem;
-      line-height: 1.55;
-      color: var(--muted);
-    }
-
-    .question {
-      margin-bottom: 22px;
-      padding: 18px 18px 16px;
-      background: #fbfcfe;
-      border: 1px solid var(--line-soft);
-      border-radius: 16px;
-    }
-
-    .q-text {
-      font-size: 0.98rem;
-      line-height: 1.55;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-
-    .q-note {
-      font-size: 0.8rem;
-      line-height: 1.45;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-
-    .likert {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      align-items: stretch;
-    }
-
-    .likert-item {
-      text-align: center;
-      min-width: 0;
-    }
-
-    .likert-item input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .likert-item label {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #ffffff;
-      color: var(--ink);
-      font-size: 0.95rem;
-      font-weight: 800;
-      cursor: pointer;
-      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.04s ease;
-      user-select: none;
-    }
-
-    .likert-item label:hover {
-      background: #f7fafe;
-      border-color: #bfd0e7;
-    }
-
-    .likert-item label:active {
-      transform: translateY(1px);
-    }
-
-    .likert-item input:focus + label {
-      outline: none;
-      box-shadow: var(--focus);
-      border-color: var(--ink-2);
-    }
-
-    .likert-item input:checked + label {
-      background: var(--selected-bg);
-      color: var(--selected-text);
-      border-color: var(--selected-line);
-    }
-
-    .likert-ends {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      margin-top: 8px;
-      font-size: 0.75rem;
-      line-height: 1.35;
-      color: #8493a8;
-      font-weight: 600;
-    }
-
-    .divider {
-      border: 0;
-      border-top: 1px solid var(--line-soft);
-      margin: 18px 0 16px;
-    }
-
-    .submit-btn {
-      width: 100%;
-      height: 52px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--btn);
-      color: #ffffff;
-      font-size: 0.98rem;
-      font-weight: 900;
-      letter-spacing: 0.01em;
-      cursor: pointer;
-      box-shadow: 0 10px 24px rgba(22,55,100,0.16);
-      transition: background 0.15s ease;
-    }
-
-    .submit-btn:hover {
-      background: var(--btn-hover);
-    }
-
-    .submit-btn:disabled {
-      background: #9caabf;
-      box-shadow: none;
-      cursor: not-allowed;
-    }
-
-    .error-msg {
-      display: none;
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--danger-line);
-      background: var(--danger-bg);
-      color: var(--danger-text);
-      font-size: 0.86rem;
-      line-height: 1.45;
-      font-weight: 700;
-    }
-
-    @media (max-width: 640px) {
-      .card {
-        padding: 24px 18px 20px;
-        border-radius: 18px;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      .logo-img {
-        max-width: 170px;
-        max-height: 54px;
-      }
-
-      .question {
-        padding: 16px 14px 14px;
-      }
-
-      .likert {
-        gap: 6px;
-      }
-
-      .likert-item label {
-        min-height: 44px;
-        font-size: 0.9rem;
-      }
-
-      .likert-ends {
-        font-size: 0.72rem;
-      }
-    }
+    @media(max-width:500px){.row-2{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
-
-<div class="shell">
   <div class="card">
-    <div class="brand">
-      <div class="logo-wrap">
-        <img src="/static/assets/saral.png" class="logo-img" alt="SARAL" onerror="this.style.display='none'">
-      </div>
-      <h1>{% if locale == "mr" %}सत्र सर्वेक्षण{% else %}Session Survey{% endif %}</h1>
-      <p class="subtitle">
-        {% if locale == "mr" %}
-          कृपया खालील तीन प्रश्नांची उत्तरे द्या. तुमची उत्तरे गोपनीय राहतील.
-        {% else %}
-          Please answer the three questions below. Your responses are confidential.
-        {% endif %}
-      </p>
+    <h1>{% if locale == "mr" %}सत्र पूर्ण{% else %}Session Complete{% endif %}</h1>
+    <p class="subtitle">
+      {% if locale == "mr" %}कृपया खालील माहिती भरा. सर्व प्रश्न आवश्यक आहेत.{% else %}Please complete the following. All questions are required.{% endif %}
+    </p>
+
+    <!-- Section 1: Salience survey -->
+    <div class="section-label">
+      {% if locale == "mr" %}पुनरावलोकन अनुभव{% else %}Review Experience{% endif %}
     </div>
 
-    <div class="question">
-      <div class="q-text">
-        {% if locale == "mr" %}
-          एकूण, आजच्या तुमच्या निर्णयांवर फील्ड नोटमधील माहितीचा किती प्रभाव पडला?
-        {% else %}
-          Overall, how much did the information in the field notes influence your decisions today?
-        {% endif %}
+    <div class="likert-group">
+      <div class="likert-label">
+        {% if locale == "mr" %}क्षेत्र नोंदींनी तुमच्या निर्णयांवर किती प्रभाव पाडला?{% else %}How much did the field notes / prior remarks influence your decisions?{% endif %}
       </div>
-      <div class="q-note">
-        {% if locale == "mr" %}
-          1 = अजिबात नाही &nbsp;·&nbsp; 5 = खूप जास्त
-        {% else %}
-          1 = Not at all &nbsp;·&nbsp; 5 = Very strongly
-        {% endif %}
+      <div class="likert-scale" data-field="salience_rating">
+        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 1)">1</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 2)">2</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 3)">3</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 4)">4</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 5)">5</div>
       </div>
-      <div class="likert" role="group" aria-label="Q1">
-        {% for i in range(1, 6) %}
-        <div class="likert-item">
-          <input type="radio" name="q1" id="q1-{{ i }}" value="{{ i }}" />
-          <label for="q1-{{ i }}">{{ i }}</label>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="likert-ends">
+      <div class="likert-anchors">
         <span>{% if locale == "mr" %}अजिबात नाही{% else %}Not at all{% endif %}</span>
-        <span>{% if locale == "mr" %}खूप जास्त{% else %}Very strongly{% endif %}</span>
+        <span>{% if locale == "mr" %}खूप{% else %}Very much{% endif %}</span>
       </div>
     </div>
 
-    <div class="question">
-      <div class="q-text">
-        {% if locale == "mr" %}
-          प्रकरण नोटमध्ये काही विशिष्ट निरीक्षणे तुमच्या लक्षात आली का?
-        {% else %}
-          Were there any specific observations in the case notes that stood out to you?
-        {% endif %}
+    <div class="likert-group">
+      <div class="likert-label">
+        {% if locale == "mr" %}कोणत्या विशिष्ट निरीक्षणांनी तुमचे लक्ष वेधले?{% else %}Did any specific observations stand out to you across cases?{% endif %}
       </div>
-      <div class="q-note">
-        {% if locale == "mr" %}
-          1 = काहीही नाही &nbsp;·&nbsp; 5 = अनेक स्पष्टपणे
-        {% else %}
-          1 = None stood out &nbsp;·&nbsp; 5 = Several stood out clearly
-        {% endif %}
+      <div class="likert-scale" data-field="standout_rating">
+        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 1)">1</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 2)">2</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 3)">3</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 4)">4</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 5)">5</div>
       </div>
-      <div class="likert" role="group" aria-label="Q2">
-        {% for i in range(1, 6) %}
-        <div class="likert-item">
-          <input type="radio" name="q2" id="q2-{{ i }}" value="{{ i }}" />
-          <label for="q2-{{ i }}">{{ i }}</label>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="likert-ends">
-        <span>{% if locale == "mr" %}काहीही नाही{% else %}None stood out{% endif %}</span>
-        <span>{% if locale == "mr" %}अनेक स्पष्टपणे{% else %}Several clearly{% endif %}</span>
+      <div class="likert-anchors">
+        <span>{% if locale == "mr" %}काहीच नाही{% else %}Nothing{% endif %}</span>
+        <span>{% if locale == "mr" %}खूप{% else %}Very much{% endif %}</span>
       </div>
     </div>
 
-    <div class="question">
-      <div class="q-text">
-        {% if locale == "mr" %}
-          तुमच्या एकूण निर्णयांबद्दल तुम्हाला किती आत्मविश्वास वाटला?
-        {% else %}
-          How confident were you in your decisions overall?
-        {% endif %}
+    <div class="likert-group">
+      <div class="likert-label">
+        {% if locale == "mr" %}एकूणच तुमच्या निर्णयांबद्दल तुम्हाला किती आत्मविश्वास होता?{% else %}How confident were you overall in your decisions?{% endif %}
       </div>
-      <div class="q-note">
-        {% if locale == "mr" %}
-          1 = अजिबात नाही &nbsp;·&nbsp; 5 = खूप आत्मविश्वास
-        {% else %}
-          1 = Not confident &nbsp;·&nbsp; 5 = Very confident
-        {% endif %}
+      <div class="likert-scale" data-field="confidence_rating">
+        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 1)">1</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 2)">2</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 3)">3</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 4)">4</div>
+        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 5)">5</div>
       </div>
-      <div class="likert" role="group" aria-label="Q3">
-        {% for i in range(1, 6) %}
-        <div class="likert-item">
-          <input type="radio" name="q3" id="q3-{{ i }}" value="{{ i }}" />
-          <label for="q3-{{ i }}">{{ i }}</label>
-        </div>
-        {% endfor %}
+      <div class="likert-anchors">
+        <span>{% if locale == "mr" %}अजिबात नाही{% else %}Not at all{% endif %}</span>
+        <span>{% if locale == "mr" %}खूप{% else %}Very confident{% endif %}</span>
       </div>
-      <div class="likert-ends">
-        <span>{% if locale == "mr" %}अजिबात नाही{% else %}Not confident{% endif %}</span>
-        <span>{% if locale == "mr" %}खूप आत्मविश्वास{% else %}Very confident{% endif %}</span>
-      </div>
+    </div>
+
+    <!-- End-of-session feedback (item 20) -->
+    <div class="form-group">
+      <label>{% if locale == "mr" %}या कार्यात काही अस्पष्ट किंवा गोंधळात टाकणारे होते का? (ऐच्छिक){% else %}Was anything about this task unclear or confusing? (optional){% endif %}</label>
+      <textarea id="feedback" placeholder="{% if locale == 'mr' %}तुमचा अभिप्राय...{% else %}Your feedback...{% endif %}" maxlength="500"></textarea>
     </div>
 
     <hr class="divider" />
 
-    <button class="submit-btn" id="btn-submit" type="button" onclick="submitSurvey()" disabled>
-      {% if locale == "mr" %}सर्वेक्षण सबमिट करा{% else %}Submit Survey{% endif %}
+    <!-- Section 2: Demographics (moved from login — item 15) -->
+    <div class="section-label">
+      {% if locale == "mr" %}तुमची माहिती{% else %}About You{% endif %}
+    </div>
+
+    <div class="form-group">
+      <label>{% if locale == "mr" %}आद्याक्षरे{% else %}Initials{% endif %} <span class="req">*</span></label>
+      <input type="text" id="initials" maxlength="8" placeholder="{% if locale == 'mr' %}उदा. अ.क.{% else %}e.g. A.K.{% endif %}" required />
+    </div>
+
+    <div class="row-2">
+      <div class="form-group">
+        <label>{% if locale == "mr" %}वय{% else %}Age{% endif %} <span class="req">*</span></label>
+        <input type="number" id="age" min="18" max="80" placeholder="{% if locale == 'mr' %}उदा. ३४{% else %}e.g. 34{% endif %}" required />
+      </div>
+      <div class="form-group">
+        <label>{% if locale == "mr" %}अनुभव (वर्षे){% else %}Years of Experience{% endif %} <span class="req">*</span></label>
+        <input type="number" id="experience_years" min="0" max="60" placeholder="{% if locale == 'mr' %}उदा. १२{% else %}e.g. 12{% endif %}" required />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{% if locale == "mr" %}पद{% else %}Role{% endif %} <span class="req">*</span></label>
+      <select id="role" required>
+        <option value="" disabled selected>{% if locale == "mr" %}पद निवडा…{% else %}Select your role…{% endif %}</option>
+        <option value="welfare_officer">{% if locale == "mr" %}कल्याण अधिकारी{% else %}Welfare Officer{% endif %}</option>
+        <option value="administrative_officer">{% if locale == "mr" %}प्रशासकीय अधिकारी{% else %}Administrative Officer{% endif %}</option>
+        <option value="field_supervisor">{% if locale == "mr" %}क्षेत्र पर्यवेक्षक{% else %}Field Supervisor{% endif %}</option>
+        <option value="retired_official">{% if locale == "mr" %}निवृत्त अधिकारी{% else %}Retired Official{% endif %}</option>
+        <option value="other">{% if locale == "mr" %}इतर{% else %}Other{% endif %}</option>
+      </select>
+    </div>
+
+    <button type="button" class="submit-btn" id="btn-submit" onclick="submitSurvey()" disabled>
+      {% if locale == "mr" %}सबमिट करा{% else %}Submit & Complete{% endif %}
     </button>
-
-    <div class="error-msg" id="err-msg"></div>
   </div>
-</div>
 
-<script>
-  const SESSION_ID = {{ session_id | tojson }};
-  const LOCALE = {{ locale | tojson }};
+  <script>
+    const SESSION_ID = {{ session_id | tojson }};
+    const LOCALE     = {{ locale | tojson }};
+    const ratings = { salience_rating: null, standout_rating: null, confidence_rating: null };
 
-  function t(en, mr) {
-    return LOCALE === "mr" ? mr : en;
-  }
-
-  function updateSubmitState() {
-    const q1 = document.querySelector('input[name="q1"]:checked');
-    const q2 = document.querySelector('input[name="q2"]:checked');
-    const q3 = document.querySelector('input[name="q3"]:checked');
-    document.getElementById('btn-submit').disabled = !(q1 && q2 && q3);
-    hideError();
-  }
-
-  document.querySelectorAll('input[type="radio"]').forEach(radio => {
-    radio.addEventListener('change', updateSubmitState);
-  });
-
-  async function submitSurvey() {
-    const q1 = document.querySelector('input[name="q1"]:checked');
-    const q2 = document.querySelector('input[name="q2"]:checked');
-    const q3 = document.querySelector('input[name="q3"]:checked');
-
-    if (!q1 || !q2 || !q3) {
-      showError(t('Please answer all three questions.', 'कृपया तिन्ही प्रश्नांची उत्तरे द्या.'));
-      return;
+    function selectLikert(btn, field, value) {
+      ratings[field] = value;
+      const scale = btn.parentElement;
+      scale.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      validateForm();
     }
 
-    const btn = document.getElementById('btn-submit');
-    const defaultText = t('Submit Survey', 'सर्वेक्षण सबमिट करा');
+    function validateForm() {
+      const allRatings = Object.values(ratings).every(v => v !== null);
+      const initials   = document.getElementById('initials').value.trim();
+      const age        = document.getElementById('age').value;
+      const exp        = document.getElementById('experience_years').value;
+      const role       = document.getElementById('role').value;
+      document.getElementById('btn-submit').disabled = !(allRatings && initials && age && exp && role);
+    }
 
-    btn.disabled = true;
-    btn.textContent = t('Submitting...', 'सबमिट करत आहे...');
+    // Validate on any input change
+    ['initials','age','experience_years','role'].forEach(id => {
+      document.getElementById(id).addEventListener('input', validateForm);
+      document.getElementById(id).addEventListener('change', validateForm);
+    });
 
-    try {
-      const res = await fetch(`/session/${SESSION_ID}/survey`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          salience_rating: parseInt(q1.value, 10),
-          standout_rating: parseInt(q2.value, 10),
-          confidence_rating: parseInt(q3.value, 10),
-        }),
-      });
+    async function submitSurvey() {
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true;
+      btn.textContent = LOCALE === 'mr' ? 'सबमिट करत आहे…' : 'Submitting…';
 
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        showError(d.detail || t('Submission failed. Please try again.', 'सबमिशन अयशस्वी झाले. कृपया पुन्हा प्रयत्न करा.'));
+      const payload = {
+        salience_rating:   ratings.salience_rating,
+        standout_rating:   ratings.standout_rating,
+        confidence_rating: ratings.confidence_rating,
+        feedback:          document.getElementById('feedback').value.trim(),
+        // Demographics
+        initials:         document.getElementById('initials').value.trim().toUpperCase(),
+        age:              parseInt(document.getElementById('age').value),
+        experience_years: parseInt(document.getElementById('experience_years').value),
+        role:             document.getElementById('role').value,
+      };
+
+      try {
+        const res = await fetch(`/session/${SESSION_ID}/survey`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          alert('Error: ' + (d.detail || 'Submission failed'));
+          btn.disabled = false;
+          btn.textContent = LOCALE === 'mr' ? 'सबमिट करा' : 'Submit & Complete';
+          return;
+        }
+
+        const data = await res.json();
+        if (data.redirect) {
+          window.location.href = data.redirect;
+        }
+      } catch(e) {
+        alert(LOCALE === 'mr' ? 'नेटवर्क त्रुटी' : 'Network error. Please try again.');
         btn.disabled = false;
-        btn.textContent = defaultText;
-        return;
+        btn.textContent = LOCALE === 'mr' ? 'सबमिट करा' : 'Submit & Complete';
       }
-
-      const data = await res.json();
-      window.location.href = data.redirect || `/session/${SESSION_ID}/complete`;
-
-    } catch (e) {
-      showError(t('Network error. Please try again.', 'नेटवर्क त्रुटी. कृपया पुन्हा प्रयत्न करा.'));
-      btn.disabled = false;
-      btn.textContent = defaultText;
     }
-  }
-
-  function showError(msg) {
-    const el = document.getElementById('err-msg');
-    el.textContent = msg;
-    el.style.display = 'block';
-  }
-
-  function hideError() {
-    const el = document.getElementById('err-msg');
-    el.textContent = '';
-    el.style.display = 'none';
-  }
-</script>
-
+  </script>
 </body>
 </html>

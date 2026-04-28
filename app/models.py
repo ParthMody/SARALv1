@@ -158,10 +158,25 @@ class Operator(Base):
     # Session lifecycle
     status       = Column(SAEnum(SessionStatusEnum), nullable=False, default=SessionStatusEnum.IN_PROGRESS)
     cases_assigned   = Column(JsonList, default=list, nullable=False)  # ordered list of case_ids
+    list_assignment  = Column(String,  nullable=True)               # "A" or "B" counterbalance list
+    case_order_seed  = Column(Integer, nullable=True)               # seed used to shuffle case order
     cases_completed  = Column(Integer,  nullable=False, default=0)
 
     created_at   = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Session timing (item 33)
+    session_start_timestamp = Column(DateTime(timezone=True), nullable=True)
+    session_end_timestamp   = Column(DateTime(timezone=True), nullable=True)
+
+    # Language logging (item 31)
+    language_selected = Column(String, nullable=True)   # "en" or "mr" as selected at login
+
+    # Instrument version (item 10)
+    instrument_version = Column(String, nullable=True)
+
+    # Session completion flag (item 7)
+    session_complete = Column(Boolean, nullable=False, default=False)
 
 
 class Vignette(Base):
@@ -188,8 +203,10 @@ class Vignette(Base):
     field_note_mr = Column(Text, nullable=False, default="")
 
     # Pool management
-    pool_version = Column(String, nullable=False, default="v2.0")
-    used_count   = Column(Integer, nullable=False, default=0)  # how many sessions have drawn this case
+    pool_version     = Column(String,  nullable=False, default="v2.0")
+    used_count       = Column(Integer, nullable=False, default=0)   # sessions that drew this case
+    pair_id          = Column(Integer, nullable=True)               # matched pair index (1-6)
+    list_assignment  = Column(String,  nullable=True)               # "A" or "B" — which counterbalance list
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -223,7 +240,14 @@ class Evaluation(Base):
     # Timing
     timestamp_open   = Column(DateTime(timezone=True), nullable=True)   # set when case loads
     timestamp_submit = Column(DateTime(timezone=True), nullable=True)   # set on submit
-    response_time_sec = Column(Float, nullable=True)                    # derived: submit - open
+    response_time_sec = Column(Float, nullable=True)                    # derived: submit - open (item 29)
+
+    # Dwell time tracking (item 5)
+    time_to_first_action_ms = Column(Integer, nullable=True)   # open → first click/keystroke
+    time_after_decision_ms  = Column(Integer, nullable=True)   # decision select → submit
+
+    # Fast response flag (item 4)
+    is_fast_response = Column(Boolean, nullable=True)  # True if response_time < 5s; logged, not blocked
 
     # Sequence within session (1–16)
     case_sequence = Column(Integer, nullable=False)
@@ -253,6 +277,9 @@ class SurveyResponse(Base):
     # Q3: How confident were you overall?
     confidence_rating = Column(Integer, nullable=False)  # 1–5
 
+    # End-of-session feedback (item 20)
+    feedback = Column(Text, nullable=True)  # open-ended, optional
+
     submitted_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
@@ -277,6 +304,7 @@ class SecondReview(Base):
     # until secondary_decision is submitted (enforced at query layer)
     primary_decision   = Column(SAEnum(DecisionEnum), nullable=False)
     secondary_decision = Column(SAEnum(DecisionEnum), nullable=True)   # null until reviewed
+    secondary_reasoning = Column(Text, nullable=True)   # reasoning text from second reviewer
 
     created_at     = Column(DateTime(timezone=True), server_default=func.now())
     reviewed_at    = Column(DateTime(timezone=True), nullable=True)

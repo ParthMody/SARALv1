@@ -1,28 +1,25 @@
 # app/routes/review.py
 """
-Secondary Review Module — SARAL v2 (TDD §9)
+Secondary Review Module — SARAL v2 Phase 2
 
-Post-hoc only: triggered after all primary sessions are complete.
-Triggered for: arm=treatment AND override=True.
+Design:
+  - 10% of ALL primary evaluations sampled uniformly (not override-conditional)
+  - Admin manually assigns sampled cases to 3-4 second reviewers
+  - Each second reviewer sees same case material as primary (profile, note, recommendation)
+  - No primary metadata visible (decision, reasoning, timing, order, override flag)
+  - Independent randomisation of case order per reviewer
+  - Compare: decision agreement, override agreement, escalation agreement
 
-Assignment priority (TDD §9.2):
-  1. Operator with >= SENIOR_EXPERIENCE_GAP more years than primary → review_type=experienced
-  2. Otherwise → random independent operator → review_type=random
-
-Blinding: primary_decision is stored in DB but NEVER returned to the
-secondary reviewer. It is revealed only after secondary_decision is submitted.
-Enforced at the query layer (TDD §9.3).
-
-Admin-only routes (passcode protected):
-  POST /admin/review/assign     → assign all pending second reviews
-  GET  /admin/review/status     → see assignment status
-
-Reviewer routes (session-cookie protected):
-  GET  /review/{session_id}     → reviewer queue
-  POST /review/{session_id}/submit  → submit secondary decision
+Workflow:
+  1. All primary sessions complete
+  2. Admin clicks "Sample for Second Review" → system samples 10% uniformly
+  3. Admin selects second reviewers from registered reviewer pool
+  4. Admin clicks "Distribute" → cases distributed evenly across selected reviewers
+  5. Second reviewers log in, see their queue, complete reviews
 """
 from __future__ import annotations
 
+import math
 import random
 from datetime import datetime, timezone
 from typing import Any
@@ -36,7 +33,6 @@ from app.audit import log_event
 from app.db import get_db
 from app.models import (
     AuditActionEnum,
-    ArmEnum,
     DecisionEnum,
     Evaluation,
     Operator,
@@ -52,6 +48,7 @@ templates = Jinja2Templates(directory="app/templates")
 settings  = get_settings()
 
 ADMIN_COOKIE = "saral_admin"
+SECOND_REVIEW_SAMPLE_RATE = 0.10  # 10% of all primary evaluations
 
 
 def _utcnow() -> datetime:
@@ -68,112 +65,241 @@ def _check_session_cookie(request: Request, session_id: str) -> None:
 
 
 # ─────────────────────────────────────────────
-# Assignment logic (TDD §9.2)
+# Step 1: Sample cases for second review
+# Admin triggers this after all primary sessions are complete.
+# Samples 10% of ALL completed primary evaluations, uniformly.
 # ─────────────────────────────────────────────
 
-def _assign_second_reviews(db: Session) -> dict[str, int]:
-    """
-    Finds all treatment-arm overrides that don't yet have a SecondReview row,
-    and assigns a secondary reviewer to each.
+@router.post("/admin/review/sample")
+def admin_sample_for_review(request: Request, db: Session = Depends(get_db)):
+    if not _is_admin(request):
+        raise HTTPException(403, "Admin access required")
 
-    Returns counts: {"assigned": n, "skipped": n}
-    """
-    # All treatment overrides from completed sessions
-    override_evals = (
-        db.query(Evaluation, Operator)
+    # All submitted evaluations from completed primary sessions
+    all_evals = (
+        db.query(Evaluation)
         .join(Operator, Operator.session_id == Evaluation.session_id)
         .filter(
-            Evaluation.arm      == ArmEnum.TREATMENT,
-            Evaluation.override == True,               # noqa: E712
-            Operator.status     == SessionStatusEnum.COMPLETED,
+            Operator.status == SessionStatusEnum.COMPLETED,
+            Operator.session_complete == True,  # noqa: E712
+            Evaluation.timestamp_submit.isnot(None),
         )
         .all()
     )
 
-    # Already-assigned case+primary pairs (avoid duplicates)
+    if not all_evals:
+        return JSONResponse({"ok": False, "detail": "No completed evaluations found."})
+
+    # Already sampled case+operator pairs
     existing = {
         (r.case_id, r.primary_operator_id)
         for r in db.query(SecondReview).all()
     }
 
-    # All completed operators available as secondary reviewers
-    all_ops = (
-        db.query(Operator)
-        .filter(Operator.status == SessionStatusEnum.COMPLETED)
-        .all()
-    )
-    ops_by_id = {op.operator_id: op for op in all_ops}
+    # Filter out already-sampled
+    eligible = [
+        ev for ev in all_evals
+        if (ev.case_id, ev.operator_id) not in existing
+    ]
 
-    assigned = 0
-    skipped  = 0
-    rng      = random.Random(42)
+    if not eligible:
+        return JSONResponse({
+            "ok": True,
+            "sampled": 0,
+            "total_eligible": 0,
+            "detail": "All eligible evaluations already sampled.",
+        })
 
-    for ev, primary_op in override_evals:
-        key = (ev.case_id, primary_op.operator_id)
-        if key in existing:
-            skipped += 1
-            continue
+    # Sample 10% uniformly
+    sample_size = max(1, math.ceil(len(eligible) * SECOND_REVIEW_SAMPLE_RATE))
+    rng = random.Random(42)  # fixed seed for reproducibility
+    sampled = rng.sample(eligible, min(sample_size, len(eligible)))
 
-        # Candidates: all completed operators except the primary
-        candidates = [
-            op for op in all_ops
-            if op.operator_id != primary_op.operator_id
-        ]
-        if not candidates:
-            skipped += 1
-            continue
-
-        # Priority: operator with >= SENIOR_EXPERIENCE_GAP more experience
-        senior_candidates = [
-            op for op in candidates
-            if (op.experience_years - primary_op.experience_years) >= settings.SENIOR_EXPERIENCE_GAP
-        ]
-
-        if senior_candidates:
-            secondary_op = rng.choice(senior_candidates)
-            review_type  = ReviewTypeEnum.EXPERIENCED
-        else:
-            secondary_op = rng.choice(candidates)
-            review_type  = ReviewTypeEnum.RANDOM
-
-        exp_gap = secondary_op.experience_years - primary_op.experience_years
-
+    # Create SecondReview rows — unassigned (secondary_operator_id = None)
+    created = 0
+    for ev in sampled:
         review = SecondReview(
             case_id               = ev.case_id,
-            primary_operator_id   = primary_op.operator_id,
-            secondary_operator_id = secondary_op.operator_id,
-            experience_gap        = exp_gap,
-            review_type           = review_type,
-            primary_decision      = ev.decision,   # stored, never served to reviewer
+            primary_operator_id   = ev.operator_id,
+            secondary_operator_id = None,         # unassigned until admin distributes
+            experience_gap        = None,
+            review_type           = None,
+            primary_decision      = ev.decision,  # stored, never served to reviewer
             secondary_decision    = None,
             created_at            = _utcnow(),
         )
         db.add(review)
-        existing.add(key)
-        assigned += 1
+        created += 1
 
     db.commit()
-    return {"assigned": assigned, "skipped": skipped}
-
-
-# ─────────────────────────────────────────────
-# Admin: trigger assignment
-# ─────────────────────────────────────────────
-
-@router.post("/admin/review/assign")
-def admin_assign_reviews(request: Request, db: Session = Depends(get_db)):
-    if not _is_admin(request):
-        raise HTTPException(403, "Admin access required")
-
-    result = _assign_second_reviews(db)
 
     log_event(
         db, AuditActionEnum.ADMIN_EXPORT, actor_id="ADMIN",
-        payload={"action": "assign_second_reviews", **result},
+        payload={
+            "action":          "sample_second_reviews",
+            "total_eligible":  len(eligible),
+            "sample_size":     sample_size,
+            "sampled":         created,
+            "sample_rate":     SECOND_REVIEW_SAMPLE_RATE,
+        },
     )
 
-    return JSONResponse({"ok": True, **result})
+    return JSONResponse({
+        "ok":              True,
+        "total_eligible":  len(eligible),
+        "sampled":         created,
+        "sample_rate":     SECOND_REVIEW_SAMPLE_RATE,
+    })
 
+
+# ─────────────────────────────────────────────
+# Step 2: List available second reviewers
+# Returns operators registered via /reviewer-login
+# ─────────────────────────────────────────────
+
+@router.get("/admin/review/reviewers")
+def admin_list_reviewers(request: Request, db: Session = Depends(get_db)):
+    if not _is_admin(request):
+        raise HTTPException(403, "Admin access required")
+
+    # Reviewers are operators who logged in via /reviewer-login
+    # They have cases_assigned = [] (no primary session)
+    all_ops = db.query(Operator).all()
+
+    reviewers = []
+    for op in all_ops:
+        # A reviewer has no cases assigned (never did primary)
+        # OR was explicitly created via reviewer-login (cases_assigned is empty)
+        is_reviewer = not op.cases_assigned or len(op.cases_assigned) == 0
+        if is_reviewer:
+            # Count how many reviews already assigned to them
+            assigned_count = (
+                db.query(SecondReview)
+                .filter(SecondReview.secondary_operator_id == op.operator_id)
+                .count()
+            )
+            completed_count = (
+                db.query(SecondReview)
+                .filter(
+                    SecondReview.secondary_operator_id == op.operator_id,
+                    SecondReview.secondary_decision.isnot(None),
+                )
+                .count()
+            )
+            reviewers.append({
+                "operator_id":      op.operator_id,
+                "session_id":       op.session_id,
+                "initials":         op.initials,
+                "role":             op.role,
+                "experience_years": op.experience_years,
+                "locale":           op.locale.value,
+                "assigned":         assigned_count,
+                "completed":        completed_count,
+            })
+
+    return JSONResponse({"reviewers": reviewers})
+
+
+# ─────────────────────────────────────────────
+# Step 3: Distribute sampled cases to selected reviewers
+# Admin selects reviewer IDs, system distributes evenly.
+# ─────────────────────────────────────────────
+
+@router.post("/admin/review/distribute")
+async def admin_distribute_reviews(request: Request, db: Session = Depends(get_db)):
+    if not _is_admin(request):
+        raise HTTPException(403, "Admin access required")
+
+    body = await request.json()
+    reviewer_ids = body.get("reviewer_ids", [])
+
+    if not reviewer_ids or len(reviewer_ids) < 1:
+        raise HTTPException(400, "Select at least 1 reviewer")
+
+    # Validate reviewer IDs exist
+    reviewers = (
+        db.query(Operator)
+        .filter(Operator.operator_id.in_(reviewer_ids))
+        .all()
+    )
+    if len(reviewers) != len(reviewer_ids):
+        raise HTTPException(400, "One or more reviewer IDs not found")
+
+    reviewer_map = {op.operator_id: op for op in reviewers}
+
+    # Get unassigned sampled reviews
+    unassigned = (
+        db.query(SecondReview)
+        .filter(SecondReview.secondary_operator_id == None)  # noqa: E711
+        .order_by(SecondReview.created_at)
+        .all()
+    )
+
+    if not unassigned:
+        return JSONResponse({
+            "ok": True,
+            "distributed": 0,
+            "detail": "No unassigned reviews to distribute.",
+        })
+
+    # Filter: reviewer must not have been the primary operator for that case
+    rng = random.Random(43)  # different seed from sampling
+    rng.shuffle(unassigned)
+
+    assigned_count = 0
+    reviewer_idx = 0
+
+    for review in unassigned:
+        # Round-robin across reviewers, skipping conflicts
+        attempts = 0
+        while attempts < len(reviewer_ids):
+            candidate_id = reviewer_ids[reviewer_idx % len(reviewer_ids)]
+            reviewer_idx += 1
+
+            # Conflict check: reviewer was not the primary operator
+            if candidate_id != review.primary_operator_id:
+                candidate_op = reviewer_map[candidate_id]
+                review.secondary_operator_id = candidate_id
+                review.review_type = ReviewTypeEnum.RANDOM
+
+                # Experience gap
+                primary_op = db.query(Operator).filter(
+                    Operator.operator_id == review.primary_operator_id
+                ).first()
+                if primary_op:
+                    gap = candidate_op.experience_years - primary_op.experience_years
+                    review.experience_gap = gap
+                    if gap >= settings.SENIOR_EXPERIENCE_GAP:
+                        review.review_type = ReviewTypeEnum.EXPERIENCED
+
+                assigned_count += 1
+                break
+
+            attempts += 1
+
+    db.commit()
+
+    log_event(
+        db, AuditActionEnum.ADMIN_EXPORT, actor_id="ADMIN",
+        payload={
+            "action":       "distribute_second_reviews",
+            "reviewer_ids": reviewer_ids,
+            "distributed":  assigned_count,
+            "total_pending": len(unassigned),
+        },
+    )
+
+    return JSONResponse({
+        "ok":           True,
+        "distributed":  assigned_count,
+        "total_pending": len(unassigned),
+        "reviewers":    reviewer_ids,
+    })
+
+
+# ─────────────────────────────────────────────
+# Admin: review status
+# ─────────────────────────────────────────────
 
 @router.get("/admin/review/status")
 def admin_review_status(request: Request, db: Session = Depends(get_db)):
@@ -181,26 +307,25 @@ def admin_review_status(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(403, "Admin access required")
 
     total     = db.query(SecondReview).count()
-    pending   = db.query(SecondReview).filter(SecondReview.secondary_decision == None).count()  # noqa: E711
-    completed = total - pending
+    unassigned = db.query(SecondReview).filter(
+        SecondReview.secondary_operator_id == None  # noqa: E711
+    ).count()
+    assigned_pending = db.query(SecondReview).filter(
+        SecondReview.secondary_operator_id.isnot(None),
+        SecondReview.secondary_decision == None,  # noqa: E711
+    ).count()
+    completed = db.query(SecondReview).filter(
+        SecondReview.secondary_decision.isnot(None)
+    ).count()
 
     rows = db.query(SecondReview).order_by(SecondReview.created_at.desc()).all()
 
-    # Build a lookup of operator_id → session_id for reviewer links
+    # Session ID lookup for reviewer links
     secondary_ids = {r.secondary_operator_id for r in rows if r.secondary_operator_id}
     session_map = {}
     if secondary_ids:
-        ops = (
-            db.query(Operator)
-            .filter(Operator.operator_id.in_(secondary_ids))
-            .all()
-        )
+        ops = db.query(Operator).filter(Operator.operator_id.in_(secondary_ids)).all()
         session_map = {op.operator_id: op.session_id for op in ops}
-
-    # Group reviews by secondary reviewer so we can show one link per reviewer
-    reviewer_sessions: dict[str, str] = {}
-    for op_id, sess_id in session_map.items():
-        reviewer_sessions[op_id] = sess_id
 
     data = []
     for r in rows:
@@ -226,7 +351,8 @@ def admin_review_status(request: Request, db: Session = Depends(get_db)):
 
     return JSONResponse({
         "total":            total,
-        "pending":          pending,
+        "unassigned":       unassigned,
+        "assigned_pending": assigned_pending,
         "completed":        completed,
         "reviews":          data,
         "pending_reviewers": [
@@ -238,8 +364,7 @@ def admin_review_status(request: Request, db: Session = Depends(get_db)):
 
 # ─────────────────────────────────────────────
 # Reviewer: GET /review/{session_id}
-# Shows the secondary reviewer their assigned cases
-# PRIMARY DECISION IS NEVER INCLUDED IN THIS VIEW
+# Case queue — full isolation from primary metadata
 # ─────────────────────────────────────────────
 
 @router.get("/review/{session_id}", response_class=HTMLResponse)
@@ -259,36 +384,52 @@ def reviewer_queue(
         db.query(SecondReview, Vignette)
         .join(Vignette, Vignette.case_id == SecondReview.case_id)
         .filter(SecondReview.secondary_operator_id == op.operator_id)
-        .order_by(SecondReview.created_at)
         .all()
     )
 
+    if not assigned:
+        raise HTTPException(404, "No cases assigned for review")
+
+    # Independent randomisation (item 12) — shuffle by reviewer's operator_id
+    rng = random.Random(hash(op.operator_id) % (2**31))
+    assigned_list = list(assigned)
+    rng.shuffle(assigned_list)
+
+    # Profile keys matching the new vignette structure
+    profile_keys = [
+        "electoral_roll_year", "structure_type", "carpet_area_sqft",
+        "pre_cutoff_status", "documents", "declared_income_band",
+        "household_size",
+    ]
+
     cases_view: list[dict[str, Any]] = []
-    for review, vignette in assigned:
+    for seq, (review, vignette) in enumerate(assigned_list, start=1):
         field_note = (
             vignette.field_note_mr if op.locale.value == "mr"
             else vignette.field_note_en
         )
         full_profile = vignette.profile_data or {}
-        visible_profile = {
-            k: full_profile[k]
-            for k in ["age", "income", "income_period", "rural", "caste_marginalized", "housing_status"]
-            if k in full_profile
-        }
-        for bool_key in ("rural", "caste_marginalized"):
-            if bool_key in visible_profile:
-                visible_profile[bool_key] = "Yes" if visible_profile[bool_key] else "No"
+        visible_profile = {}
+        for k in profile_keys:
+            if k in full_profile:
+                val = full_profile[k]
+                if isinstance(val, list):
+                    visible_profile[k] = ", ".join(str(v) for v in val)
+                else:
+                    visible_profile[k] = val
 
         cases_view.append({
             "review_id":           review.id,
             "case_id":             vignette.case_id,
+            "case_sequence":       seq,   # independent order, not primary's
             "rule_result":         vignette.rule_result.value,
             "algo_recommendation": vignette.algo_recommendation.value,
             "field_note":          field_note,
             "profile":             visible_profile,
             "secondary_decision":  review.secondary_decision.value if review.secondary_decision else None,
             "submitted":           review.secondary_decision is not None,
-            # primary_decision intentionally excluded — blinding enforced here
+            # Intentionally excluded: primary_decision, primary reasoning,
+            # primary timing, original case order, override flag
         })
 
     completed = sum(1 for c in cases_view if c["submitted"])
@@ -348,8 +489,9 @@ async def reviewer_submit(
     if review.secondary_decision is not None:
         raise HTTPException(409, "Already reviewed")
 
-    review.secondary_decision = DecisionEnum(decision)
-    review.reviewed_at        = _utcnow()
+    review.secondary_decision  = DecisionEnum(decision)
+    review.secondary_reasoning = reasoning
+    review.reviewed_at         = _utcnow()
     db.commit()
 
     log_event(
@@ -361,22 +503,20 @@ async def reviewer_submit(
             "context":            "second_review",
             "secondary_decision": decision,
             "review_type":        review.review_type.value if review.review_type else None,
+            "experience_gap":     review.experience_gap,
         },
     )
 
-    # Reveal primary decision now that secondary is submitted (TDD §9.3)
+    # Reveal primary decision after secondary submits
     return JSONResponse({
-        "ok":              True,
+        "ok":               True,
         "primary_decision": review.primary_decision.value,
         "agreement":        review.primary_decision.value == decision,
     })
 
 
 # ─────────────────────────────────────────────
-# Admin: open reviewer queue on behalf of reviewer
-# Sets the session cookie and redirects to their queue.
-# Use this when the admin needs to hand off to a reviewer
-# on the same machine, or open it themselves for testing.
+# Admin: open reviewer queue (cookie handoff)
 # ─────────────────────────────────────────────
 
 @router.get("/admin/review/open/{session_id}")
@@ -392,7 +532,6 @@ def admin_open_reviewer_queue(
     if not op:
         raise HTTPException(404, "Session not found")
 
-    # Verify this operator actually has second reviews assigned
     has_reviews = (
         db.query(SecondReview)
         .filter(SecondReview.secondary_operator_id == op.operator_id)
@@ -401,12 +540,7 @@ def admin_open_reviewer_queue(
     if not has_reviews:
         raise HTTPException(404, "No second reviews assigned to this session")
 
-    response = RedirectResponse(
-        url=f"/review/{session_id}",
-        status_code=303,
-    )
-    # Set reviewer's session cookie — overwrites admin's current session cookie
-    # on this browser. Admin should use a separate browser/incognito for this.
+    response = RedirectResponse(url=f"/review/{session_id}", status_code=303)
     response.set_cookie(
         key="session_id",
         value=session_id,

@@ -3,152 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SARAL v2 — Session</title>
+  <title>SARAL v2 — Case Review</title>
   <style>
-    :root {
-      --bg: #f3f5f8; --panel: #ffffff; --panel-soft: #f8fafc;
-      --ink: #102a56; --ink-2: #21406d; --text: #213247; --muted: #6e7f97;
-      --line: #dbe3ee; --line-soft: #e9eef5;
-      --green-bg: #e9f8ef; --green-line: #8ed5a7; --green-text: #166534;
-      --red-bg: #fff0f0; --red-line: #f0aaaa; --red-text: #991b1b;
-      --amber-bg: #fff8e6; --amber-line: #efd28b; --amber-text: #9a6700;
-      --teal-bg: #ebfbf8; --teal-line: #99ddd3; --teal-text: #0f766e;
-      --blue-bg: #edf4ff; --blue-line: #a9c6f5; --blue-text: #1d4f91;
-      --shadow: 0 18px 40px rgba(16,42,86,0.07);
-      --shadow-strong: 0 24px 60px rgba(16,42,86,0.16);
-      --focus: 0 0 0 4px rgba(16,42,86,0.12);
+    :root{
+      --bg:#f3f5f8;--panel:#fff;--ink:#102a56;--ink-2:#21406d;
+      --text:#213247;--muted:#6e7f97;--line:#dbe3ee;--line-soft:#e9eef5;
+      --green-bg:#e9f8ef;--green-line:#8ed5a7;--green-text:#166534;
+      --red-bg:#fff0f0;--red-line:#f0aaaa;--red-text:#991b1b;
+      --teal-bg:#ebfbf8;--teal-line:#99ddd3;--teal-text:#0f766e;
+      --amber-bg:#fff8e6;--amber-line:#efd28b;--amber-text:#9a6700;
+      --shadow:0 12px 32px rgba(16,42,86,0.06);
+      --focus:0 0 0 4px rgba(16,42,86,0.12);
     }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body {
-      min-height: 100vh;
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
-      background: radial-gradient(circle at top left, rgba(22,55,100,0.05), transparent 26%), radial-gradient(circle at bottom right, rgba(22,55,100,0.04), transparent 22%), var(--bg);
-      color: var(--text);
+    *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+    body{min-height:100vh;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);}
+
+    /* Topbar */
+    .topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft);}
+    .topbar-inner{max-width:1060px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+    .brand{display:flex;align-items:center;gap:10px;}
+    .brand-logo{width:36px;height:36px;border-radius:8px;background:#fff;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .brand-logo img{width:74%;height:74%;object-fit:contain;}
+    .brand-title{font-size:0.95rem;font-weight:800;color:var(--ink);}
+    .brand-sub{font-size:0.74rem;color:var(--muted);}
+    .progress-outer{width:120px;height:5px;border-radius:99px;background:#e4ebf5;overflow:hidden;}
+    .progress-inner{height:100%;border-radius:99px;background:linear-gradient(90deg,#1c3f72,#3768ab);transition:width 0.4s;}
+    .session-code{font-family:monospace;font-size:0.7rem;color:var(--muted);background:#f1f5f9;border:1px solid var(--line-soft);border-radius:5px;padding:2px 6px;}
+
+    /* Layout */
+    .shell{max-width:1060px;margin:0 auto;padding:24px 20px 40px;}
+    .case-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+
+    /* Cards */
+    .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;}
+    .card+.card{margin-top:16px;}
+    .section-label{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;}
+
+    /* Profile */
+    .profile-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+    .profile-table td{padding:6px 0;vertical-align:top;}
+    .profile-table td:first-child{color:var(--muted);font-weight:700;width:45%;padding-right:12px;}
+    .profile-table td:last-child{color:var(--text);font-weight:600;}
+    .profile-table tr+tr td{border-top:1px solid #f0f3f7;}
+
+    /* Prior remarks — visually subordinate */
+    .remarks-box{
+      background:#fdfcf8;border:1px dashed #d4cbb8;border-radius:10px;
+      padding:12px 14px;margin-top:16px;
     }
-    .topbar { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line-soft); }
-    .topbar-inner { max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-    .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .brand-logo { width: 44px; height: 44px; border-radius: 12px; background: #fff; border: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden; }
-    .brand-logo img { width: 78%; height: 78%; object-fit: contain; display: block; }
-    .brand-copy { min-width: 0; }
-    .brand-title { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
-    .brand-subtitle { margin: 2px 0 0; font-size: 0.84rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .progress-wrap { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
-    .progress-label { font-size: 0.82rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
-    .progress-bar-outer { width: 170px; height: 10px; border-radius: 999px; overflow: hidden; background: #e4ebf5; border: 1px solid #dae3ef; }
-    .progress-bar-inner { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #1c3f72 0%, #3768ab 100%); width: {{ (completed / total_cases * 100) | int }}%; transition: width 0.25s ease; }
-    .recovery-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.68rem; color: var(--muted); opacity: 0.4; letter-spacing: 0.08em; flex: 0 0 auto; user-select: all; }
-    .shell { max-width: 1320px; margin: 0 auto; padding: 26px 20px 40px; }
-    .all-done-banner { display: none; background: linear-gradient(135deg, #163764 0%, #224c86 100%); color: #ffffff; border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow); margin-bottom: 18px; font-size: 0.95rem; font-weight: 600; }
-    .all-done-banner a { color: #cfe1ff; font-weight: 800; text-decoration: underline; }
-    .summary { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
-    .summary strong { font-size: 0.82rem; color: var(--ink); }
-    .chip { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 12px; font-size: 0.74rem; font-weight: 800; letter-spacing: 0.02em; border: 1px solid transparent; }
-    .chip-done    { background: var(--green-bg); color: var(--green-text); border-color: var(--green-line); }
-    .chip-pending { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-line); }
-    .table-wrap { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; background: transparent; font-size: 0.86rem; }
-    thead th { background: #f9fbfe; color: #60738f; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; text-align: left; padding: 14px; border-bottom: 1px solid var(--line-soft); }
-    tbody td { padding: 14px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
-    tbody tr { transition: background 0.15s ease; }
-    tbody tr:hover { background: #f9fbfe; }
-    tbody tr.done-row { opacity: 0.62; }
-    tbody tr:last-child td { border-bottom: none; }
-    .case-seq { color: var(--muted); font-weight: 700; width: 44px; }
-    .case-id  { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82rem; color: var(--ink); }
-    .rule-badge, .pill { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 6px 11px; font-size: 0.71rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid transparent; white-space: nowrap; }
-    .rule-ELIGIBLE_BY_RULE, .pill-approve { background: var(--green-bg); color: var(--green-text); border-color: var(--green-line); }
-    .rule-INELIGIBLE_BY_RULE, .pill-reject { background: var(--red-bg); color: var(--red-text); border-color: var(--red-line); }
-    .pill-escalate { background: var(--teal-bg); color: var(--teal-text); border-color: var(--teal-line); }
-    .pill-pending  { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-line); }
-    .rec-approve, .rec-reject { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 11px; font-size: 0.71rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid transparent; }
-    .rec-approve { background: var(--green-bg); color: var(--green-text); border-color: var(--green-line); }
-    .rec-reject  { background: var(--red-bg); color: var(--red-text); border-color: var(--red-line); }
-    .row-review-btn { border: 1px solid var(--line); background: #ffffff; color: var(--ink); border-radius: 10px; padding: 8px 12px; font-size: 0.76rem; font-weight: 800; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; }
-    .row-review-btn:hover { background: #f8fafc; border-color: #bfd0e7; }
-    .backdrop { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(12,23,38,0.52); backdrop-filter: blur(4px); padding: 24px; }
-    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(1120px, calc(100vw - 32px)); height: min(88vh, 900px); background: var(--panel); border-radius: 22px; border: 1px solid var(--line-soft); box-shadow: var(--shadow-strong); display: flex; flex-direction: column; overflow: hidden; }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 22px; background: #fbfcfe; border-bottom: 1px solid var(--line-soft); }
-    .modal-title-wrap { min-width: 0; }
-    .modal-title { font-size: 1rem; font-weight: 800; color: var(--ink); }
-    .modal-seq   { font-size: 0.82rem; color: var(--muted); margin-left: 8px; }
-    .modal-close { width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; color: #60738f; font-size: 1.3rem; line-height: 1; cursor: pointer; flex: 0 0 auto; }
-    .modal-body { flex: 1; display: grid; grid-template-columns: minmax(0,1fr) 360px; min-height: 0; }
-    .col-left  { padding: 22px; overflow-y: auto; border-right: 1px solid var(--line-soft); }
-    .col-right { padding: 22px; overflow-y: auto; background: #fcfdff; display: flex; flex-direction: column; gap: 18px; }
-    .section { margin-bottom: 22px; position: relative; z-index: 1; overflow: hidden; }
-    .section:last-child { margin-bottom: 0; }
-    .section-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); }
-    .profile-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-    .profile-item { background: #fbfcfe; border: 1px solid var(--line-soft); border-radius: 12px; padding: 12px; min-width: 0; }
-    .profile-item label { display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
-    .profile-item span  { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text); word-break: break-word; }
-    .field-note { background: #fbfcfe; border: 1px solid var(--line-soft); border-left: 4px solid #8ea8cc; border-radius: 0 12px 12px 0; padding: 15px 16px; font-size: 0.9rem; line-height: 1.7; color: #31465f; white-space: pre-wrap; }
-    .officer-remarks{
-      background:#fffaf0;
-      border:1px dashed #e6c98f;
-      border-radius:12px;
-      padding:14px 16px;
-      color:#4a5568;
-      font-style:italic;
-      line-height:1.65;
+    .remarks-tag{
+      display:inline-block;font-size:0.62rem;font-weight:800;font-style:normal;
+      text-transform:uppercase;letter-spacing:0.08em;color:#a0896b;
+      background:#f5efe4;border:1px solid #d4cbb8;border-radius:3px;
+      padding:1px 6px;margin-bottom:6px;
     }
-    .officer-remarks-label{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:4px 9px;
-      border-radius:999px;
-      font-size:0.68rem;
-      font-weight:800;
-      letter-spacing:0.04em;
-      text-transform:uppercase;
-      background:var(--amber-bg);
-      color:var(--amber-text);
-      border:1px solid var(--amber-line);
-      font-style:normal;
+    .remarks-text{font-size:0.84rem;color:#6b5e4a;font-style:italic;line-height:1.6;}
+
+    /* Rule badge */
+    .rule-badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 10px;font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;border:1px solid transparent;}
+    .rule-ELIGIBLE_BY_RULE{background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
+    .rule-INELIGIBLE_BY_RULE{background:var(--red-bg);color:var(--red-text);border-color:var(--red-line);}
+
+    /* Algo box */
+    .algo-box{border-radius:12px;border:1px solid transparent;padding:14px;text-align:center;}
+    .algo-approve{background:var(--green-bg);border-color:var(--green-line);color:var(--green-text);}
+    .algo-reject{background:var(--red-bg);border-color:var(--red-line);color:var(--red-text);}
+    .algo-label{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;opacity:0.85;}
+    .algo-value{font-size:1.15rem;font-weight:900;}
+
+    /* Decision */
+    .decision-card{position:sticky;top:80px;}
+    .btn-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+    .dec-btn{
+      border:1px solid var(--line);background:#fff;color:var(--ink);
+      border-radius:10px;padding:12px 10px;font-size:0.82rem;font-weight:800;
+      cursor:pointer;text-align:center;transition:border-color 0.15s,background 0.15s;
     }
-    .algo-box { border-radius: 14px; border: 1px solid transparent; padding: 16px; text-align: center; }
-    .algo-approve { background: var(--green-bg); border-color: var(--green-line); color: var(--green-text); }
-    .algo-reject  { background: var(--red-bg);   border-color: var(--red-line);   color: var(--red-text); }
-    .algo-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; opacity: 0.9; }
-    .algo-value { font-size: 1.22rem; font-weight: 900; letter-spacing: 0.02em; }
-    .decision-panel { margin-top: auto; }
-    .decision-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); }
-    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .dec-btn { border: 1px solid var(--line); background: #ffffff; color: var(--ink); border-radius: 12px; padding: 13px 14px; font-size: 0.83rem; font-weight: 800; cursor: pointer; user-select: none; text-align: center; transition: border-color 0.15s ease, background 0.15s ease, transform 0.04s ease; }
-    .dec-btn:hover  { background: #f9fbfe; border-color: #bfd0e7; }
-    .dec-btn:active { transform: translateY(1px); }
-    .dec-btn.sel-approve  { background: var(--green-text); color: #fff; border-color: var(--green-text); }
-    .dec-btn.sel-reject   { background: var(--red-text);   color: #fff; border-color: var(--red-text); }
-    .dec-btn.sel-escalate { background: var(--teal-text);  color: #fff; border-color: var(--teal-text); }
-    .reasoning-area { width: 100%; min-height: 110px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; background: #ffffff; color: var(--text); padding: 13px 14px; font-size: 0.9rem; line-height: 1.5; font-family: inherit; }
-    .reasoning-area:focus { outline: none; border-color: var(--ink-2); box-shadow: var(--focus); }
-    .char-hint { margin-top: 6px; font-size: 0.75rem; color: var(--muted); text-align: right; font-weight: 700; }
-    .submit-btn { width: 100%; margin-top: 14px; height: 50px; border: 0; border-radius: 12px; background: #163764; color: #ffffff; font-size: 0.92rem; font-weight: 900; cursor: pointer; box-shadow: 0 10px 24px rgba(22,55,100,0.16); transition: background 0.15s ease; }
-    .submit-btn:hover    { background: #214a85; }
-    .submit-btn:disabled { background: #9caabf; box-shadow: none; cursor: not-allowed; }
-    .done-notice { background: var(--green-bg); border: 1px solid var(--green-line); border-radius: 14px; padding: 16px; text-align: center; color: var(--green-text); font-size: 0.9rem; font-weight: 800; }
-    @media (max-width: 1080px) {
-      .modal-body { grid-template-columns: 1fr; }
-      .col-left   { border-right: none; border-bottom: 1px solid var(--line-soft); }
-      .col-right  { background: #ffffff; }
-      .profile-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .dec-btn:hover{background:#f9fbfe;border-color:#bfd0e7;}
+    .dec-btn.sel-approve{background:var(--green-text);color:#fff;border-color:var(--green-text);}
+    .dec-btn.sel-reject{background:var(--red-text);color:#fff;border-color:var(--red-text);}
+    .dec-btn.sel-escalate{background:var(--teal-text);color:#fff;border-color:var(--teal-text);}
+
+    .reasoning-area{
+      width:100%;min-height:80px;resize:vertical;border:1px solid var(--line);
+      border-radius:10px;background:#fff;color:var(--text);padding:10px 12px;
+      font-size:0.85rem;line-height:1.5;font-family:inherit;
     }
-    @media (max-width: 760px) {
-      .topbar-inner { flex-direction: column; align-items: stretch; }
-      .progress-wrap { justify-content: space-between; }
-      .progress-bar-outer { flex: 1 1 auto; width: auto; }
-      .recovery-code { display: none; }
-      .shell { padding: 18px 14px 30px; }
-      .summary { padding: 12px 14px; }
-      .table-wrap { overflow-x: auto; }
-      table { min-width: 760px; }
-      .profile-grid { grid-template-columns: 1fr; }
-      .modal { width: calc(100vw - 16px); height: calc(100vh - 16px); border-radius: 18px; }
-      .backdrop { padding: 8px; }
+    .reasoning-area:focus{outline:none;border-color:var(--ink-2);box-shadow:var(--focus);}
+    .char-hint{margin-top:4px;font-size:0.7rem;color:var(--muted);text-align:right;font-weight:700;}
+
+    .submit-btn{
+      width:100%;margin-top:12px;height:46px;border:0;border-radius:10px;
+      background:#163764;color:#fff;font-size:0.88rem;font-weight:900;
+      cursor:pointer;transition:background 0.15s;
     }
+    .submit-btn:hover{background:#214a85;}
+    .submit-btn:disabled{background:#9caabf;cursor:not-allowed;}
+
+    /* Confirm */
+    .confirm-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(12,23,38,0.5);backdrop-filter:blur(3px);justify-content:center;align-items:center;}
+    .confirm-box{background:#fff;border-radius:14px;padding:24px 22px;box-shadow:0 20px 50px rgba(16,42,86,0.18);max-width:400px;width:calc(100% - 32px);text-align:center;}
+    .confirm-box h3{font-size:0.95rem;color:var(--ink);margin:0 0 6px;}
+    .confirm-box p{font-size:0.82rem;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+    .confirm-actions{display:flex;gap:8px;justify-content:center;}
+    .confirm-actions button{padding:9px 18px;border-radius:8px;font-size:0.8rem;font-weight:800;cursor:pointer;border:1px solid var(--line);}
+    .btn-yes{background:var(--ink);color:#fff;border-color:var(--ink);}
+    .btn-no{background:#fff;color:var(--ink);}
+
+    /* Loading */
+    .loading{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);justify-content:center;align-items:center;flex-direction:column;gap:14px;}
+    .spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:var(--ink);border-radius:50%;animation:spin 1s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    @media(max-width:860px){.case-grid{grid-template-columns:1fr;}.decision-card{position:static;}}
   </style>
 </head>
 <body>
@@ -156,359 +123,256 @@
 <div class="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <div class="brand-logo">
-        <img src="/static/assets/saral.png" alt="SARAL" onerror="this.style.display='none'">
-      </div>
-      <div class="brand-copy">
+      <div class="brand-logo"><img src="/static/assets/saral.png" alt="" onerror="this.style.display='none'"></div>
+      <div>
         <div class="brand-title">SARAL v2</div>
-        <div class="brand-subtitle">
-          {% if locale == "mr" %}कल्याण निवड निर्णय संशोधन — ऑपरेटर सत्र{% else %}Welfare Triage Decision Research — Operator Session{% endif %}
-        </div>
+        <div class="brand-sub">{% if locale == "mr" %}प्रकरण पुनरावलोकन{% else %}Case Review{% endif %}</div>
       </div>
     </div>
-
-    <div class="progress-wrap">
-      <span class="progress-label" id="progress-label">
-        {{ completed }} / {{ total_cases }}
-        {% if locale == "mr" %}पूर्ण{% else %}completed{% endif %}
-      </span>
-      <div class="progress-bar-outer">
-        <div class="progress-bar-inner" id="progress-bar"></div>
-      </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="progress-outer"><div class="progress-inner" id="pbar" style="width:0%;"></div></div>
+      <span class="session-code">{{ session_id[:8] }}</span>
     </div>
-
-    <span class="recovery-code" title="Session recovery code — researcher use only">{{ session_id[:8] }}</span>
   </div>
 </div>
 
 <div class="shell">
+  <div class="case-grid" id="case-grid">
 
-  <div class="all-done-banner" id="all-done-banner">
-    {% if locale == "mr" %}
-      सर्व {{ total_cases }} प्रकरणे पूर्ण झाली.
-      <a href="/session/{{ session_id }}/survey">सर्वेक्षण सुरू करा →</a>
-    {% else %}
-      All {{ total_cases }} cases completed.
-      <a href="/session/{{ session_id }}/survey">Proceed to survey →</a>
-    {% endif %}
+    <!-- Left -->
+    <div>
+      <!-- Profile -->
+      <div class="card">
+        <div class="section-label">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
+        <table class="profile-table" id="s-profile"></table>
+      </div>
+
+      <!-- Rule result -->
+      <div class="card">
+        <div class="section-label">{% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}</div>
+        <span class="rule-badge" id="s-rule"></span>
+      </div>
+
+      <!-- Prior remarks -->
+      <div class="remarks-box" id="s-remarks-box">
+        <div class="remarks-tag">{% if locale == "mr" %}पूर्व / अप्रमाणित{% else %}Prior / Unverified{% endif %}</div>
+        <div class="remarks-text" id="s-remarks"></div>
+      </div>
+    </div>
+
+    <!-- Right -->
+    <div>
+      <!-- Algo recommendation -->
+      <div class="card">
+        <div class="section-label">{% if locale == "mr" %}प्रणाली शिफारस{% else %}System Recommendation{% endif %}</div>
+        <div class="algo-box" id="s-algo">
+          <div class="algo-label">{% if locale == "mr" %}अल्गोरिदम{% else %}Algorithm Recommendation{% endif %}</div>
+          <div class="algo-value" id="s-algo-val"></div>
+        </div>
+      </div>
+
+      <!-- Decision -->
+      <div class="card decision-card">
+        <div class="section-label">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
+        <div class="btn-group">
+          <div class="dec-btn" id="btn-approve" onclick="pick('approve')">{% if locale == "mr" %}मंजूर{% else %}APPROVE{% endif %}</div>
+          <div class="dec-btn" id="btn-reject" onclick="pick('reject')">{% if locale == "mr" %}नाकार{% else %}REJECT{% endif %}</div>
+          <div class="dec-btn" id="btn-escalate" onclick="pick('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे{% else %}ESCALATE{% endif %}</div>
+        </div>
+        <textarea class="reasoning-area" id="d-reason"
+          placeholder="{% if locale == 'mr' %}या निर्णयावर कोणत्या घटकाने सर्वात जास्त प्रभाव पाडला? (आवश्यक, ३०० अक्षरे){% else %}What factor most influenced this decision? (required, 300 chars){% endif %}"
+          maxlength="300" oninput="onInput()"></textarea>
+        <div class="char-hint" id="chint">0 / 300</div>
+        <button class="submit-btn" id="btn-sub" onclick="onSub()" disabled>
+          {% if locale == "mr" %}सबमिट{% else %}Submit Decision{% endif %}
+        </button>
+      </div>
+    </div>
   </div>
-
-  <div class="summary">
-    <strong>{% if locale == "mr" %}प्रगती{% else %}Progress{% endif %}</strong>
-    <span class="chip chip-done" id="chip-done">
-      {% if locale == "mr" %}पूर्ण{% else %}Done{% endif %}: {{ completed }}
-    </span>
-    <span class="chip chip-pending" id="chip-pending">
-      {% if locale == "mr" %}प्रलंबित{% else %}Pending{% endif %}: {{ total_cases - completed }}
-    </span>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>{% if locale == "mr" %}प्रकरण ID{% else %}Case ID{% endif %}</th>
-          <th>{% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}</th>
-          <th>{% if locale == "mr" %}शिफारस{% else %}Recommendation{% endif %}</th>
-          <th>{% if locale == "mr" %}निर्णय{% else %}Decision{% endif %}</th>
-          <th>{% if locale == "mr" %}क्रिया{% else %}Action{% endif %}</th>
-        </tr>
-      </thead>
-      <tbody id="case-tbody">
-        {% for c in cases %}
-        <tr id="row-{{ c.case_id }}" class="{% if c.submitted %}done-row{% endif %}">
-          <td class="case-seq">{{ c.case_sequence }}</td>
-          <td class="case-id">{{ c.case_id[:8] }}…</td>
-          <td><span class="rule-badge rule-{{ c.rule_result }}">{{ c.rule_result }}</span></td>
-          <td><span class="rec-{{ c.algo_recommendation }}">{{ c.algo_recommendation | upper }}</span></td>
-          <td id="decision-{{ c.case_id }}">
-            {% if c.submitted %}
-              <span class="pill pill-{{ c.decision }}">{{ c.decision | upper }}</span>
-            {% else %}
-              <span class="pill pill-pending">
-                {% if locale == "mr" %}प्रलंबित{% else %}Pending{% endif %}
-              </span>
-            {% endif %}
-          </td>
-          <td>
-            <button
-              class="row-review-btn"
-              type="button"
-              data-case='{{ c | tojson }}'
-              onclick="openCaseFromButton(this)"
-            >
-              {% if locale == "mr" %}पुनरावलोकन{% else %}Review{% endif %}
-            </button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
 </div>
 
-<div class="backdrop" id="backdrop">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title-wrap">
-        <span class="modal-title">{% if locale == "mr" %}प्रकरण पुनरावलोकन{% else %}Case Review{% endif %}</span>
-        <span class="modal-seq" id="m-seq"></span>
-      </div>
-      <button class="modal-close" type="button" onclick="closeModal()">×</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="col-left">
-        <div class="section">
-          <div class="section-title">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
-          <div class="profile-grid" id="m-profile"></div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">{% if locale == "mr" %}क्षेत्र नोंद{% else %}Field Record{% endif %}</div>
-          <div class="field-note" id="m-field-note"></div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">
-            {% if locale == "mr" %}सक्षम प्राधिकरण शेरे{% else %}Prior Remarks{% endif %}
-            <span style="font-size:0.65rem;font-weight:700;color:var(--muted);margin-left:6px;font-style:italic;">
-              {% if locale == "mr" %}अनौपचारिक{% else %}informal{% endif %}
-            </span>
-          </div>
-          <div class="officer-remarks" id="m-officer-remarks">
-            <span class="officer-remarks-label">
-              {% if locale == "mr" %}पूर्व / अप्रमाणित{% else %}Prior / Unverified{% endif %}
-            </span>
-            <div id="m-officer-remarks-text" style="margin-top:8px;"></div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">{% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}</div>
-          <span class="rule-badge" id="m-rule-badge"></span>
-        </div>
-      </div>
-
-      <div class="col-right">
-        <div>
-          <div class="section-title">{% if locale == "mr" %}प्रणाली शिफारस{% else %}System Recommendation{% endif %}</div>
-          <div class="algo-box" id="m-algo-box">
-            <div class="algo-label">{% if locale == "mr" %}अल्गोरिदम शिफारस{% else %}Algorithm Recommendation{% endif %}</div>
-            <div class="algo-value" id="m-algo-value"></div>
-          </div>
-        </div>
-
-        <div class="decision-panel" id="m-decision-panel">
-          <div class="decision-title">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
-          <input type="hidden" id="d-case-id" />
-          <input type="hidden" id="d-opened-at" />
-
-          <div class="btn-group">
-            <div class="dec-btn" id="btn-approve" onclick="selectDecision('approve')">{% if locale == "mr" %}मंजूर करा{% else %}APPROVE{% endif %}</div>
-            <div class="dec-btn" id="btn-reject" onclick="selectDecision('reject')">{% if locale == "mr" %}नाकारा{% else %}REJECT{% endif %}</div>
-            <div class="dec-btn" id="btn-escalate" onclick="selectDecision('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे पाठवा{% else %}ESCALATE{% endif %}</div>
-          </div>
-
-          <textarea class="reasoning-area" id="d-reasoning"
-            placeholder="{% if locale == 'mr' %}तुमच्या निर्णयाचे थोडक्यात कारण सांगा (आवश्यक){% else %}Briefly explain your reasoning (required){% endif %}"
-            maxlength="1000" oninput="updateCharHint()"></textarea>
-
-          <div class="char-hint" id="char-hint">0 / 1000</div>
-
-          <button class="submit-btn" id="btn-submit" type="button" onclick="submitDecision()" disabled>
-            {% if locale == "mr" %}निर्णय सबमिट करा{% else %}Submit Decision{% endif %}
-          </button>
-        </div>
-
-        <div class="done-notice" id="m-done-notice" style="display:none;">
-          {% if locale == "mr" %}हे प्रकरण आधीच सबमिट केले आहे.{% else %}This case has already been submitted.{% endif %}
-        </div>
-      </div>
+<!-- Confirm -->
+<div class="confirm-overlay" id="cov">
+  <div class="confirm-box">
+    <h3>{% if locale == "mr" %}निर्णय लॉक करा{% else %}Lock Decision{% endif %}</h3>
+    <p>{% if locale == "mr" %}सबमिट केल्यानंतर बदलता येणार नाही.{% else %}This cannot be changed after submission.{% endif %}</p>
+    <div class="confirm-actions">
+      <button class="btn-no" onclick="hc()">{% if locale == "mr" %}मागे{% else %}Go Back{% endif %}</button>
+      <button class="btn-yes" onclick="doSubmit()">{% if locale == "mr" %}सबमिट{% else %}Confirm{% endif %}</button>
     </div>
   </div>
+</div>
+
+<!-- Loading -->
+<div class="loading" id="ld">
+  <div class="spinner"></div>
+  <p style="font-size:0.82rem;color:var(--muted);">{% if locale == "mr" %}पुढचे प्रकरण…{% else %}Next case…{% endif %}</p>
 </div>
 
 <script>
-  const SESSION_ID  = {{ session_id | tojson }};
-  const TOTAL_CASES = {{ total_cases }};
-  const LOCALE      = {{ locale | tojson }};
-  let completedCount = {{ completed }};
-  const openedAtMap = {};
-  let selectedDecision = null;
+const SID   = {{ session_id | tojson }};
+const LOC   = {{ locale | tojson }};
+const CASES = {{ cases | tojson }};
+const N     = CASES.length;
 
-  function t(en, mr) { return LOCALE === "mr" ? mr : en; }
+let ci = 0, dec = null, openT = null, firstAct = null, decT = null;
 
-  function openCaseFromButton(button) {
-    const raw = button.getAttribute("data-case");
-    if (!raw) { console.error("Missing data-case payload."); return; }
-    try {
-      openCase(JSON.parse(raw));
-    } catch (err) {
-      console.error("Failed to parse case payload:", err, raw);
-      alert("Could not open case review.");
-    }
-  }
+function t(e, m) { return LOC === 'mr' ? m : e; }
 
-  function openCase(c) {
-    if (!openedAtMap[c.case_id]) openedAtMap[c.case_id] = new Date().toISOString();
-    document.getElementById('d-case-id').value   = c.case_id;
-    document.getElementById('d-opened-at').value = openedAtMap[c.case_id];
-    document.getElementById('m-seq').textContent = `(${c.case_sequence} / ${TOTAL_CASES})`;
+const PL = {
+  electoral_roll_year:  t('Electoral Roll Year','मतदार यादी वर्ष'),
+  structure_type:       t('Structure Type','संरचना प्रकार'),
+  carpet_area_sqft:     t('Carpet Area (sq ft)','कार्पेट क्षेत्र'),
+  pre_cutoff_status:    t('Pre-Cutoff Status','कटऑफपूर्व'),
+  documents:            t('Documents','कागदपत्रे'),
+  declared_income_band: t('Declared Income','जाहीर उत्पन्न'),
+  household_size:       t('Household Size','कुटुंब आकार'),
+};
 
-    const profileEl = document.getElementById('m-profile');
-    profileEl.innerHTML = '';
+// Preferred display order
+const KEY_ORDER = ['electoral_roll_year','structure_type','carpet_area_sqft',
+  'pre_cutoff_status','declared_income_band','household_size','documents'];
 
-    const profileLabels = c.profile_labels || {
-      age: t('Age', 'वय'),
-      income: t('Income', 'उत्पन्न'),
-      income_period: t('Income Period', 'उत्पन्न कालावधी'),
-      caste_marginalized: t('Marginalized Caste', 'वंचित जात'),
-    };
+function findPending() {
+  for (let i = 0; i < N; i++) if (!CASES[i].submitted) return i;
+  return N;
+}
 
-    Object.entries(c.profile || {}).forEach(([k, v]) => {
-      const label = profileLabels[k] || k.replace(/_/g, ' ');
-      profileEl.innerHTML += `<div class="profile-item"><label>${label}</label><span>${v ?? '—'}</span></div>`;
+function render(idx) {
+  if (idx >= N) { window.location.href = `/session/${SID}/survey`; return; }
+  const c = CASES[idx];
+  if (c.submitted) { ci++; render(ci); return; }
+
+  dec = null; firstAct = null; decT = null; openT = Date.now();
+
+  // Profile — ordered table
+  const pt = document.getElementById('s-profile');
+  pt.innerHTML = '';
+  const prof = c.profile || {};
+  KEY_ORDER.forEach(k => {
+    if (!(k in prof)) return;
+    let v = prof[k];
+    if (Array.isArray(v)) v = v.join(', ');
+    const label = PL[k] || k.replace(/_/g,' ');
+    pt.innerHTML += `<tr><td>${label}</td><td>${v ?? '—'}</td></tr>`;
+  });
+
+  // Rule
+  const re = document.getElementById('s-rule');
+  re.textContent = c.rule_result;
+  re.className = `rule-badge rule-${c.rule_result}`;
+
+  // Prior remarks (field_note is the remark in the new vignette structure)
+  document.getElementById('s-remarks').textContent = c.field_note || '—';
+
+  // Algo
+  document.getElementById('s-algo-val').textContent = c.algo_recommendation.toUpperCase();
+  document.getElementById('s-algo').className = `algo-box algo-${c.algo_recommendation}`;
+
+  // Reset
+  ['btn-approve','btn-reject','btn-escalate'].forEach(id => document.getElementById(id).className = 'dec-btn');
+  document.getElementById('d-reason').value = '';
+  document.getElementById('chint').textContent = '0 / 300';
+  document.getElementById('btn-sub').disabled = true;
+  document.getElementById('btn-sub').textContent = t('Submit Decision','सबमिट');
+
+  // Progress
+  const done = CASES.filter(x => x.submitted).length;
+  document.getElementById('pbar').style.width = Math.round((done/N)*100) + '%';
+
+  document.getElementById('ld').style.display = 'none';
+}
+
+function fa() { if (!firstAct) firstAct = Date.now(); }
+
+function pick(d) {
+  fa(); dec = d; decT = Date.now();
+  ['btn-approve','btn-reject','btn-escalate'].forEach(id => document.getElementById(id).className = 'dec-btn');
+  document.getElementById(`btn-${d}`).className = `dec-btn sel-${d}`;
+  chk();
+}
+
+function onInput() {
+  fa();
+  const l = document.getElementById('d-reason').value.length;
+  document.getElementById('chint').textContent = `${l} / 300`;
+  chk();
+}
+
+function chk() {
+  document.getElementById('btn-sub').disabled = !(dec && document.getElementById('d-reason').value.trim().length > 0);
+}
+
+function onSub() { document.getElementById('cov').style.display = 'flex'; }
+function hc()    { document.getElementById('cov').style.display = 'none'; }
+
+async function doSubmit() {
+  hc();
+  const c = CASES[ci];
+  const btn = document.getElementById('btn-sub');
+  btn.disabled = true;
+  btn.textContent = t('Submitting…','सबमिट…');
+
+  const tfa = firstAct ? (firstAct - openT) : null;
+  const tad = decT ? (Date.now() - decT) : null;
+
+  try {
+    const res = await fetch(`/session/${SID}/evaluate`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        case_id: c.case_id,
+        decision: dec,
+        reasoning: document.getElementById('d-reason').value.trim(),
+        opened_at: new Date(openT).toISOString(),
+        time_to_first_action_ms: tfa,
+        time_after_decision_ms: tad,
+      }),
     });
 
-    const raw = c.field_note || '';
-    const fieldRecordEl = document.getElementById('m-field-note');
-    const remarksEl = document.getElementById('m-officer-remarks-text');
-
-    fieldRecordEl.textContent = '';
-    remarksEl.textContent = '';
-
-    if (raw.includes('Field Remark') || raw.includes('क्षेत्र निरीक्षण')) {
-      const splitKey = raw.includes('Field Remark') ? 'Field Remark' : 'क्षेत्र निरीक्षण';
-      const splitIdx = raw.lastIndexOf(splitKey);
-      const record = raw.substring(0, splitIdx).trim();
-      const remarkFull = raw.substring(splitIdx);
-      const colonIdx = remarkFull.indexOf(':');
-      const remark = colonIdx >= 0 ? remarkFull.substring(colonIdx + 1).trim() : '';
-
-      fieldRecordEl.textContent = record || '—';
-      remarksEl.textContent = remark || '—';
-    } else {
-      fieldRecordEl.textContent = raw || '—';
-      remarksEl.textContent = '—';
-    }
-
-    const ruleEl = document.getElementById('m-rule-badge');
-    ruleEl.textContent = c.rule_result;
-    ruleEl.className = `rule-badge rule-${c.rule_result}`;
-
-    document.getElementById('m-algo-value').textContent = c.algo_recommendation.toUpperCase();
-    document.getElementById('m-algo-box').className = `algo-box algo-${c.algo_recommendation}`;
-
-    const panel = document.getElementById('m-decision-panel');
-    const doneNotice = document.getElementById('m-done-notice');
-
-    if (c.submitted) {
-      panel.style.display = 'none';
-      doneNotice.style.display = 'block';
-    } else {
-      panel.style.display = 'flex';
-      panel.style.flexDirection = 'column';
-      doneNotice.style.display = 'none';
-      selectedDecision = null;
-
-      ['btn-approve','btn-reject','btn-escalate'].forEach(id => {
-        document.getElementById(id).className = 'dec-btn';
-      });
-
-      document.getElementById('d-reasoning').value = '';
-      document.getElementById('char-hint').textContent = '0 / 1000';
-      document.getElementById('btn-submit').disabled = true;
-    }
-
-    document.getElementById('backdrop').style.display = 'block';
-  }
-
-  function closeModal() { document.getElementById('backdrop').style.display = 'none'; }
-
-  function selectDecision(dec) {
-    selectedDecision = dec;
-    ['btn-approve','btn-reject','btn-escalate'].forEach(id => {
-      document.getElementById(id).className = 'dec-btn';
-    });
-    const map = { approve:'btn-approve', reject:'btn-reject', escalate:'btn-escalate' };
-    if (map[dec]) document.getElementById(map[dec]).className = `dec-btn sel-${dec}`;
-    validateSubmit();
-  }
-
-  function updateCharHint() {
-    const ta = document.getElementById('d-reasoning');
-    document.getElementById('char-hint').textContent = `${ta.value.length} / 1000`;
-    validateSubmit();
-  }
-
-  function validateSubmit() {
-    const hasDecision = !!selectedDecision;
-    const hasReasoning = document.getElementById('d-reasoning').value.trim().length > 0;
-    document.getElementById('btn-submit').disabled = !(hasDecision && hasReasoning);
-  }
-
-  async function submitDecision() {
-    const caseId = document.getElementById('d-case-id').value;
-    const openedAt = document.getElementById('d-opened-at').value;
-    const reasoning = document.getElementById('d-reasoning').value.trim();
-
-    if (!selectedDecision) { alert(t('Please select a decision.','कृपया निर्णय निवडा.')); return; }
-    if (!reasoning) { alert(t('Please enter your reasoning.','कृपया कारण लिहा.')); return; }
-
-    const btn = document.getElementById('btn-submit');
-    const defaultText = t('Submit Decision','निर्णय सबमिट करा');
-    btn.disabled = true;
-    btn.textContent = t('Submitting...','सबमिट करत आहे...');
-
-    try {
-      const res = await fetch(`/session/${SESSION_ID}/evaluate`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ case_id:caseId, decision:selectedDecision, reasoning, opened_at:openedAt }),
-      });
-
-      if (!res.ok) {
-        const d = await res.json().catch(()=>({}));
-        alert(t('Error: ','त्रुटी: ') + (d.detail || t('Submission failed','सबमिशन अयशस्वी झाले')));
-        btn.disabled = false;
-        btn.textContent = defaultText;
-        return;
-      }
-
-      const data = await res.json();
-      const cell = document.getElementById(`decision-${caseId}`);
-      if (cell) cell.innerHTML = `<span class="pill pill-${selectedDecision}">${selectedDecision.toUpperCase()}</span>`;
-      const row = document.getElementById(`row-${caseId}`);
-      if (row) row.classList.add('done-row');
-
-      completedCount++;
-      updateProgress();
-      closeModal();
-
-      if (data.all_done) {
-        document.getElementById('all-done-banner').style.display = 'block';
-        window.scrollTo({top:0, behavior:'smooth'});
-      }
-    } catch(e) {
-      alert(t('Network error. Please try again.','नेटवर्क त्रुटी. कृपया पुन्हा प्रयत्न करा.'));
+    if (!res.ok) {
+      const d = await res.json().catch(()=>({}));
+      alert(t('Error: ','त्रुटी: ') + (d.detail || 'Failed'));
       btn.disabled = false;
-      btn.textContent = defaultText;
+      btn.textContent = t('Submit Decision','सबमिट');
+      return;
     }
-  }
 
-  function updateProgress() {
-    const pct = Math.round((completedCount / TOTAL_CASES) * 100);
-    document.getElementById('progress-bar').style.width = pct + '%';
-    document.getElementById('progress-label').textContent = `${completedCount} / ${TOTAL_CASES} ${t('completed','पूर्ण')}`;
-    document.getElementById('chip-done').textContent = `${t('Done','पूर्ण')}: ${completedCount}`;
-    document.getElementById('chip-pending').textContent = `${t('Pending','प्रलंबित')}: ${TOTAL_CASES - completedCount}`;
-  }
+    const data = await res.json();
+    CASES[ci].submitted = true;
 
-  document.getElementById('backdrop').addEventListener('click', e => { if (e.target.id==='backdrop') closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+    if (data.all_done) {
+      window.location.href = `/session/${SID}/survey`;
+      return;
+    }
+
+    document.getElementById('ld').style.display = 'flex';
+    ci++;
+    setTimeout(() => render(ci), 500);
+
+  } catch(e) {
+    alert(t('Network error.','नेटवर्क त्रुटी.'));
+    btn.disabled = false;
+    btn.textContent = t('Submit Decision','सबमिट');
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') e.preventDefault(); });
+
+// Device logging (item 32)
+fetch('/admin/log-device', {
+  method:'POST', headers:{'Content-Type':'application/json'},
+  body: JSON.stringify({
+    session_id: SID,
+    user_agent: navigator.userAgent,
+    screen_width: screen.width,
+    screen_height: screen.height,
+    device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+  }),
+}).catch(() => {});
+
+ci = findPending();
+if (ci >= N) window.location.href = `/session/${SID}/survey`;
+else render(ci);
 </script>
 </body>
 </html>

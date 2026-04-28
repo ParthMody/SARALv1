@@ -1,4 +1,10 @@
 # app/routes/dashboard.py
+"""
+Login and session management routes — SARAL v2 Phase 2.
+
+Landing page collects language only. Demographics are collected at the end
+of the session via the survey (item 15: move demographics to end).
+"""
 from __future__ import annotations
 
 import uuid
@@ -23,9 +29,11 @@ router = APIRouter(tags=["dashboard"])
 templates = Jinja2Templates(directory="app/templates")
 settings = get_settings()
 
+ADMIN_COOKIE = "saral_admin"
+
 
 # ─────────────────────────────────────────────
-# GET /  →  Login / landing page
+# GET /  →  Landing page (language selection only)
 # ─────────────────────────────────────────────
 
 @router.get("/", response_class=HTMLResponse)
@@ -37,63 +45,39 @@ def landing(request: Request):
 
 
 # ─────────────────────────────────────────────
-# POST /login  →  Create operator + session
+# POST /  →  Create operator session (locale only)
+# Demographics are collected post-task via survey.
 # ─────────────────────────────────────────────
 
-@router.post("/login", response_class=HTMLResponse)
-def login(
+@router.post("/", response_class=HTMLResponse)
+def start_session(
     request: Request,
-    initials:         str = Form(...),
-    age:              int = Form(...),
-    role:             str = Form(...),
-    experience_years: int = Form(...),
-    locale:           str = Form("en"),
+    locale: str = Form("en"),
     db: Session = Depends(get_db),
 ):
-    # ── Validation ────────────────────────────
-    errors = []
-
-    initials = initials.strip().upper()
-    if not initials or len(initials) > 8:
-        errors.append("Initials must be 1–8 characters.")
-
-    if not (18 <= age <= 80):
-        errors.append("Age must be between 18 and 80.")
-
-    role = role.strip()
-    if not role:
-        errors.append("Role is required.")
-
-    if not (0 <= experience_years <= 60):
-        errors.append("Experience years must be between 0 and 60.")
-
     if locale not in ("en", "mr"):
         locale = "en"
 
-    if errors:
-        return templates.TemplateResponse(
-            "landing.html",
-            {"request": request, "error": " ".join(errors)},
-            status_code=422,
-        )
-
-    # ── Create operator row ───────────────────
     try:
         locale_enum = LocaleEnum(locale)
     except ValueError:
         locale_enum = LocaleEnum.EN
 
+    # Create operator row — demographics are placeholder until survey
     operator = Operator(
         operator_id      = str(uuid.uuid4()),
         session_id       = str(uuid.uuid4()),
-        initials         = initials,
-        age              = age,
-        role             = role,
-        experience_years = experience_years,
+        initials         = "—",          # placeholder, updated at survey
+        age              = 0,            # placeholder
+        role             = "pending",    # placeholder
+        experience_years = 0,            # placeholder
         locale           = locale_enum,
         status           = SessionStatusEnum.IN_PROGRESS,
         cases_assigned   = [],
         cases_completed  = 0,
+        session_complete = False,
+        language_selected = locale,
+        instrument_version = settings.INSTRUMENT_VERSION,
         created_at       = datetime.now(timezone.utc),
     )
 
@@ -107,36 +91,30 @@ def login(
         actor_id   = operator.operator_id,
         session_id = operator.session_id,
         payload    = {
-            "role":             role,
-            "experience_years": experience_years,
-            "locale":           locale,
+            "locale":             locale,
+            "instrument_version": settings.INSTRUMENT_VERSION,
+            "demographics":       "deferred_to_survey",
         },
     )
 
-    # ── Redirect into session ─────────────────
-    # Session route will handle case assignment
     response = RedirectResponse(
         url=f"/session/{operator.session_id}",
         status_code=303,
     )
-    # Store session_id in a short-lived cookie for the operator's browser
     response.set_cookie(
         key="session_id",
         value=operator.session_id,
         httponly=True,
         samesite="strict",
-        max_age=14400,  # 4 hours — covers breaks and slow sessions
+        max_age=14400,
     )
     return response
 
+
 # ─────────────────────────────────────────────
 # GET /admin/resume/{session_id}
-# Admin-only crash recovery: reissues the session cookie
-# and redirects the operator back into their session.
+# Admin-only crash recovery
 # ─────────────────────────────────────────────
-
-ADMIN_COOKIE = "saral_admin"
-
 
 @router.get("/admin/resume/{session_id}")
 def admin_resume_session(
@@ -144,7 +122,6 @@ def admin_resume_session(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    # Admin auth check
     if request.cookies.get(ADMIN_COOKIE) != settings.ADMIN_SECRET:
         raise HTTPException(403, "Admin access required")
 
@@ -176,10 +153,10 @@ def admin_resume_session(
     )
     return response
 
+
 # ─────────────────────────────────────────────
-# GET /reviewer-login  →  Secondary reviewer login
-# No vignette draw — creates operator row and
-# redirects to holding page until admin assigns reviews.
+# Reviewer login — demographics collected upfront
+# (reviewers don't go through the primary session flow)
 # ─────────────────────────────────────────────
 
 @router.get("/reviewer-login", response_class=HTMLResponse)
@@ -201,7 +178,6 @@ def reviewer_login(
     db: Session = Depends(get_db),
 ):
     errors = []
-
     initials = initials.strip().upper()
     if not initials or len(initials) > 8:
         errors.append("Initials must be 1–8 characters.")
@@ -227,8 +203,6 @@ def reviewer_login(
     except ValueError:
         locale_enum = LocaleEnum.EN
 
-    # Create operator row — no cases assigned, status IN_PROGRESS
-    # Cases will be assigned by admin after primary sessions complete
     operator = Operator(
         operator_id      = str(uuid.uuid4()),
         session_id       = str(uuid.uuid4()),
@@ -240,6 +214,9 @@ def reviewer_login(
         status           = SessionStatusEnum.IN_PROGRESS,
         cases_assigned   = [],
         cases_completed  = 0,
+        session_complete = False,
+        language_selected = locale,
+        instrument_version = settings.INSTRUMENT_VERSION,
         created_at       = datetime.now(timezone.utc),
     )
 
@@ -280,7 +257,6 @@ def reviewer_waiting(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    # Cookie check
     if request.cookies.get("session_id") != session_id:
         return RedirectResponse(url="/reviewer-login", status_code=303)
 
@@ -288,7 +264,6 @@ def reviewer_waiting(
     if not op:
         raise HTTPException(404, "Session not found")
 
-    # If reviews have been assigned, redirect directly to the queue
     from app.models import SecondReview
     has_reviews = (
         db.query(SecondReview)

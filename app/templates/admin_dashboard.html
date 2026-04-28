@@ -6,140 +6,103 @@
   <title>SARAL v2 — Admin Dashboard</title>
   <style>
     :root{
-      --bg:#f3f5f8;
-      --panel:#ffffff;
-      --panel-soft:#f8fafc;
-      --ink:#102a56;
-      --ink-2:#21406d;
-      --text:#213247;
-      --muted:#6e7f97;
-      --line:#dbe3ee;
-      --line-soft:#e9eef5;
-
-      --green-bg:#e9f8ef;
-      --green-line:#8ed5a7;
-      --green-text:#166534;
-
-      --red-bg:#fff0f0;
-      --red-line:#f0aaaa;
-      --red-text:#991b1b;
-
-      --amber-bg:#fff8e6;
-      --amber-line:#efd28b;
-      --amber-text:#9a6700;
-
-      --blue-bg:#edf4ff;
-      --blue-line:#a9c6f5;
-      --blue-text:#1d4f91;
-
-      --btn:#163764;
-      --btn-hover:#214a85;
-
+      --bg:#f3f5f8;--panel:#fff;--panel-soft:#f8fafc;
+      --ink:#102a56;--text:#213247;--muted:#6e7f97;
+      --line:#dbe3ee;--line-soft:#e9eef5;
+      --green-bg:#e9f8ef;--green-line:#8ed5a7;--green-text:#166534;
+      --red-bg:#fff0f0;--red-line:#f0aaaa;--red-text:#991b1b;
+      --amber-bg:#fff8e6;--amber-line:#efd28b;--amber-text:#9a6700;
+      --blue-bg:#edf4ff;--blue-line:#a9c6f5;--blue-text:#1d4f91;
+      --btn:#163764;--btn-hover:#214a85;
       --shadow:0 18px 40px rgba(16,42,86,0.07);
     }
-
-    *{box-sizing:border-box;}
-    html,body{margin:0;padding:0;}
-
-    body{
-      min-height:100vh;
-      font-family:Inter,"Segoe UI",Arial,sans-serif;
-      background:
-        radial-gradient(circle at top left,rgba(22,55,100,0.05),transparent 26%),
-        radial-gradient(circle at bottom right,rgba(22,55,100,0.04),transparent 22%),
-        var(--bg);
-      color:var(--text);
-    }
-
+    *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+    body{min-height:100vh;font-family:Inter,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at top left,rgba(22,55,100,0.05),transparent 26%),radial-gradient(circle at bottom right,rgba(22,55,100,0.04),transparent 22%),var(--bg);color:var(--text);}
     .topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line-soft);}
     .topbar-inner{max-width:1320px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
-    .brand{display:flex;align-items:center;gap:14px;min-width:0;}
-    .brand-logo{width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden;}
-    .brand-logo img{width:78%;height:78%;object-fit:contain;display:block;}
-    .brand-copy{min-width:0;}
-    .brand-title{margin:0;font-size:1.08rem;font-weight:800;color:var(--ink);letter-spacing:-0.02em;}
-    .brand-subtitle{margin:2px 0 0;font-size:0.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .topbar-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;}
+    .brand{display:flex;align-items:center;gap:14px;}
+    .brand-logo{width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .brand-logo img{width:78%;height:78%;object-fit:contain;}
+    .brand-title{font-size:1.08rem;font-weight:800;color:var(--ink);}
+    .brand-sub{font-size:0.84rem;color:var(--muted);}
+    .topbar-right{display:flex;align-items:center;gap:12px;}
     .topbar-meta{font-size:0.78rem;color:var(--muted);font-weight:700;}
-    .btn-sm{display:inline-flex;align-items:center;justify-content:center;height:38px;padding:0 14px;border-radius:10px;font-size:0.78rem;font-weight:800;text-decoration:none;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;transition:background 0.15s,border-color 0.15s;}
-    .btn-sm:hover{background:#f8fafc;border-color:#bfd0e7;}
-    .btn-logout{color:var(--muted);}
+    .btn-sm{display:inline-flex;align-items:center;height:38px;padding:0 14px;border-radius:10px;font-size:0.78rem;font-weight:800;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;}
+    .btn-sm:hover{background:#f8fafc;}
 
     .shell{max-width:1320px;margin:0 auto;padding:26px 20px 40px;}
 
     .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px;}
-    .stat-card{background:var(--panel);border:1px solid var(--line-soft);border-radius:16px;box-shadow:var(--shadow);padding:16px 16px 14px;}
-    .stat-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:5px;font-weight:800;}
+    .stat-card{background:var(--panel);border:1px solid var(--line-soft);border-radius:16px;box-shadow:var(--shadow);padding:16px;}
+    .stat-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:800;margin-bottom:5px;}
     .stat-value{font-size:1.55rem;font-weight:900;color:var(--ink);line-height:1.1;}
     .stat-value.green{color:var(--green-text);}
     .stat-value.amber{color:var(--amber-text);}
     .stat-value.blue{color:var(--blue-text);}
 
     .section{margin-top:24px;}
-    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line-soft);}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap;gap:8px;}
     .section-title{font-size:0.74rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-weight:800;margin:0;}
-
     .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:18px;box-shadow:var(--shadow);}
     .card-pad{padding:16px 18px;}
 
-    .pool-meta{display:flex;gap:24px;flex-wrap:wrap;font-size:0.86rem;color:var(--text);}
-    .pool-meta span.label{color:var(--muted);font-weight:700;margin-right:4px;}
-    .pool-bar-outer{background:#e4ebf5;border:1px solid #dae3ef;border-radius:999px;height:10px;overflow:hidden;margin-top:12px;}
-    .pool-bar-inner{height:100%;background:linear-gradient(90deg,#1c3f72 0%,#3768ab 100%);border-radius:999px;transition:width 0.3s;}
-
-    .table-wrap{overflow:hidden;}
-    table{width:100%;border-collapse:collapse;font-size:0.84rem;background:transparent;}
+    table{width:100%;border-collapse:collapse;font-size:0.84rem;}
     th{background:#f9fbfe;color:#60738f;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;padding:14px 12px;text-align:left;border-bottom:1px solid var(--line-soft);font-weight:800;white-space:nowrap;}
     td{padding:13px 12px;border-bottom:1px solid #edf2f7;vertical-align:middle;}
     tr:last-child td{border-bottom:none;}
     tbody tr:hover{background:#f9fbfe;}
 
-    .pill{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:6px 10px;font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;border:1px solid transparent;white-space:nowrap;}
-    .pill-completed  {background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
+    .pill{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;font-size:0.7rem;font-weight:800;text-transform:uppercase;border:1px solid transparent;white-space:nowrap;}
+    .pill-completed{background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
     .pill-in_progress{background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber-line);}
-    .pill-abandoned  {background:var(--red-bg);color:var(--red-text);border-color:var(--red-line);}
-    .pill-approve    {background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
-    .pill-reject     {background:var(--red-bg);color:var(--red-text);border-color:var(--red-line);}
-    .pill-escalate   {background:var(--blue-bg);color:var(--blue-text);border-color:var(--blue-line);}
+    .pill-approve{background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
+    .pill-reject{background:var(--red-bg);color:var(--red-text);border-color:var(--red-line);}
+    .pill-escalate{background:var(--blue-bg);color:var(--blue-text);border-color:var(--blue-line);}
+    .pill-unassigned{background:#f1f5f9;color:#64748b;border-color:#cbd5e1;}
 
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.76rem;color:var(--muted);}
+    .mono{font-family:monospace;font-size:0.76rem;color:var(--muted);}
+    .empty-cell{color:var(--muted);text-align:center;padding:24px 16px;}
 
-    .resume-btn{display:inline-flex;align-items:center;justify-content:center;padding:6px 11px;background:var(--amber-text);color:#fff;border-radius:8px;font-size:0.72rem;font-weight:800;text-decoration:none;border:1px solid var(--amber-text);transition:opacity 0.15s;}
-    .resume-btn:hover{opacity:0.9;}
-    .dash{color:var(--muted);font-size:0.78rem;}
+    .action-btn{display:inline-flex;align-items:center;height:34px;padding:0 14px;background:var(--btn);color:#fff;border:none;border-radius:9px;font-size:0.76rem;font-weight:800;cursor:pointer;transition:background 0.15s;white-space:nowrap;}
+    .action-btn:hover{background:var(--btn-hover);}
+    .action-btn:disabled{background:#9caabf;cursor:not-allowed;}
+    .action-btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line);}
+    .action-btn.secondary:hover{background:#f8fafc;}
+
+    .result-msg{display:none;font-size:0.78rem;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid transparent;}
+    .result-msg.ok{background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
+    .result-msg.err{background:var(--red-bg);color:var(--red-text);border-color:var(--red-line);}
+
+    .review-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+    .review-stat{background:var(--panel-soft);border:1px solid var(--line-soft);border-radius:12px;padding:12px 14px;}
+    .review-stat-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:800;margin-bottom:4px;}
+    .review-stat-value{font-size:1.2rem;font-weight:900;color:var(--ink);}
+
+    .step-indicator{display:flex;gap:8px;align-items:center;margin-bottom:14px;}
+    .step{display:flex;align-items:center;gap:6px;font-size:0.76rem;font-weight:700;color:var(--muted);}
+    .step.active{color:var(--ink);}
+    .step-num{width:22px;height:22px;border-radius:50%;background:#e4ebf5;color:#60738f;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800;}
+    .step.active .step-num{background:var(--ink);color:#fff;}
+    .step-arrow{color:#cbd5e1;font-size:0.8rem;}
+
+    .reviewer-list{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
+    .reviewer-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fbfcfe;border:1px solid var(--line-soft);border-radius:10px;}
+    .reviewer-row label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.84rem;font-weight:700;color:var(--text);flex:1;}
+    .reviewer-row input[type="checkbox"]{width:16px;height:16px;accent-color:var(--ink);}
+    .reviewer-meta{font-size:0.76rem;color:var(--muted);}
 
     .export-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
-    .export-card{background:var(--panel);border:1px solid var(--line-soft);border-radius:16px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:8px;min-height:180px;}
+    .export-card{background:var(--panel);border:1px solid var(--line-soft);border-radius:16px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:8px;min-height:160px;}
     .export-card-title{font-size:0.95rem;font-weight:800;color:var(--ink);}
     .export-card-desc{font-size:0.78rem;color:var(--muted);line-height:1.55;}
     .export-card a{display:inline-flex;align-items:center;justify-content:center;margin-top:auto;min-height:40px;padding:0 14px;background:var(--btn);color:#fff;border-radius:10px;font-size:0.78rem;font-weight:800;text-decoration:none;transition:background 0.15s;}
     .export-card a:hover{background:var(--btn-hover);}
 
-    /* ── Second review ── */
-    .assign-btn{display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 14px;background:var(--btn);color:#fff;border:none;border-radius:9px;font-size:0.76rem;font-weight:800;cursor:pointer;transition:background 0.15s;white-space:nowrap;}
-    .assign-btn:hover   {background:var(--btn-hover);}
-    .assign-btn:disabled{background:#9caabf;cursor:not-allowed;}
-
-    .assign-result{display:none;font-size:0.78rem;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid transparent;}
-    .assign-result.ok {background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
-    .assign-result.err{background:var(--red-bg);color:var(--red-text);border-color:var(--red-line);}
-
-    .review-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-    .review-stat{background:var(--panel-soft);border:1px solid var(--line-soft);border-radius:12px;padding:12px 14px;}
-    .review-stat-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:800;margin-bottom:4px;}
-    .review-stat-value{font-size:1.2rem;font-weight:900;color:var(--ink);}
-
-    .empty-cell{color:var(--muted);text-align:center;padding:24px 16px;}
-
-    @media(max-width:980px){.table-scroll{overflow-x:auto;}table{min-width:1200px;}}
     @media(max-width:760px){
       .topbar-inner{flex-direction:column;align-items:stretch;}
-      .topbar-right{justify-content:space-between;}
       .shell{padding:18px 14px 30px;}
-      .card-pad{padding:14px;}
-      .pool-meta{gap:12px;flex-direction:column;}
-      .review-stat-grid{grid-template-columns:1fr;}
-      .section-header{flex-direction:column;align-items:flex-start;gap:10px;}
+      .review-stat-grid{grid-template-columns:repeat(2,1fr);}
+      .section-header{flex-direction:column;align-items:flex-start;}
     }
   </style>
 </head>
@@ -148,18 +111,16 @@
 <div class="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <div class="brand-logo">
-        <img src="/static/assets/saral.png" alt="SARAL" onerror="this.style.display='none'">
-      </div>
-      <div class="brand-copy">
+      <div class="brand-logo"><img src="/static/assets/saral.png" alt="SARAL" onerror="this.style.display='none'"></div>
+      <div>
         <div class="brand-title">SARAL v2 — Admin</div>
-        <div class="brand-subtitle">Research monitoring and export console</div>
+        <div class="brand-sub">Research monitoring and export console</div>
       </div>
     </div>
     <div class="topbar-right">
       <div class="topbar-meta">Generated: {{ generated }}</div>
       <form method="POST" action="/admin/logout" style="display:inline;">
-        <button type="submit" class="btn-sm btn-logout">Log out</button>
+        <button type="submit" class="btn-sm">Log out</button>
       </form>
     </div>
   </div>
@@ -169,210 +130,204 @@
 
   <!-- Stat cards -->
   <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label">Total Operators</div>
-      <div class="stat-value blue">{{ experiment.total_ops }}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Completed Sessions</div>
-      <div class="stat-value green">{{ experiment.completed }}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">In Progress</div>
-      <div class="stat-value amber">{{ experiment.in_progress }}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Evaluations</div>
-      <div class="stat-value">{{ experiment.total_evals }}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Override Count</div>
-      <div class="stat-value">{{ experiment.overrides }}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Override Rate</div>
-      <div class="stat-value blue">{{ experiment.override_rate }}</div>
-    </div>
-  </div>
-
-  <!-- Vignette pool -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">Vignette Pool</div>
-    </div>
-    <div class="card card-pad">
-      <div class="pool-meta">
-        <div><span class="label">Total:</span><strong>{{ pool.total }}</strong></div>
-        <div><span class="label">Used (≥1 draw):</span><strong>{{ pool.used_any }}</strong></div>
-        <div><span class="label">Unused:</span><strong>{{ pool.total - pool.used_any }}</strong></div>
-      </div>
-      {% if pool.total > 0 %}
-      <div class="pool-bar-outer">
-        <div class="pool-bar-inner" style="width:{{ ((pool.used_any / pool.total) * 100) | int }}%;"></div>
-      </div>
-      {% endif %}
-    </div>
+    <div class="stat-card"><div class="stat-label">Total Operators</div><div class="stat-value blue">{{ experiment.total_ops }}</div></div>
+    <div class="stat-card"><div class="stat-label">Completed Sessions</div><div class="stat-value green">{{ experiment.completed }}</div></div>
+    <div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-value amber">{{ experiment.in_progress }}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Evaluations</div><div class="stat-value">{{ experiment.total_evals }}</div></div>
+    <div class="stat-card"><div class="stat-label">Override Count</div><div class="stat-value">{{ experiment.overrides }}</div></div>
+    <div class="stat-card"><div class="stat-label">Override Rate</div><div class="stat-value blue">{{ experiment.override_rate }}</div></div>
   </div>
 
   <!-- Session monitor -->
   <div class="section">
-    <div class="section-header">
-      <div class="section-title">Session Monitor</div>
-    </div>
-    <div class="card table-wrap">
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Initials</th><th>Role</th><th>Exp (yrs)</th><th>Locale</th>
-              <th>Status</th><th>Cases Done</th><th>Overrides</th>
-              <th>Avg RT (s)</th><th>Duration (min)</th><th>Started</th>
-              <th>Session ID</th><th>Recovery</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for s in sessions %}
-            <tr>
-              <td><strong>{{ s.initials }}</strong></td>
-              <td>{{ s.role }}</td>
-              <td>{{ s.experience_years }}</td>
-              <td>{{ s.locale | upper }}</td>
-              <td><span class="pill pill-{{ s.status }}">{{ s.status }}</span></td>
-              <td>{{ s.cases_completed }} / 16</td>
-              <td>{{ s.override_count }}</td>
-              <td>{{ s.avg_rt_sec }}</td>
-              <td>{{ s.duration_min }}</td>
-              <td>{{ s.created_at }}</td>
-              <td class="mono">{{ s.session_id[:12] }}…</td>
-              <td>
-                {% if s.status == "in_progress" %}
-                <a href="/admin/resume/{{ s.session_id }}" class="resume-btn"
-                   onclick="return confirm('Resume session for {{ s.initials }}? This will reissue their cookie.')">Resume</a>
-                {% else %}
-                <span class="dash">—</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="12" class="empty-cell">No sessions yet.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+    <div class="section-header"><div class="section-title">Session Monitor</div></div>
+    <div class="card" style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Initials</th><th>Role</th><th>Exp</th><th>Locale</th><th>List</th>
+            <th>Status</th><th>Cases</th><th>Overrides</th><th>Avg RT</th>
+            <th>Started</th><th>Session ID</th><th>Recovery</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in sessions %}
+          <tr>
+            <td><strong>{{ s.initials }}</strong></td>
+            <td>{{ s.role }}</td>
+            <td>{{ s.experience_years }}y</td>
+            <td>{{ s.locale | upper }}</td>
+            <td>{{ s.list_assignment or '—' }}</td>
+            <td><span class="pill pill-{{ s.status }}">{{ s.status }}</span></td>
+            <td>{{ s.cases_completed }} / 12</td>
+            <td>{{ s.override_count }}</td>
+            <td>{{ s.avg_rt_sec }}s</td>
+            <td>{{ s.created_at }}</td>
+            <td class="mono">{{ s.session_id[:12] }}…</td>
+            <td>
+              {% if s.status == "in_progress" %}
+              <a href="/admin/resume/{{ s.session_id }}" class="action-btn secondary" style="font-size:0.7rem;height:28px;padding:0 10px;"
+                 onclick="return confirm('Resume session for {{ s.initials }}?')">Resume</a>
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="12" class="empty-cell">No sessions yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Second review -->
+  <!-- Second review — 3-step workflow -->
   <div class="section">
-    <div class="section-header">
-      <div class="section-title">Second Review</div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span class="assign-result" id="assign-result"></span>
-        <button class="assign-btn" id="assign-btn" onclick="assignReviews()">
-          Assign Second Reviews
-        </button>
+    <div class="section-header"><div class="section-title">Second Review</div></div>
+    <div class="card card-pad">
+
+      <!-- Step indicator -->
+      <div class="step-indicator">
+        <div class="step active" id="step-1"><span class="step-num">1</span> Sample Cases</div>
+        <span class="step-arrow">→</span>
+        <div class="step" id="step-2"><span class="step-num">2</span> Select Reviewers</div>
+        <span class="step-arrow">→</span>
+        <div class="step" id="step-3"><span class="step-num">3</span> Distribute</div>
       </div>
-    </div>
-    <div class="card card-pad" id="review-status-card">
-      <div id="review-status-body">
-        <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;">
-          Run after all primary sessions are complete. Only treatment-arm overrides are eligible.
-          Assignment is idempotent — safe to run multiple times.
+
+      <!-- Status panel -->
+      <div id="review-status"></div>
+
+      <!-- Step 1: Sample -->
+      <div id="panel-sample">
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">
+          Samples 10% of all completed primary evaluations uniformly. Safe to run multiple times — already-sampled cases are skipped.
+        </p>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="action-btn" id="btn-sample" onclick="sampleCases()">Sample for Second Review</button>
+          <span class="result-msg" id="sample-result"></span>
         </div>
       </div>
+
+      <!-- Step 2: Select reviewers (hidden until step 1 done) -->
+      <div id="panel-reviewers" style="display:none;margin-top:16px;">
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:8px;">
+          Select 1–4 reviewers. These are operators who registered via the reviewer login.
+        </p>
+        <div class="reviewer-list" id="reviewer-list"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+          <button class="action-btn" id="btn-distribute" onclick="distributeCases()" disabled>Distribute Cases</button>
+          <span class="result-msg" id="distribute-result"></span>
+        </div>
+      </div>
+
+      <!-- Reviewer queue links (shown after distribution) -->
+      <div id="panel-reviewer-links" style="display:none;margin-top:16px;">
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:8px;">Open reviewer queues:</p>
+        <div id="reviewer-links" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- Review table -->
+      <div id="review-table" style="margin-top:16px;"></div>
     </div>
   </div>
 
   <!-- Data exports -->
   <div class="section">
-    <div class="section-header">
-      <div class="section-title">Data Exports</div>
-    </div>
+    <div class="section-header"><div class="section-title">Data Exports</div></div>
     <div class="export-grid">
       <div class="export-card">
         <div class="export-card-title">Evaluations</div>
-        <div class="export-card-desc">All submitted operator decisions — arm, algorithm recommendation, decision, override flag, response time, and reasoning.</div>
+        <div class="export-card-desc">All operator decisions — arm, recommendation, decision, override, response time, dwell time, reasoning.</div>
         <a href="/admin/export/evaluations.csv">Download evaluations.csv</a>
       </div>
       <div class="export-card">
         <div class="export-card-title">Survey Responses</div>
-        <div class="export-card-desc">Post-task salience survey — salience, standout, and confidence ratings linked to operator demographics.</div>
+        <div class="export-card-desc">Post-task salience survey + end-of-session feedback.</div>
         <a href="/admin/export/survey.csv">Download survey_responses.csv</a>
       </div>
       <div class="export-card">
         <div class="export-card-title">Second Reviews</div>
-        <div class="export-card-desc">Secondary review outcomes for treatment-arm overrides. Primary decision is revealed only after secondary review is complete.</div>
+        <div class="export-card-desc">Secondary review outcomes. Primary decision revealed after secondary submission.</div>
         <a href="/admin/export/second_reviews.csv">Download second_reviews.csv</a>
       </div>
     </div>
   </div>
 
-</div><!-- /.shell -->
+</div>
 
 <script>
-  window.addEventListener('DOMContentLoaded', loadReviewStatus);
+  window.addEventListener('DOMContentLoaded', loadStatus);
 
-  async function loadReviewStatus() {
+  // ── Load review status on page load ──
+  async function loadStatus() {
     try {
       const res = await fetch('/admin/review/status');
       if (!res.ok) return;
-      renderReviewStatus(await res.json());
-    } catch(e) { /* silently ignore on load */ }
+      const data = await res.json();
+      renderStatus(data);
+    } catch(e) {}
   }
 
-  function renderReviewStatus(data) {
-    if (data.total === 0) return;
+  function renderStatus(data) {
+    const el = document.getElementById('review-status');
+    if (data.total === 0 && data.unassigned === 0) {
+      el.innerHTML = '';
+      return;
+    }
 
-    // Build reviewer links for pending reviewers
-    const reviewerLinks = (data.pending_reviewers || []).map((r, i) =>
-      `<a href="/admin/review/open/${r.session_id}"
-          style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
-                 background:var(--btn);color:#fff;border-radius:8px;
-                 font-size:0.76rem;font-weight:800;text-decoration:none;
-                 transition:background 0.15s;"
-          onmouseover="this.style.background='var(--btn-hover)'"
-          onmouseout="this.style.background='var(--btn)'"
-          title="Sets session cookie for this reviewer and opens their queue. Use incognito if you need to keep admin access open."
-       >Open Reviewer Queue ${i + 1} ↗</a>`
-    ).join('');
-
-    document.getElementById('review-status-body').innerHTML = `
+    el.innerHTML = `
       <div class="review-stat-grid">
-        <div class="review-stat">
-          <div class="review-stat-label">Total Assigned</div>
-          <div class="review-stat-value">${data.total}</div>
-        </div>
-        <div class="review-stat">
-          <div class="review-stat-label">Pending Review</div>
-          <div class="review-stat-value" style="color:var(--amber-text);">${data.pending}</div>
-        </div>
-        <div class="review-stat">
-          <div class="review-stat-label">Completed</div>
-          <div class="review-stat-value" style="color:var(--green-text);">${data.completed}</div>
-        </div>
+        <div class="review-stat"><div class="review-stat-label">Sampled</div><div class="review-stat-value">${data.total}</div></div>
+        <div class="review-stat"><div class="review-stat-label">Unassigned</div><div class="review-stat-value" style="color:var(--amber-text);">${data.unassigned}</div></div>
+        <div class="review-stat"><div class="review-stat-label">Assigned (Pending)</div><div class="review-stat-value" style="color:var(--blue-text);">${data.assigned_pending}</div></div>
+        <div class="review-stat"><div class="review-stat-label">Completed</div><div class="review-stat-value" style="color:var(--green-text);">${data.completed}</div></div>
       </div>
-      ${reviewerLinks ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px;">${reviewerLinks}</div>` : ''}
-      ${data.reviews.length ? renderReviewTable(data.reviews) : ''}
     `;
+
+    // Show step 2 if there are unassigned reviews
+    if (data.unassigned > 0) {
+      loadReviewers();
+      document.getElementById('panel-reviewers').style.display = 'block';
+      setActiveStep(2);
+    }
+
+    // Show reviewer links if there are assigned pending reviews
+    if (data.pending_reviewers && data.pending_reviewers.length > 0) {
+      const linksEl = document.getElementById('reviewer-links');
+      linksEl.innerHTML = data.pending_reviewers.map((r, i) =>
+        `<a href="/admin/review/open/${r.session_id}" class="action-btn" style="font-size:0.74rem;">
+          Open Reviewer ${i+1} ↗
+        </a>`
+      ).join('');
+      document.getElementById('panel-reviewer-links').style.display = 'block';
+      setActiveStep(3);
+    }
+
+    // Render review table if reviews exist
+    if (data.reviews && data.reviews.length > 0) {
+      renderReviewTable(data.reviews);
+    }
   }
 
   function renderReviewTable(reviews) {
     const rows = reviews.map(r => {
       const dec = r.secondary_decision;
-      const pill = dec
-        ? `<span class="pill pill-${dec}">${dec.toUpperCase()}</span>`
-        : `<span style="color:var(--muted);font-size:0.78rem;">Pending</span>`;
+      const status = !r.secondary_operator_id
+        ? '<span class="pill pill-unassigned">Unassigned</span>'
+        : dec
+          ? `<span class="pill pill-${dec}">${dec.toUpperCase()}</span>`
+          : '<span style="color:var(--muted);font-size:0.78rem;">Pending</span>';
       return `<tr>
         <td class="mono">${r.case_id.substring(0,8)}…</td>
         <td class="mono">${r.primary_operator_id.substring(0,8)}…</td>
         <td class="mono">${r.secondary_operator_id ? r.secondary_operator_id.substring(0,8)+'…' : '—'}</td>
         <td>${r.review_type || '—'}</td>
-        <td>${r.experience_gap !== null ? (r.experience_gap >= 0 ? '+' : '') + r.experience_gap + ' yrs' : '—'}</td>
-        <td>${pill}</td>
+        <td>${r.experience_gap !== null ? (r.experience_gap>=0?'+':'')+r.experience_gap+'y' : '—'}</td>
+        <td>${status}</td>
       </tr>`;
     }).join('');
-    return `
-      <div style="margin-top:14px;overflow-x:auto;">
+
+    document.getElementById('review-table').innerHTML = `
+      <div style="overflow-x:auto;">
         <table>
           <thead><tr>
             <th>Case ID</th><th>Primary Op</th><th>Secondary Op</th>
@@ -383,35 +338,102 @@
       </div>`;
   }
 
-  async function assignReviews() {
-    if (!confirm('Assign second reviews for all treatment-arm overrides from completed sessions?\n\nThis is safe to run multiple times — already-assigned cases are skipped.')) return;
+  function setActiveStep(n) {
+    for (let i = 1; i <= 3; i++) {
+      const el = document.getElementById(`step-${i}`);
+      el.classList.toggle('active', i <= n);
+    }
+  }
 
-    const btn    = document.getElementById('assign-btn');
-    const result = document.getElementById('assign-result');
-    btn.disabled    = true;
-    btn.textContent = 'Assigning…';
-    result.style.display = 'none';
+  // ── Step 1: Sample ──
+  async function sampleCases() {
+    const btn = document.getElementById('btn-sample');
+    const msg = document.getElementById('sample-result');
+    btn.disabled = true; btn.textContent = 'Sampling…';
+    msg.style.display = 'none';
 
     try {
-      const res  = await fetch('/admin/review/assign', { method: 'POST' });
+      const res = await fetch('/admin/review/sample', {method:'POST'});
       const data = await res.json();
-      if (res.ok) {
-        result.textContent   = `Assigned: ${data.assigned} · Skipped: ${data.skipped}`;
-        result.className     = 'assign-result ok';
-        result.style.display = 'inline-flex';
-        loadReviewStatus();
+      if (data.ok) {
+        msg.textContent = `Sampled: ${data.sampled} from ${data.total_eligible} eligible`;
+        msg.className = 'result-msg ok'; msg.style.display = 'inline-flex';
+        loadStatus();
       } else {
-        result.textContent   = data.detail || 'Assignment failed';
-        result.className     = 'assign-result err';
-        result.style.display = 'inline-flex';
+        msg.textContent = data.detail || 'Failed';
+        msg.className = 'result-msg err'; msg.style.display = 'inline-flex';
       }
     } catch(e) {
-      result.textContent   = 'Network error';
-      result.className     = 'assign-result err';
-      result.style.display = 'inline-flex';
+      msg.textContent = 'Network error';
+      msg.className = 'result-msg err'; msg.style.display = 'inline-flex';
     } finally {
-      btn.disabled    = false;
-      btn.textContent = 'Assign Second Reviews';
+      btn.disabled = false; btn.textContent = 'Sample for Second Review';
+    }
+  }
+
+  // ── Step 2: Load reviewers ──
+  async function loadReviewers() {
+    try {
+      const res = await fetch('/admin/review/reviewers');
+      if (!res.ok) return;
+      const data = await res.json();
+
+      const listEl = document.getElementById('reviewer-list');
+      if (data.reviewers.length === 0) {
+        listEl.innerHTML = '<p style="font-size:0.82rem;color:var(--muted);">No reviewers registered. Ask reviewers to log in at /reviewer-login.</p>';
+        return;
+      }
+
+      listEl.innerHTML = data.reviewers.map(r => `
+        <div class="reviewer-row">
+          <label>
+            <input type="checkbox" name="reviewer" value="${r.operator_id}"
+                   onchange="updateDistributeBtn()">
+            <strong>${r.initials}</strong>
+          </label>
+          <span class="reviewer-meta">${r.role} · ${r.experience_years}y · ${r.locale.toUpperCase()} · Assigned: ${r.assigned} · Done: ${r.completed}</span>
+        </div>
+      `).join('');
+    } catch(e) {}
+  }
+
+  function updateDistributeBtn() {
+    const checked = document.querySelectorAll('input[name="reviewer"]:checked');
+    document.getElementById('btn-distribute').disabled = checked.length < 1;
+  }
+
+  // ── Step 3: Distribute ──
+  async function distributeCases() {
+    const checked = document.querySelectorAll('input[name="reviewer"]:checked');
+    const ids = Array.from(checked).map(cb => cb.value);
+
+    if (ids.length < 1) { alert('Select at least 1 reviewer.'); return; }
+
+    const btn = document.getElementById('btn-distribute');
+    const msg = document.getElementById('distribute-result');
+    btn.disabled = true; btn.textContent = 'Distributing…';
+    msg.style.display = 'none';
+
+    try {
+      const res = await fetch('/admin/review/distribute', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({reviewer_ids: ids}),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        msg.textContent = `Distributed: ${data.distributed} cases across ${ids.length} reviewers`;
+        msg.className = 'result-msg ok'; msg.style.display = 'inline-flex';
+        loadStatus();
+      } else {
+        msg.textContent = data.detail || 'Failed';
+        msg.className = 'result-msg err'; msg.style.display = 'inline-flex';
+      }
+    } catch(e) {
+      msg.textContent = 'Network error';
+      msg.className = 'result-msg err'; msg.style.display = 'inline-flex';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Distribute Cases';
     }
   }
 </script>
