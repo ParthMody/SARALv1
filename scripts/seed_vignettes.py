@@ -1,30 +1,36 @@
 # scripts/seed_vignettes.py
 """
-Vignette seeder for SARAL v2 Phase 2 — Mumbai pilot (final-officer framing).
+Vignette seeder for SARAL v2 Phase 2 — Mumbai pilot (v2.4-mumbai-final).
 
-Design (v2.4):
-  16 profiles × 2 arm versions = 32 vignette objects.
-  Each operator draws 12 profile_ids from 16 at session time.
-  Within those 12, 6 are randomly assigned control, 6 treatment.
-  No List A/B coupling — assignment is fully randomised at draw.
+Grounded in: GR ZoPuDho-0810/Pr.Kr.96/2018/ZoPaSu-1
 
-  Rule logic is MULTI-FACTOR:
-    eligible   = pre_cutoff_status == Yes AND carpet_area <= 200 AND income == low
-    ineligible = any of those conditions violated
-    Some borderline cases have mixed signals (e.g. pre_cutoff Yes but carpet > 200)
-    to prevent operators from learning a single-field rule.
+Design:
+  16 profiles × 2 arm versions (control/treatment) = 32 vignette objects.
+  Each operator draws 12 from 16, assigned 6 control + 6 treatment at session time.
+  No List A/B coupling — fully randomised at draw.
 
-  Treatment signals ADD information beyond the structured record.
-  They are observations, history, or third-party statements — never redundant
-  restatements of what the structured fields already show.
+  Signal direction LOCKED. Do not modify after seeding.
 
-  Signal direction is coded and LOCKED. Do not modify after seeding.
+  Cell distribution (balanced 4×4):
+    APPROVE + WITH:    profiles 3, 4, 10, 15     (4)
+    APPROVE + AGAINST: profiles 7, 8, 13, 14     (4)
+    REJECT  + WITH:    profiles 1, 2, 5, 11      (4)
+    REJECT  + AGAINST: profiles 6, 9, 12, 16     (4)
 
-  Cell distribution:
-    APPROVE + WITH:    profiles 3, 4, 10, 15, 16    (5)
-    APPROVE + AGAINST: profiles 7, 8, 13, 14        (4)
-    REJECT  + WITH:    profiles 1, 2, 5, 11, 12     (5)
-    REJECT  + AGAINST: profiles 6, 9                 (2)
+  Rule logic (multi-factor, from 2018 GR):
+    Eligible if ALL:
+      - Structure existed on/before 1.1.2011 (mandatory proof from Vivaran Patra)
+      - Current occupancy confirmed
+      - Self-declaration: no other property
+      - Aadhaar submitted
+    Track B (post-2011 arrival): additionally needs notarized consent + OTC + extra proofs
+    Disqualified if: D1 (family rehab), D2/D3 (non-independence), D4 (false declaration)
+
+  All treatment signals paraphrased from:
+    1. Phase 1 verification corpus (260 PMAY field observations, Maharashtra, 2026)
+    2. GR-documented disqualifications (D1-D4, VP1-VP6, Track A/B)
+
+  All PII is synthetic. No vignette corresponds to an identifiable person.
 
 Usage:
     python -m scripts.seed_vignettes          # seed
@@ -46,36 +52,25 @@ from app.models import (
 POOL_VERSION = "v2.4-mumbai-final"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# RULE LOGIC (documented, multi-factor)
+# 16 PROFILES — GR-grounded, signal direction locked
 #
-# Eligible if ALL of:
-#   - pre_cutoff_status == "Yes"
-#   - carpet_area_sqft <= 200
-#   - declared_income_band == "low"
-#
-# Ineligible if ANY of:
-#   - pre_cutoff_status == "No"
-#   - carpet_area_sqft > 200
-#   - declared_income_band != "low"
-#
-# IMPORTANT: Some profiles are deliberately borderline — they meet 2 of 3
-# criteria but fail on 1. This prevents operators from learning a single-field
-# heuristic. The algo recommendation reflects the overall rule output.
-#
-# Document completeness is distributed across BOTH arms — some APPROVE cases
-# have sparse docs (genuine eligibility, paperwork gaps), some REJECT cases
-# have full docs (fully documented but ineligible).
+# Categories:
+#   VP1/VP2 cutoff proof (1, 6, 12, 16)
+#   Family disqualification D1/D2/D3 (2, 5)
+#   Track A strong (3, 10)
+#   Track B transfer (4, 9, 15)
+#   Affluence / normative (7)
+#   Self-declaration / property (8, 11)
+#   Current occupancy (13)
+#   Commercial misuse (14)
 # ─────────────────────────────────────────────────────────────────────────────
 
 PROFILES = [
 
     # ══════════════════════════════════════════════════════════════════════════
-    # A. PAKKA-HOUSE STATUS (profiles 1-4)
+    # PROFILE 1 — REJECT + WITH
+    # VP1 cutoff proof absent + site evidence of recent arrival
     # ══════════════════════════════════════════════════════════════════════════
-
-    # ── Profile 1 — REJECT + WITH ────────────────────────────────────────────
-    # Structured: pakka, large area, no pre-cutoff → clearly ineligible
-    # Signal ADDS: behavioural observation (applicant admitted to owning house)
     {
         "profile_id": 1,
         "category": "pakka_house_status",
@@ -83,47 +78,57 @@ PROFILES = [
         "rule_result": "INELIGIBLE_BY_RULE",
         "signal_direction": "WITH",
         "profile": {
-            "electoral_roll_year": 2010,
-            "structure_type": "pakka",
-            "carpet_area_sqft": 225,
-            "pre_cutoff_status": "No",
-            "documents": ["Aadhaar", "Electoral roll", "Income certificate"],
-            "declared_income_band": "medium",
-            "household_size": 3,
+            "name": "Ramesh Jadhav",
+            "age": 47,
+            "slum": "Bhabrekar Nagar, Andheri (W)",
+            "survey_no": "142 (pt), Andheri",
+            "occupancy_type": "Residential",
+            "claimed_since": 2008,
+            "documents": ["Electricity bill (2012)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "NOT on 2011 or earlier roll",
+            "municipal_tax": "None",
+            "society": "None",
+            "housing": "Tin sheets + tarpaulin",
         },
-        "control_note_en": "Field visit: occupancy confirmed at registered address; routine check completed.",
-        "control_note_mr": "क्षेत्रभेट: नोंदणीकृत पत्त्यावर वास्तव्य पुष्टी; नियमित तपासणी पूर्ण.",
-        "treatment_note_en": "Field visit: applicant admitted to owning the house during conversation; neighbours confirmed long-term residence.",
-        "treatment_note_mr": "क्षेत्रभेट: अर्जदाराने संभाषणात घर स्वतःचे असल्याचे मान्य केले; शेजाऱ्यांनी दीर्घकालीन वास्तव्य पुष्टी केली.",
+        "control_note_en": "Applicant claims residence since 2008. Electricity bill from 2012 submitted. No voter roll entry for 2011 or earlier. Self-declarations filed. Aadhaar submitted.",
+        "control_note_mr": "अर्जदार २००८ पासून राहत असल्याचा दावा करतो. २०१२ चे वीज बिल सादर. २०११ किंवा त्यापूर्वीची मतदार यादी नोंद नाही. स्वघोषणापत्रे दाखल. आधार सादर.",
+        "treatment_note_en": "Applicant claims residence since 2008. Electricity bill from 2012 submitted. No voter roll entry for 2011 or earlier. Self-declarations filed. Aadhaar submitted. During site visit, structure appeared recently reinforced with new tin sheets. Neighbours could not confirm applicant's presence before 2013.",
+        "treatment_note_mr": "अर्जदार २००८ पासून राहत असल्याचा दावा करतो. २०१२ चे वीज बिल सादर. २०११ किंवा त्यापूर्वीची मतदार यादी नोंद नाही. स्वघोषणापत्रे दाखल. आधार सादर. क्षेत्रभेटीत संरचना नवीन टिन पत्र्यांनी अलीकडेच मजबूत केलेली दिसली. शेजाऱ्यांना अर्जदाराची २०१३ पूर्वीची उपस्थिती पुष्टी करता आली नाही.",
     },
 
-    # ── Profile 2 — REJECT + WITH ────────────────────────────────────────────
-    # Structured: semi but large area, no pre-cutoff, medium income → ineligible
-    # Signal ADDS: history (prior PMAY allocation — not in structured record)
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 2 — REJECT + WITH
+    # D1: family member already received free rehab
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 2,
-        "category": "pakka_house_status",
+        "category": "family_property",
         "algo_recommendation": "reject",
         "rule_result": "INELIGIBLE_BY_RULE",
         "signal_direction": "WITH",
         "profile": {
-            "electoral_roll_year": 2011,
-            "structure_type": "semi",
-            "carpet_area_sqft": 210,
-            "pre_cutoff_status": "No",
-            "documents": ["Aadhaar", "Electoral roll"],
-            "declared_income_band": "medium",
-            "household_size": 2,
+            "name": "Sunita Kamble",
+            "age": 38,
+            "slum": "Rajiv Gandhi Nagar, Bandra (E)",
+            "survey_no": "67 (pt), Bandra",
+            "occupancy_type": "Residential",
+            "claimed_since": 2005,
+            "documents": ["Voter roll (2009)", "Aadhaar", "Self-declaration (A+B)", "Electricity bill (2006)"],
+            "voter_roll": "2009",
+            "municipal_tax": "None",
+            "society": "Rajiv Gandhi CHS (registered 2004)",
+            "housing": "Semi-pucca (brick + tin roof)",
         },
-        "control_note_en": "Verification: site check done; resident available during visit.",
-        "control_note_mr": "सत्यापन: क्षेत्र तपासणी पूर्ण; भेटीदरम्यान रहिवासी उपलब्ध.",
-        "treatment_note_en": "Field visit: applicant received pakka house through prior PMAY allocation per ward records.",
-        "treatment_note_mr": "क्षेत्रभेट: वॉर्ड नोंदीनुसार अर्जदाराला पूर्वीच्या PMAY वाटपातून पक्के घर मिळाले.",
+        "control_note_en": "Applicant on voter roll since 2009. Electricity connection from 2006. Society member since 2004. Self-declarations filed. Aadhaar submitted.",
+        "control_note_mr": "अर्जदार २००९ पासून मतदार यादीत. २००६ पासून वीज जोडणी. २००४ पासून सोसायटी सदस्य. स्वघोषणापत्रे दाखल. आधार सादर.",
+        "treatment_note_en": "Applicant on voter roll since 2009. Electricity connection from 2006. Society member since 2004. Self-declarations filed. Aadhaar submitted. Husband Prakash Kamble received free rehabilitation flat under SRS scheme in 2017 at same location.",
+        "treatment_note_mr": "अर्जदार २००९ पासून मतदार यादीत. २००६ पासून वीज जोडणी. २००४ पासून सोसायटी सदस्य. स्वघोषणापत्रे दाखल. आधार सादर. पती प्रकाश कांबळे यांना २०१७ मध्ये त्याच ठिकाणी SRS योजनेंतर्गत मोफत पुनर्वसन सदनिका मिळाली.",
     },
 
-    # ── Profile 3 — APPROVE + WITH ───────────────────────────────────────────
-    # Structured: kuccha, small area, pre-cutoff yes, low income → eligible
-    # Signal ADDS: observation (no pakka house, rents — not in structured record)
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 3 — APPROVE + WITH
+    # Track A: full documentation + visible hardship
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 3,
         "category": "pakka_house_status",
@@ -131,51 +136,58 @@ PROFILES = [
         "rule_result": "ELIGIBLE_BY_RULE",
         "signal_direction": "WITH",
         "profile": {
-            "electoral_roll_year": 2002,
-            "structure_type": "kuccha",
-            "carpet_area_sqft": 150,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Ration card"],
-            "declared_income_band": "low",
-            "household_size": 5,
+            "name": "Laxmi Waghmare",
+            "age": 52,
+            "slum": "Shivaji Nagar, Govandi",
+            "survey_no": "203 (pt), Govandi",
+            "occupancy_type": "Residential",
+            "claimed_since": 1998,
+            "documents": ["Voter roll (2000)", "Electricity bill (2003)", "Municipal tax receipt (2005)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "2000",
+            "municipal_tax": "Paid since 2005",
+            "society": "Shivaji CHS (founding member, registered 1999)",
+            "housing": "Kuccha (bamboo + plastic sheet)",
         },
-        "control_note_en": "Field visit: structure observed; resident confirmed at site.",
-        "control_note_mr": "क्षेत्रभेट: संरचना पाहिली; क्षेत्रात रहिवासी पुष्टी.",
-        "treatment_note_en": "Field visit: no pakka house anywhere; applicant rents current dwelling from a relative.",
-        "treatment_note_mr": "क्षेत्रभेट: कुठेही पक्के घर नाही; अर्जदार नातेवाईकांकडून सध्याचे निवासस्थान भाड्याने घेतो.",
+        "control_note_en": "Applicant on voter roll since 2000. Electricity from 2003. Municipal tax paid since 2005. Society founding member. All documents verified. Pre-cutoff existence confirmed. Current occupancy confirmed via recent voter roll entry.",
+        "control_note_mr": "अर्जदार २००० पासून मतदार यादीत. २००३ पासून वीज. २००५ पासून नगरपालिका कर भरला. सोसायटी संस्थापक सदस्य. सर्व कागदपत्रे सत्यापित. कटऑफपूर्व अस्तित्व पुष्टी. अलीकडील मतदार यादी नोंदीद्वारे सध्याचे वास्तव्य पुष्टी.",
+        "treatment_note_en": "Applicant on voter roll since 2000. Electricity from 2003. Municipal tax paid since 2005. Society founding member. All documents verified. Pre-cutoff existence confirmed. Current occupancy confirmed via recent voter roll entry. Structure clearly impoverished; verifier notes household visibly in long-term hardship.",
+        "treatment_note_mr": "अर्जदार २००० पासून मतदार यादीत. २००३ पासून वीज. २००५ पासून नगरपालिका कर भरला. सोसायटी संस्थापक सदस्य. सर्व कागदपत्रे सत्यापित. कटऑफपूर्व अस्तित्व पुष्टी. अलीकडील मतदार यादी नोंदीद्वारे सध्याचे वास्तव्य पुष्टी. संरचना स्पष्टपणे दरिद्री; सत्यापनकर्त्याने कुटुंब दीर्घकालीन हालाखीत असल्याचे नोंदवले.",
     },
 
-    # ── Profile 4 — APPROVE + WITH ───────────────────────────────────────────
-    # Structured: kuccha, small, pre-cutoff yes → eligible; sparse docs
-    # Signal ADDS: observation (chawl, shared facilities — context not in record)
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 4 — APPROVE + WITH
+    # Track B: complete transfer + livelihood
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 4,
-        "category": "pakka_house_status",
+        "category": "tenancy_occupancy",
         "algo_recommendation": "approve",
         "rule_result": "ELIGIBLE_BY_RULE",
         "signal_direction": "WITH",
         "profile": {
-            "electoral_roll_year": 1998,
-            "structure_type": "kuccha",
-            "carpet_area_sqft": 140,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Electoral roll"],
-            "declared_income_band": "low",
-            "household_size": 4,
+            "name": "Abdul Shaikh",
+            "age": 34,
+            "slum": "Dharavi Cross Road, Mahim",
+            "survey_no": "88 (pt), Mahim",
+            "occupancy_type": "Residential + Commercial (tailoring)",
+            "claimed_since": 2014,
+            "documents": ["Voter roll (2019)", "Electricity bill (2015)", "Aadhaar", "Self-declaration (A+B)", "Notarized consent (2014)", "OTC receipt (₹60,000 paid 2019)"],
+            "voter_roll": "2019",
+            "municipal_tax": "None",
+            "society": "None",
+            "housing": "Semi-pucca (brick walls, tin roof)",
+            "prior_occupant_proof": "Voter roll (2008), Electricity bill (2009)",
         },
-        "control_note_en": "Verification: standard check completed; documentation submitted.",
-        "control_note_mr": "सत्यापन: नियमित तपासणी पूर्ण; कागदपत्रे सादर.",
-        "treatment_note_en": "Field visit: applicant lives in chawl with shared toilet and water; no individual home observed.",
-        "treatment_note_mr": "क्षेत्रभेट: अर्जदार सामायिक शौचालय व पाण्यासह चाळीत राहतो; वैयक्तिक घर दिसले नाही.",
+        "control_note_en": "Applicant is Track B — arrived 2014. Structure pre-cutoff existence confirmed via prior occupant's voter roll (2008) and electricity bill (2009). Notarized consent and OTC receipt submitted. Current voter roll entry 2019. Site inspection completed.",
+        "control_note_mr": "अर्जदार Track B — २०१४ मध्ये आला. पूर्वीच्या रहिवाशाच्या मतदार यादी (२००८) आणि वीज बिल (२००९) द्वारे संरचनेचे कटऑफपूर्व अस्तित्व पुष्टी. नोटरीकृत संमती आणि OTC पावती सादर. सध्याची मतदार यादी नोंद २०१९. क्षेत्र तपासणी पूर्ण.",
+        "treatment_note_en": "Applicant is Track B — arrived 2014. Structure pre-cutoff existence confirmed via prior occupant's voter roll (2008) and electricity bill (2009). Notarized consent and OTC receipt submitted. Current voter roll entry 2019. Site inspection completed. Applicant runs small tailoring unit from same structure; family of four shares the space.",
+        "treatment_note_mr": "अर्जदार Track B — २०१४ मध्ये आला. पूर्वीच्या रहिवाशाच्या मतदार यादी (२००८) आणि वीज बिल (२००९) द्वारे संरचनेचे कटऑफपूर्व अस्तित्व पुष्टी. नोटरीकृत संमती आणि OTC पावती सादर. सध्याची मतदार यादी नोंद २०१९. क्षेत्र तपासणी पूर्ण. अर्जदार त्याच संरचनेतून लहान शिलाई युनिट चालवतो; चार जणांचे कुटुंब जागा सामायिक करते.",
     },
 
     # ══════════════════════════════════════════════════════════════════════════
-    # B. FAMILY PROPERTY (profiles 5-8)
+    # PROFILE 5 — REJECT + WITH
+    # D2/D3: non-independence from family member's structure
     # ══════════════════════════════════════════════════════════════════════════
-
-    # ── Profile 5 — REJECT + WITH ────────────────────────────────────────────
-    # Structured: borderline (pre-cutoff No, semi, medium) → ineligible
-    # Signal ADDS: third-party info (neighbours say father transferred property)
     {
         "profile_id": 5,
         "category": "family_property",
@@ -183,71 +195,87 @@ PROFILES = [
         "rule_result": "INELIGIBLE_BY_RULE",
         "signal_direction": "WITH",
         "profile": {
-            "electoral_roll_year": 2012,
-            "structure_type": "semi",
-            "carpet_area_sqft": 200,
-            "pre_cutoff_status": "No",
-            "documents": ["Aadhaar", "Electoral roll", "Bank statement"],
-            "declared_income_band": "medium",
-            "household_size": 3,
+            "name": "Ganesh Patil",
+            "age": 29,
+            "slum": "Ambedkar Nagar, Kurla (W)",
+            "survey_no": "156 (pt), Kurla",
+            "occupancy_type": "Residential",
+            "claimed_since": 2010,
+            "documents": ["Aadhaar (address: father's structure)", "Self-declaration (A+B)"],
+            "voter_roll": "Same address as father Mohan Patil",
+            "municipal_tax": "None",
+            "society": "None",
+            "housing": "Claimed separate structure (no photographic evidence)",
+            "father_status": "Mohan Patil — eligible, separate Annexure-II filed",
         },
-        "control_note_en": "Field visit: occupancy verified; basic details confirmed at site.",
-        "control_note_mr": "क्षेत्रभेट: वास्तव्य सत्यापित; मूलभूत तपशील क्षेत्रात पुष्टी.",
-        "treatment_note_en": "Verification: neighbours say father recently transferred property to applicant's name.",
-        "treatment_note_mr": "सत्यापन: शेजाऱ्यांच्या म्हणण्यानुसार वडिलांनी अलीकडे मालमत्ता अर्जदाराच्या नावावर हस्तांतरित केली.",
+        "control_note_en": "Applicant claims separate structure adjacent to father Mohan Patil's structure. Voter roll shows same address as father. No independent electricity connection. No separate municipal tax assessment. Father has filed separate Annexure-II and is eligible.",
+        "control_note_mr": "अर्जदार वडील मोहन पाटील यांच्या संरचनेला लागून वेगळी संरचना असल्याचा दावा करतो. मतदार यादीत वडिलांचाच पत्ता. स्वतंत्र वीज जोडणी नाही. स्वतंत्र नगरपालिका कर मूल्यांकन नाही. वडिलांनी स्वतंत्र Annexure-II दाखल केला आणि ते पात्र आहेत.",
+        "treatment_note_en": "Applicant claims separate structure adjacent to father Mohan Patil's structure. Voter roll shows same address as father. No independent electricity connection. No separate municipal tax assessment. Father has filed separate Annexure-II and is eligible. During site visit, no visible partition or separate entrance was observed between the two claimed structures.",
+        "treatment_note_mr": "अर्जदार वडील मोहन पाटील यांच्या संरचनेला लागून वेगळी संरचना असल्याचा दावा करतो. मतदार यादीत वडिलांचाच पत्ता. स्वतंत्र वीज जोडणी नाही. स्वतंत्र नगरपालिका कर मूल्यांकन नाही. वडिलांनी स्वतंत्र Annexure-II दाखल केला आणि ते पात्र आहेत. क्षेत्रभेटीत दोन दावा केलेल्या संरचनांमध्ये कोणतीही दृश्य विभाजन किंवा स्वतंत्र प्रवेशद्वार दिसले नाही.",
     },
 
-    # ── Profile 6 — REJECT + AGAINST ─────────────────────────────────────────
-    # Structured: borderline (pre-cutoff No, semi) → ineligible by rule
-    # Signal ADDS: suggests applicant is genuinely without assets — pushes AGAINST rejection
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 6 — REJECT + AGAINST
+    # VP2 timing ambiguous + neighbour confirmation creates doubt
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 6,
-        "category": "family_property",
+        "category": "tenancy_occupancy",
         "algo_recommendation": "reject",
         "rule_result": "INELIGIBLE_BY_RULE",
         "signal_direction": "AGAINST",
         "profile": {
-            "electoral_roll_year": 2009,
-            "structure_type": "semi",
-            "carpet_area_sqft": 195,
-            "pre_cutoff_status": "No",
-            "documents": ["Aadhaar", "Income certificate"],
-            "declared_income_band": "medium",
-            "household_size": 4,
+            "name": "Meena Gupta",
+            "age": 44,
+            "slum": "Transit Camp, Goregaon (E)",
+            "survey_no": "211 (pt), Goregaon",
+            "occupancy_type": "Residential",
+            "claimed_since": 2009,
+            "documents": ["Electricity bill (Jan 2012, connection date Nov 2011)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "NOT on roll before 2014",
+            "municipal_tax": "None",
+            "society": "None",
+            "housing": "Kuccha (tin + bamboo)",
         },
-        "control_note_en": "Verification: site check complete; resident present during visit.",
-        "control_note_mr": "सत्यापन: क्षेत्र तपासणी पूर्ण; भेटीदरम्यान रहिवासी उपस्थित.",
-        "treatment_note_en": "Field visit: applicant lives in separate household; no inherited property access; supports family on own income.",
-        "treatment_note_mr": "क्षेत्रभेट: अर्जदार वेगळ्या घरात राहतो; वारसा मालमत्तेचा प्रवेश नाही; स्वतःच्या उत्पन्नावर कुटुंबाचा उदरनिर्वाह.",
+        "control_note_en": "Applicant's earliest document is electricity bill from January 2012 with connection date November 2011. No voter roll entry before 2014. Self-declarations filed. Aadhaar submitted. No other pre-cutoff proof available.",
+        "control_note_mr": "अर्जदाराचे सर्वात जुने कागदपत्र जानेवारी २०१२ चे वीज बिल आहे ज्यावर जोडणी तारीख नोव्हेंबर २०११ आहे. २०१४ पूर्वी मतदार यादी नोंद नाही. स्वघोषणापत्रे दाखल. आधार सादर. इतर कटऑफपूर्व पुरावा उपलब्ध नाही.",
+        "treatment_note_en": "Applicant's earliest document is electricity bill from January 2012 with connection date November 2011. No voter roll entry before 2014. Self-declarations filed. Aadhaar submitted. Applicant claims continuous residence since 2009; surrounding households confirm long-term presence.",
+        "treatment_note_mr": "अर्जदाराचे सर्वात जुने कागदपत्र जानेवारी २०१२ चे वीज बिल आहे ज्यावर जोडणी तारीख नोव्हेंबर २०११ आहे. २०१४ पूर्वी मतदार यादी नोंद नाही. स्वघोषणापत्रे दाखल. आधार सादर. अर्जदार २००९ पासून सतत राहत असल्याचा दावा करतो; आसपासच्या कुटुंबांनी दीर्घकालीन उपस्थिती पुष्टी केली.",
     },
 
-    # ── Profile 7 — APPROVE + AGAINST ────────────────────────────────────────
-    # Structured: eligible (pre-cutoff Yes, kuccha, small, low income)
-    # Signal ADDS: family context that casts doubt (family has city house)
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 7 — APPROVE + AGAINST
+    # Eligible but affluence indicators inconsistent
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 7,
-        "category": "family_property",
+        "category": "visible_affluence",
         "algo_recommendation": "approve",
         "rule_result": "ELIGIBLE_BY_RULE",
         "signal_direction": "AGAINST",
         "profile": {
-            "electoral_roll_year": 2005,
-            "structure_type": "kuccha",
-            "carpet_area_sqft": 175,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Electoral roll", "Bank statement"],
-            "declared_income_band": "low",
-            "household_size": 3,
+            "name": "Priya Deshmukh",
+            "age": 41,
+            "slum": "Ambujwadi, Malad (W)",
+            "survey_no": "178 (pt), Malad",
+            "occupancy_type": "Residential",
+            "claimed_since": 2003,
+            "documents": ["Voter roll (2005)", "Electricity bill (2004)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "2005",
+            "municipal_tax": "None",
+            "society": "Ambujwadi CHS (registered 2006)",
+            "housing": "Semi-pucca (brick + asbestos roof)",
         },
-        "control_note_en": "Field visit: documentation reviewed; no discrepancies noted.",
-        "control_note_mr": "क्षेत्रभेट: कागदपत्रे तपासली; विसंगती नाही.",
-        "treatment_note_en": "Field visit: family owns a flat in Thane; applicant claims to live separately but address overlaps.",
-        "treatment_note_mr": "क्षेत्रभेट: कुटुंबाचा ठाण्यात फ्लॅट आहे; अर्जदार वेगळे राहत असल्याचे सांगतो पण पत्ता ओव्हरलॅप होतो.",
+        "control_note_en": "Applicant on voter roll since 2005. Electricity from 2004. Society member since 2006. Self-declarations filed. Aadhaar submitted. Pre-cutoff existence confirmed. Current occupancy verified.",
+        "control_note_mr": "अर्जदार २००५ पासून मतदार यादीत. २००४ पासून वीज. २००६ पासून सोसायटी सदस्य. स्वघोषणापत्रे दाखल. आधार सादर. कटऑफपूर्व अस्तित्व पुष्टी. सध्याचे वास्तव्य सत्यापित.",
+        "treatment_note_en": "Applicant on voter roll since 2005. Electricity from 2004. Society member since 2006. Self-declarations filed. Aadhaar submitted. Pre-cutoff existence confirmed. Current occupancy verified. Locality is high-income zone; lifestyle indicators (vehicle, household interior) inconsistent with declared status.",
+        "treatment_note_mr": "अर्जदार २००५ पासून मतदार यादीत. २००४ पासून वीज. २००६ पासून सोसायटी सदस्य. स्वघोषणापत्रे दाखल. आधार सादर. कटऑफपूर्व अस्तित्व पुष्टी. सध्याचे वास्तव्य सत्यापित. परिसर उच्च-उत्पन्न क्षेत्र; जीवनशैली निर्देशक (वाहन, घराचे आतील) जाहीर स्थितीशी विसंगत.",
     },
 
-    # ── Profile 8 — APPROVE + AGAINST ────────────────────────────────────────
-    # Structured: eligible (pre-cutoff Yes, kuccha, low income)
-    # Signal ADDS: family land context that raises questions
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 8 — APPROVE + AGAINST
+    # Eligible but family ancestral land disclosure
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 8,
         "category": "family_property",
@@ -255,131 +283,148 @@ PROFILES = [
         "rule_result": "ELIGIBLE_BY_RULE",
         "signal_direction": "AGAINST",
         "profile": {
-            "electoral_roll_year": 2004,
-            "structure_type": "kuccha",
-            "carpet_area_sqft": 180,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Electoral roll", "Income certificate"],
-            "declared_income_band": "low",
-            "household_size": 6,
+            "name": "Vitthal More",
+            "age": 56,
+            "slum": "Panchsheel Nagar, Chembur",
+            "survey_no": "134 (pt), Chembur",
+            "occupancy_type": "Residential",
+            "claimed_since": 2001,
+            "documents": ["Voter roll (2004)", "Electricity bill (2002)", "Property tax receipt (2003)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "2004",
+            "municipal_tax": "Paid since 2003",
+            "society": "Panchsheel CHS (registered 2002)",
+            "housing": "Semi-pucca (brick + corrugated sheet)",
         },
-        "control_note_en": "Verification: records checked and filed; standard process.",
-        "control_note_mr": "सत्यापन: नोंदी तपासून दाखल; नियमित प्रक्रिया.",
-        "treatment_note_en": "Field visit: father has agriculture land in village; applicant has kacha house but family is not landless.",
-        "treatment_note_mr": "क्षेत्रभेट: वडिलांची गावात शेतजमीन; अर्जदाराचे कच्चे घर आहे पण कुटुंब भूमिहीन नाही.",
+        "control_note_en": "Applicant on voter roll since 2004. Electricity from 2002. Property tax paid. Society member. All documents verified. Pre-cutoff existence confirmed. Self-declaration states no other property owned.",
+        "control_note_mr": "अर्जदार २००४ पासून मतदार यादीत. २००२ पासून वीज. मालमत्ता कर भरला. सोसायटी सदस्य. सर्व कागदपत्रे सत्यापित. कटऑफपूर्व अस्तित्व पुष्टी. स्वघोषणापत्रात इतर मालमत्ता नसल्याचे नमूद.",
+        "treatment_note_en": "Applicant on voter roll since 2004. Electricity from 2002. Property tax paid. Society member. All documents verified. Pre-cutoff existence confirmed. Self-declaration states no other property owned. Family holds ancestral agricultural land in Satara district per applicant disclosure.",
+        "treatment_note_mr": "अर्जदार २००४ पासून मतदार यादीत. २००२ पासून वीज. मालमत्ता कर भरला. सोसायटी सदस्य. सर्व कागदपत्रे सत्यापित. कटऑफपूर्व अस्तित्व पुष्टी. स्वघोषणापत्रात इतर मालमत्ता नसल्याचे नमूद. अर्जदाराच्या खुलाशानुसार कुटुंबाची सातारा जिल्ह्यात पूर्वजांची शेतजमीन आहे.",
     },
 
     # ══════════════════════════════════════════════════════════════════════════
-    # C. TENANCY / OCCUPANCY (profiles 9-10)
+    # PROFILE 9 — REJECT + AGAINST
+    # Track B incomplete but hardship framing
     # ══════════════════════════════════════════════════════════════════════════
-
-    # ── Profile 9 — REJECT + AGAINST ─────────────────────────────────────────
-    # Structured: ineligible (no pre-cutoff, semi, medium)
-    # Signal ADDS: sympathy context — large needy family, junior officer flagged
     {
         "profile_id": 9,
-        "category": "tenancy_occupancy",
+        "category": "sympathy_framing",
         "algo_recommendation": "reject",
         "rule_result": "INELIGIBLE_BY_RULE",
         "signal_direction": "AGAINST",
         "profile": {
-            "electoral_roll_year": 2010,
-            "structure_type": "semi",
-            "carpet_area_sqft": 185,
-            "pre_cutoff_status": "No",
-            "documents": ["Aadhaar", "Electoral roll", "Ration card"],
-            "declared_income_band": "medium",
-            "household_size": 7,
+            "name": "Rekha Yadav",
+            "age": 36,
+            "slum": "Kranti Nagar, Bhandup (W)",
+            "survey_no": "195 (pt), Bhandup",
+            "occupancy_type": "Residential",
+            "claimed_since": 2015,
+            "documents": ["Voter roll (2019)", "Aadhaar", "Self-declaration (A+B)", "Electricity bill (2016)"],
+            "voter_roll": "2019",
+            "municipal_tax": "None",
+            "society": "None",
+            "housing": "Kuccha (tin + tarpaulin)",
+            "transfer_proof": "Handwritten consent (NOT notarized)",
+            "otc": "NOT paid",
+            "prior_occupant_proof": "Voter roll (2007)",
         },
-        "control_note_en": "Field visit: resident available at premises; routine verification.",
-        "control_note_mr": "क्षेत्रभेट: रहिवासी परिसरात उपलब्ध; नियमित सत्यापन.",
-        "treatment_note_en": "Field visit: tenant on rent; large family of 7; junior officer noted family appears genuinely in need of housing.",
-        "treatment_note_mr": "क्षेत्रभेट: भाड्याने राहतो; ७ जणांचे मोठे कुटुंब; कनिष्ठ अधिकाऱ्याने कुटुंबाला खरोखर घराची गरज असल्याचे नोंदवले.",
+        "control_note_en": "Applicant is Track B — arrived 2015. Structure pre-cutoff existence confirmed via prior occupant's voter roll. Transfer consent letter is handwritten and not notarized — does not meet GR requirement. OTC not paid. Site inspection pending.",
+        "control_note_mr": "अर्जदार Track B — २०१५ मध्ये आला. पूर्वीच्या रहिवाशाच्या मतदार यादीद्वारे संरचनेचे कटऑफपूर्व अस्तित्व पुष्टी. हस्तांतरण संमतीपत्र हस्तलिखित आणि नोटरीकृत नाही — GR आवश्यकता पूर्ण करत नाही. OTC भरलेला नाही. क्षेत्र तपासणी प्रलंबित.",
+        "treatment_note_en": "Applicant is Track B — arrived 2015. Structure pre-cutoff existence confirmed via prior occupant's voter roll. Transfer consent letter is handwritten and not notarized — does not meet GR requirement. OTC not paid. Site inspection pending. Verifier notes household clearly in hardship; applicant claims prior occupant deceased.",
+        "treatment_note_mr": "अर्जदार Track B — २०१५ मध्ये आला. पूर्वीच्या रहिवाशाच्या मतदार यादीद्वारे संरचनेचे कटऑफपूर्व अस्तित्व पुष्टी. हस्तांतरण संमतीपत्र हस्तलिखित आणि नोटरीकृत नाही — GR आवश्यकता पूर्ण करत नाही. OTC भरलेला नाही. क्षेत्र तपासणी प्रलंबित. सत्यापनकर्त्याने कुटुंब स्पष्टपणे हालाखीत असल्याचे नोंदवले; अर्जदार पूर्वीचा रहिवासी मृत असल्याचे सांगतो.",
     },
 
-    # ── Profile 10 — APPROVE + WITH ──────────────────────────────────────────
-    # Structured: eligible (pre-cutoff Yes, kuccha, low income)
-    # Signal ADDS: tenancy context supporting need (uncertain SRA status)
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 10 — APPROVE + WITH
+    # Track A: long-standing, multiple proofs, deteriorating structure
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 10,
-        "category": "tenancy_occupancy",
+        "category": "pakka_house_status",
         "algo_recommendation": "approve",
         "rule_result": "ELIGIBLE_BY_RULE",
         "signal_direction": "WITH",
         "profile": {
-            "electoral_roll_year": 2000,
-            "structure_type": "kuccha",
-            "carpet_area_sqft": 160,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Electoral roll"],
-            "declared_income_band": "low",
-            "household_size": 4,
+            "name": "Baburao Gaikwad",
+            "age": 61,
+            "slum": "Dr. Ambedkar Colony, Sion",
+            "survey_no": "89 (pt), Sion",
+            "occupancy_type": "Residential",
+            "claimed_since": 1995,
+            "documents": ["Voter roll (1998)", "Electricity bill (1997)", "Property tax receipt (2000)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "1998",
+            "municipal_tax": "Paid since 2000",
+            "society": "Ambedkar CHS (founding member, registered 1997)",
+            "housing": "Kuccha (original bamboo structure, deteriorating)",
         },
-        "control_note_en": "Verification: occupancy confirmed; documents on file.",
-        "control_note_mr": "सत्यापन: वास्तव्य पुष्टी; कागदपत्रे दाखल.",
-        "treatment_note_en": "Field visit: lives on rent; has been waiting for SRA allocation; uncertain about process.",
-        "treatment_note_mr": "क्षेत्रभेट: भाड्याने राहतो; SRA वाटपाची वाट पाहत आहे; प्रक्रियेबद्दल अनिश्चित.",
+        "control_note_en": "Applicant on voter roll since 1998. Electricity from 1997. Property tax paid since 2000. Society founding member. All documents verified. Pre-cutoff existence well established. Current occupancy confirmed.",
+        "control_note_mr": "अर्जदार १९९८ पासून मतदार यादीत. १९९७ पासून वीज. २००० पासून मालमत्ता कर भरला. सोसायटी संस्थापक सदस्य. सर्व कागदपत्रे सत्यापित. कटऑफपूर्व अस्तित्व सुस्थापित. सध्याचे वास्तव्य पुष्टी.",
+        "treatment_note_en": "Applicant on voter roll since 1998. Electricity from 1997. Property tax paid since 2000. Society founding member. All documents verified. Pre-cutoff existence well established. Current occupancy confirmed. Structure is original from 1995, deteriorating; family long-resident and dependent on this dwelling.",
+        "treatment_note_mr": "अर्जदार १९९८ पासून मतदार यादीत. १९९७ पासून वीज. २००० पासून मालमत्ता कर भरला. सोसायटी संस्थापक सदस्य. सर्व कागदपत्रे सत्यापित. कटऑफपूर्व अस्तित्व सुस्थापित. सध्याचे वास्तव्य पुष्टी. संरचना १९९५ ची मूळ, खराब होत आहे; कुटुंब दीर्घकाळ राहिलेले आणि या निवासस्थानावर अवलंबून.",
     },
 
     # ══════════════════════════════════════════════════════════════════════════
-    # D. VISIBLE AFFLUENCE (profiles 11-12)
+    # PROFILE 11 — REJECT + WITH
+    # D4: false declaration — owns alternate property
     # ══════════════════════════════════════════════════════════════════════════
-
-    # ── Profile 11 — REJECT + WITH ───────────────────────────────────────────
-    # Structured: borderline (pre-cutoff No, carpet 190, medium income)
-    # Signal ADDS: behavioural observation (lifestyle inconsistency not visible in record)
     {
         "profile_id": 11,
-        "category": "visible_affluence",
+        "category": "documentation",
         "algo_recommendation": "reject",
         "rule_result": "INELIGIBLE_BY_RULE",
         "signal_direction": "WITH",
         "profile": {
-            "electoral_roll_year": 2010,
-            "structure_type": "semi",
-            "carpet_area_sqft": 190,
-            "pre_cutoff_status": "No",
-            "documents": ["Aadhaar", "Electoral roll", "Income certificate"],
-            "declared_income_band": "medium",
-            "household_size": 3,
+            "name": "Nilesh Pawar",
+            "age": 39,
+            "slum": "Adarsh Nagar, Worli",
+            "survey_no": "223 (pt), Worli",
+            "occupancy_type": "Residential",
+            "claimed_since": 2006,
+            "documents": ["Voter roll (2009)", "Electricity bill (2007)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "2009",
+            "municipal_tax": "None",
+            "society": "None",
+            "housing": "Semi-pucca (brick + tile roof)",
+            "property_flag": "Owns 1BHK in Virar (purchased 2018) per property records",
         },
-        "control_note_en": "Field visit: resident present; standard details collected.",
-        "control_note_mr": "क्षेत्रभेट: रहिवासी उपस्थित; नियमित तपशील गोळा केले.",
-        "treatment_note_en": "Field visit: applicant arrived in private car; gold jewellery observed; lifestyle appears above declared income.",
-        "treatment_note_mr": "क्षेत्रभेट: अर्जदार खाजगी गाडीने आला; सोन्याचे दागिने दिसले; जीवनशैली जाहीर उत्पन्नापेक्षा वर दिसते.",
+        "control_note_en": "Applicant on voter roll since 2009. Electricity from 2007. Self-declarations filed. Pre-cutoff existence confirmed. During verification, property records show applicant owns a 1BHK flat in Virar purchased in 2018. Self-declaration (A) states no other property.",
+        "control_note_mr": "अर्जदार २००९ पासून मतदार यादीत. २००७ पासून वीज. स्वघोषणापत्रे दाखल. कटऑफपूर्व अस्तित्व पुष्टी. सत्यापनादरम्यान, मालमत्ता नोंदी दर्शवतात की अर्जदाराने २०१८ मध्ये विरारमध्ये 1BHK फ्लॅट खरेदी केला. स्वघोषणापत्र (A) मध्ये इतर मालमत्ता नसल्याचे नमूद.",
+        "treatment_note_en": "Applicant on voter roll since 2009. Electricity from 2007. Self-declarations filed. Pre-cutoff existence confirmed. During verification, property records show applicant owns a 1BHK flat in Virar purchased in 2018. Self-declaration (A) states no other property. Applicant's Virar flat was confirmed via MHADA records cross-check; slum address used only for Aadhaar.",
+        "treatment_note_mr": "अर्जदार २००९ पासून मतदार यादीत. २००७ पासून वीज. स्वघोषणापत्रे दाखल. कटऑफपूर्व अस्तित्व पुष्टी. सत्यापनादरम्यान, मालमत्ता नोंदी दर्शवतात की अर्जदाराने २०१८ मध्ये विरारमध्ये 1BHK फ्लॅट खरेदी केला. स्वघोषणापत्र (A) मध्ये इतर मालमत्ता नसल्याचे नमूद. अर्जदाराच्या विरार फ्लॅटची MHADA नोंदी क्रॉस-चेकद्वारे पुष्टी; स्लम पत्ता केवळ आधारसाठी वापरला.",
     },
 
-    # ── Profile 12 — REJECT + WITH ───────────────────────────────────────────
-    # Structured: ineligible (no pre-cutoff, carpet 205, medium)
-    # Signal ADDS: third-party info (shopkeeper says applicant has business income)
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 12 — REJECT + AGAINST
+    # No documentary proof but neighbour testimony
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 12,
-        "category": "visible_affluence",
+        "category": "pakka_house_status",
         "algo_recommendation": "reject",
         "rule_result": "INELIGIBLE_BY_RULE",
-        "signal_direction": "WITH",
+        "signal_direction": "AGAINST",
         "profile": {
-            "electoral_roll_year": 2013,
-            "structure_type": "semi",
-            "carpet_area_sqft": 205,
-            "pre_cutoff_status": "No",
-            "documents": ["Aadhaar", "Electoral roll"],
-            "declared_income_band": "medium",
-            "household_size": 2,
+            "name": "Fatima Ansari",
+            "age": 50,
+            "slum": "Rafiq Nagar, Mankhurd",
+            "survey_no": "247 (pt), Mankhurd",
+            "occupancy_type": "Residential",
+            "claimed_since": 2007,
+            "documents": ["Aadhaar", "Self-declaration (A+B)", "Electricity bill (2013)"],
+            "voter_roll": "NOT on any roll before 2014",
+            "municipal_tax": "None",
+            "society": "None",
+            "housing": "Kuccha (tin + plastic sheet)",
         },
-        "control_note_en": "Verification: visit completed; basic details verified on site.",
-        "control_note_mr": "सत्यापन: भेट पूर्ण; मूलभूत तपशील क्षेत्रात सत्यापित.",
-        "treatment_note_en": "Verification: local shopkeeper says applicant runs a side business; income may be higher than declared.",
-        "treatment_note_mr": "सत्यापन: स्थानिक दुकानदार म्हणतो अर्जदार साइड बिझनेस चालवतो; उत्पन्न जाहीर केलेल्यापेक्षा जास्त असू शकते.",
+        "control_note_en": "Applicant's earliest document is electricity bill from 2013. No voter roll entry before 2014. No other pre-cutoff proof submitted. Self-declarations filed. Aadhaar submitted.",
+        "control_note_mr": "अर्जदाराचे सर्वात जुने कागदपत्र २०१३ चे वीज बिल आहे. २०१४ पूर्वी मतदार यादी नोंद नाही. इतर कटऑफपूर्व पुरावा सादर नाही. स्वघोषणापत्रे दाखल. आधार सादर.",
+        "treatment_note_en": "Applicant's earliest document is electricity bill from 2013. No voter roll entry before 2014. No other pre-cutoff proof submitted. Self-declarations filed. Aadhaar submitted. Surrounding households confirm continuous presence since at least 2007.",
+        "treatment_note_mr": "अर्जदाराचे सर्वात जुने कागदपत्र २०१३ चे वीज बिल आहे. २०१४ पूर्वी मतदार यादी नोंद नाही. इतर कटऑफपूर्व पुरावा सादर नाही. स्वघोषणापत्रे दाखल. आधार सादर. आसपासच्या कुटुंबांनी किमान २००७ पासून सतत उपस्थिती पुष्टी केली.",
     },
 
     # ══════════════════════════════════════════════════════════════════════════
-    # E. DOCUMENTATION (profiles 13-14)
+    # PROFILE 13 — APPROVE + AGAINST
+    # Eligible but non-resident signals
     # ══════════════════════════════════════════════════════════════════════════
-
-    # ── Profile 13 — APPROVE + AGAINST ───────────────────────────────────────
-    # Structured: eligible (pre-cutoff Yes, semi, small, low income, full docs)
-    # Signal ADDS: history (prior rejection — not in structured record)
     {
         "profile_id": 13,
         "category": "documentation",
@@ -387,104 +432,118 @@ PROFILES = [
         "rule_result": "ELIGIBLE_BY_RULE",
         "signal_direction": "AGAINST",
         "profile": {
-            "electoral_roll_year": 2008,
-            "structure_type": "semi",
-            "carpet_area_sqft": 170,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Electoral roll", "Income certificate"],
-            "declared_income_band": "low",
-            "household_size": 5,
+            "name": "Rajendra Shirke",
+            "age": 45,
+            "slum": "Nehru Nagar, Vile Parle (E)",
+            "survey_no": "162 (pt), Vile Parle",
+            "occupancy_type": "Residential",
+            "claimed_since": 2004,
+            "documents": ["Voter roll (2005)", "Electricity bill (2006)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "2005",
+            "municipal_tax": "None",
+            "society": "Nehru Nagar CHS (registered 2005)",
+            "housing": "Semi-pucca (brick + tin roof)",
         },
-        "control_note_en": "Field visit: documentation in order; all records collected.",
-        "control_note_mr": "क्षेत्रभेट: कागदपत्रे व्यवस्थित; सर्व नोंदी गोळा केल्या.",
-        "treatment_note_en": "Records: previous application was rejected last year for data mismatch; applicant has resubmitted with same documents.",
-        "treatment_note_mr": "अभिलेख: गेल्या वर्षीचा अर्ज डेटा विसंगतीमुळे नाकारला; अर्जदाराने त्याच कागदपत्रांसह पुन्हा सादर केला.",
+        "control_note_en": "Applicant on voter roll since 2005. Electricity from 2006. Society member. Self-declarations filed. Aadhaar submitted. Pre-cutoff existence confirmed. Current voter roll entry present.",
+        "control_note_mr": "अर्जदार २००५ पासून मतदार यादीत. २००६ पासून वीज. सोसायटी सदस्य. स्वघोषणापत्रे दाखल. आधार सादर. कटऑफपूर्व अस्तित्व पुष्टी. सध्याची मतदार यादी नोंद आहे.",
+        "treatment_note_en": "Applicant on voter roll since 2005. Electricity from 2006. Society member. Self-declarations filed. Aadhaar submitted. Pre-cutoff existence confirmed. Current voter roll entry present. During unannounced site visit, structure was locked; neighbours report applicant primarily resides elsewhere; electricity meter shows minimal recent consumption.",
+        "treatment_note_mr": "अर्जदार २००५ पासून मतदार यादीत. २००६ पासून वीज. सोसायटी सदस्य. स्वघोषणापत्रे दाखल. आधार सादर. कटऑफपूर्व अस्तित्व पुष्टी. सध्याची मतदार यादी नोंद आहे. अघोषित क्षेत्रभेटीत संरचना बंद होती; शेजारी अर्जदार प्रामुख्याने इतरत्र राहत असल्याचे सांगतात; वीज मीटर अलीकडील कमी वापर दर्शवतो.",
     },
 
-    # ── Profile 14 — APPROVE + AGAINST ───────────────────────────────────────
-    # Structured: eligible (pre-cutoff Yes, kuccha, small, low income)
-    # Signal ADDS: officer observation about document quality (not in record)
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 14 — APPROVE + AGAINST
+    # Eligible but commercial misuse
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 14,
-        "category": "documentation",
+        "category": "tenancy_occupancy",
         "algo_recommendation": "approve",
         "rule_result": "ELIGIBLE_BY_RULE",
         "signal_direction": "AGAINST",
         "profile": {
-            "electoral_roll_year": 2002,
-            "structure_type": "kuccha",
-            "carpet_area_sqft": 145,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Income certificate"],
-            "declared_income_band": "low",
-            "household_size": 4,
+            "name": "Deepak Chavan",
+            "age": 48,
+            "slum": "Santosh Nagar, Jogeshwari (E)",
+            "survey_no": "188 (pt), Jogeshwari",
+            "occupancy_type": "Residential",
+            "claimed_since": 2002,
+            "documents": ["Voter roll (2004)", "Electricity bill (2003)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "2004",
+            "municipal_tax": "None",
+            "society": "Santosh Nagar CHS (registered 2003)",
+            "housing": "Semi-pucca (brick + asbestos)",
         },
-        "control_note_en": "Verification: documents reviewed; application details confirmed.",
-        "control_note_mr": "सत्यापन: कागदपत्रे तपासली; अर्ज तपशील पुष्टी.",
-        "treatment_note_en": "Verification: income certificate appears recently issued; junior officer noted values don't match older records on file.",
-        "treatment_note_mr": "सत्यापन: उत्पन्न प्रमाणपत्र अलीकडे जारी केल्यासारखे दिसते; कनिष्ठ अधिकाऱ्याने नोंदवले की आकडे जुन्या नोंदींशी जुळत नाहीत.",
+        "control_note_en": "Applicant on voter roll since 2004. Electricity from 2003. Society member. Self-declarations filed. Aadhaar submitted. Pre-cutoff existence confirmed. Current occupancy verified.",
+        "control_note_mr": "अर्जदार २००४ पासून मतदार यादीत. २००३ पासून वीज. सोसायटी सदस्य. स्वघोषणापत्रे दाखल. आधार सादर. कटऑफपूर्व अस्तित्व पुष्टी. सध्याचे वास्तव्य सत्यापित.",
+        "treatment_note_en": "Applicant on voter roll since 2004. Electricity from 2003. Society member. Self-declarations filed. Aadhaar submitted. Pre-cutoff existence confirmed. Current occupancy verified. During visit, structure observed in use as unauthorized godown; non-resident workers present on premises.",
+        "treatment_note_mr": "अर्जदार २००४ पासून मतदार यादीत. २००३ पासून वीज. सोसायटी सदस्य. स्वघोषणापत्रे दाखल. आधार सादर. कटऑफपूर्व अस्तित्व पुष्टी. सध्याचे वास्तव्य सत्यापित. भेटीदरम्यान, संरचना अनधिकृत गोदाम म्हणून वापरात दिसली; परिसरात अनिवासी कामगार उपस्थित.",
     },
 
     # ══════════════════════════════════════════════════════════════════════════
-    # F. SYMPATHY FRAMING (profiles 15-16)
+    # PROFILE 15 — APPROVE + WITH
+    # Track B: clean transfer chain, all additional proofs
     # ══════════════════════════════════════════════════════════════════════════
-
-    # ── Profile 15 — APPROVE + WITH ──────────────────────────────────────────
-    # Structured: eligible (pre-cutoff Yes, kuccha, very small, low income)
-    # Signal ADDS: emotional context (prior rejection, distrust — not in record)
     {
         "profile_id": 15,
-        "category": "sympathy_framing",
+        "category": "tenancy_occupancy",
         "algo_recommendation": "approve",
         "rule_result": "ELIGIBLE_BY_RULE",
         "signal_direction": "WITH",
         "profile": {
-            "electoral_roll_year": 2000,
-            "structure_type": "kuccha",
-            "carpet_area_sqft": 130,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Electoral roll", "Ration card"],
-            "declared_income_band": "low",
-            "household_size": 6,
+            "name": "Kavita Bhosale",
+            "age": 33,
+            "slum": "Indira Nagar, Borivali (W)",
+            "survey_no": "201 (pt), Borivali",
+            "occupancy_type": "Residential",
+            "claimed_since": 2016,
+            "documents": ["Voter roll (2019)", "Electricity bill (2017)", "Aadhaar", "Self-declaration (A+B)", "Notarized consent on stamp paper (2016)", "OTC receipt (₹40,000 paid 2020)", "Employer certificate (2025)", "Child school enrollment (2023)"],
+            "voter_roll": "2019",
+            "municipal_tax": "None",
+            "society": "None",
+            "housing": "Semi-pucca (brick + corrugated sheet)",
+            "prior_occupant_proof": "Voter roll (2006), Electricity bill (2005)",
         },
-        "control_note_en": "Field visit: resident at home; records collected without issues.",
-        "control_note_mr": "क्षेत्रभेट: रहिवासी घरी; नोंदी अडचणीशिवाय गोळा केल्या.",
-        "treatment_note_en": "Field visit: applicant expressed frustration with process; has been rejected twice before; says family desperately needs permanent housing.",
-        "treatment_note_mr": "क्षेत्रभेट: अर्जदाराने प्रक्रियेबद्दल नाराजी व्यक्त केली; यापूर्वी दोनदा नाकारले; कुटुंबाला कायमस्वरूपी घराची तातडीने गरज असल्याचे सांगतो.",
+        "control_note_en": "Applicant is Track B — arrived 2016. Structure pre-cutoff existence confirmed via prior occupant's voter roll (2006) and electricity bill (2005). Notarized consent on stamp paper submitted. OTC paid. Current voter roll, employer certificate, and school enrollment all confirm current address. Site inspection completed.",
+        "control_note_mr": "अर्जदार Track B — २०१६ मध्ये आला. पूर्वीच्या रहिवाशाच्या मतदार यादी (२००६) आणि वीज बिल (२००५) द्वारे संरचनेचे कटऑफपूर्व अस्तित्व पुष्टी. स्टॅम्प पेपरवर नोटरीकृत संमती सादर. OTC भरला. सध्याची मतदार यादी, नियोक्ता प्रमाणपत्र आणि शाळा प्रवेश सर्व सध्याचा पत्ता पुष्टी करतात. क्षेत्र तपासणी पूर्ण.",
+        "treatment_note_en": "Applicant is Track B — arrived 2016. Structure pre-cutoff existence confirmed via prior occupant's voter roll (2006) and electricity bill (2005). Notarized consent on stamp paper submitted. OTC paid. Current voter roll, employer certificate, and school enrollment all confirm current address. Site inspection completed. Transfer chain clean and documented; all additional Track B proofs present.",
+        "treatment_note_mr": "अर्जदार Track B — २०१६ मध्ये आला. पूर्वीच्या रहिवाशाच्या मतदार यादी (२००६) आणि वीज बिल (२००५) द्वारे संरचनेचे कटऑफपूर्व अस्तित्व पुष्टी. स्टॅम्प पेपरवर नोटरीकृत संमती सादर. OTC भरला. सध्याची मतदार यादी, नियोक्ता प्रमाणपत्र आणि शाळा प्रवेश सर्व सध्याचा पत्ता पुष्टी करतात. क्षेत्र तपासणी पूर्ण. हस्तांतरण साखळी स्वच्छ आणि दस्तऐवजीकृत; सर्व अतिरिक्त Track B पुरावे उपस्थित.",
     },
 
-    # ── Profile 16 — APPROVE + WITH ──────────────────────────────────────────
-    # Structured: eligible (pre-cutoff Yes, kuccha, low income); sparse docs
-    # Signal ADDS: migration context (village ID, reports village home)
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROFILE 16 — REJECT + AGAINST
+    # Documentary deficiency but long-term residence
+    # ══════════════════════════════════════════════════════════════════════════
     {
         "profile_id": 16,
-        "category": "sympathy_framing",
-        "algo_recommendation": "approve",
-        "rule_result": "ELIGIBLE_BY_RULE",
-        "signal_direction": "WITH",
+        "category": "documentation",
+        "algo_recommendation": "reject",
+        "rule_result": "INELIGIBLE_BY_RULE",
+        "signal_direction": "AGAINST",
         "profile": {
-            "electoral_roll_year": 2004,
-            "structure_type": "kuccha",
-            "carpet_area_sqft": 155,
-            "pre_cutoff_status": "Yes",
-            "documents": ["Aadhaar", "Electoral roll"],
-            "declared_income_band": "low",
-            "household_size": 3,
+            "name": "Shankar Mane",
+            "age": 58,
+            "slum": "Datta Nagar, Mulund (W)",
+            "survey_no": "215 (pt), Mulund",
+            "occupancy_type": "Residential",
+            "claimed_since": 2005,
+            "documents": ["Electricity bill (2011, connection date unclear)", "Aadhaar", "Self-declaration (A+B)"],
+            "voter_roll": "2009 (name spelled 'Shankarlal Mane' vs 'Shankar Mane' on Aadhaar)",
+            "municipal_tax": "None",
+            "society": "Dissolved in 2015",
+            "housing": "Kuccha (bamboo + tin, original structure)",
         },
-        "control_note_en": "Verification: standard check done; no issues found.",
-        "control_note_mr": "सत्यापन: नियमित तपासणी; कोणतीही समस्या नाही.",
-        "treatment_note_en": "Verification: applicant migrated from village; holds village ID only; reports having no home in Mumbai.",
-        "treatment_note_mr": "सत्यापन: अर्जदार गावातून स्थलांतरित; फक्त गावचे ओळखपत्र; मुंबईत घर नसल्याचे सांगतो.",
+        "control_note_en": "Applicant submitted electricity bill from 2011 with unclear connection date. Voter roll entry from 2009 shows different name spelling ('Shankarlal Mane' vs 'Shankar Mane' on Aadhaar). Society dissolved. No property tax record. Name mismatch between documents raises verification concern.",
+        "control_note_mr": "अर्जदाराने अस्पष्ट जोडणी तारखेसह २०११ चे वीज बिल सादर केले. २००९ च्या मतदार यादी नोंदीत वेगळे नाव ('शंकरलाल माने' विरुद्ध आधारवर 'शंकर माने'). सोसायटी विसर्जित. मालमत्ता कर नोंद नाही. कागदपत्रांमधील नाव विसंगती सत्यापन चिंता निर्माण करते.",
+        "treatment_note_en": "Applicant submitted electricity bill from 2011 with unclear connection date. Voter roll entry from 2009 shows different name spelling ('Shankarlal Mane' vs 'Shankar Mane' on Aadhaar). Society dissolved. No property tax record. Name mismatch between documents raises verification concern. Applicant produced original documents with consistent address; long-term continuous resident per local verification.",
+        "treatment_note_mr": "अर्जदाराने अस्पष्ट जोडणी तारखेसह २०११ चे वीज बिल सादर केले. २००९ च्या मतदार यादी नोंदीत वेगळे नाव ('शंकरलाल माने' विरुद्ध आधारवर 'शंकर माने'). सोसायटी विसर्जित. मालमत्ता कर नोंद नाही. कागदपत्रांमधील नाव विसंगती सत्यापन चिंता निर्माण करते. अर्जदाराने सुसंगत पत्त्यासह मूळ कागदपत्रे सादर केली; स्थानिक सत्यापनानुसार दीर्घकालीन सतत रहिवासी.",
     },
 ]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SEEDER
-#
-# Creates 32 vignettes: 16 profiles × 2 arm versions (control + treatment).
-# No List A/B coupling — session-time logic handles randomisation.
-# Each vignette stores its profile_id but NOT a list assignment.
+# Creates 32 vignettes: 16 profiles × 2 arms (control + treatment).
+# No list coupling — session-time logic handles randomisation.
 # ─────────────────────────────────────────────────────────────────────────────
 
 def seed(clear: bool = False) -> None:
@@ -531,7 +590,7 @@ def seed(clear: bool = False) -> None:
                     field_note_mr       = note_mr,
                     pool_version        = POOL_VERSION,
                     pair_id             = pid,
-                    list_assignment     = None,  # no list coupling
+                    list_assignment     = None,
                     used_count          = 0,
                 )
                 db.add(v)
@@ -543,24 +602,25 @@ def seed(clear: bool = False) -> None:
         print()
         print("Pool structure:")
         print("  16 profiles × 2 arms = 32 vignette objects")
-        print("  Session-time: draw 12 profile_ids from 16, assign 6 control + 6 treatment")
+        print("  Session-time: draw 12 from 16, assign 6 control + 6 treatment")
         print()
-        print("Rule logic (multi-factor):")
-        print("  Eligible:   pre_cutoff=Yes AND carpet<=200 AND income=low")
-        print("  Ineligible: any condition violated")
+        print("Cell distribution (balanced 4×4):")
+        print("  APPROVE + WITH:    profiles 3, 4, 10, 15     (4)")
+        print("  APPROVE + AGAINST: profiles 7, 8, 13, 14     (4)")
+        print("  REJECT  + WITH:    profiles 1, 2, 5, 11      (4)")
+        print("  REJECT  + AGAINST: profiles 6, 9, 12, 16     (4)")
         print()
-        print("Signal direction distribution:")
-        print("  APPROVE + WITH:    profiles 3, 4, 10, 15, 16    (5)")
-        print("  APPROVE + AGAINST: profiles 7, 8, 13, 14        (4)")
-        print("  REJECT  + WITH:    profiles 1, 2, 5, 11, 12     (5)")
-        print("  REJECT  + AGAINST: profiles 6, 9                (2)")
+
+        # Verify
+        vigs = db.query(Vignette).all()
+        ct = sum(1 for v in vigs if v.arm == ArmEnum.CONTROL)
+        tr = sum(1 for v in vigs if v.arm == ArmEnum.TREATMENT)
+        app = sum(1 for v in vigs if v.algo_recommendation == AlgoRecommendationEnum.APPROVE)
+        rej = sum(1 for v in vigs if v.algo_recommendation == AlgoRecommendationEnum.REJECT)
+        print(f"  Total: {len(vigs)} | Control: {ct} Treatment: {tr} | Approve: {app} Reject: {rej}")
         print()
-        print("Document distribution:")
-        docs_by_rec = {"approve": [], "reject": []}
-        for p in PROFILES:
-            docs_by_rec[p["algo_recommendation"]].append(len(p["profile"]["documents"]))
-        for rec, counts in docs_by_rec.items():
-            print(f"  {rec.upper()}: doc counts = {sorted(counts)} (mean={sum(counts)/len(counts):.1f})")
+        print("GR grounding: ZoPuDho-0810/Pr.Kr.96/2018/ZoPaSu-1")
+        print("Sources: Phase 1 corpus (12 profiles) + GR disqualifications (4 profiles)")
         print()
         print("Marathi translations require verification before pilot deployment.")
 

@@ -8,114 +8,78 @@
     :root{
       --bg:#f3f5f8;--panel:#fff;--ink:#102a56;--ink-2:#21406d;
       --text:#213247;--muted:#6e7f97;--line:#dbe3ee;--line-soft:#e9eef5;
-      --green-bg:#e9f8ef;--green-line:#8ed5a7;--green-text:#166534;
-      --red-bg:#fff0f0;--red-line:#f0aaaa;--red-text:#991b1b;
-      --teal-bg:#ebfbf8;--teal-line:#99ddd3;--teal-text:#0f766e;
-      --amber-bg:#fff8e6;--amber-line:#efd28b;--amber-text:#9a6700;
-      --shadow:0 12px 32px rgba(16,42,86,0.06);
+      --green-text:#166534;--red-text:#991b1b;
+      --teal-bg:#ebfbf8;--teal-text:#0f766e;
+      --shadow:0 10px 28px rgba(16,42,86,0.05);
       --focus:0 0 0 4px rgba(16,42,86,0.12);
     }
     *{box-sizing:border-box;}html,body{margin:0;padding:0;}
     body{min-height:100vh;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);}
 
-    /* Topbar */
     .topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft);}
-    .topbar-inner{max-width:1060px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+    .topbar-inner{max-width:740px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;}
     .brand{display:flex;align-items:center;gap:10px;}
-    .brand-logo{width:36px;height:36px;border-radius:8px;background:#fff;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    .brand-logo img{width:74%;height:74%;object-fit:contain;}
-    .brand-title{font-size:0.95rem;font-weight:800;color:var(--ink);}
-    .brand-sub{font-size:0.74rem;color:var(--muted);}
-    .progress-outer{width:120px;height:5px;border-radius:99px;background:#e4ebf5;overflow:hidden;}
+    .brand-logo{width:34px;height:34px;border-radius:8px;background:#fff;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .brand-logo img{width:72%;height:72%;object-fit:contain;}
+    .brand-title{font-size:0.92rem;font-weight:800;color:var(--ink);}
+    .brand-sub{font-size:0.72rem;color:var(--muted);}
+    .progress-outer{width:110px;height:5px;border-radius:99px;background:#e4ebf5;overflow:hidden;}
     .progress-inner{height:100%;border-radius:99px;background:linear-gradient(90deg,#1c3f72,#3768ab);transition:width 0.4s;}
-    .session-code{font-family:monospace;font-size:0.7rem;color:var(--muted);background:#f1f5f9;border:1px solid var(--line-soft);border-radius:5px;padding:2px 6px;}
+    .session-code{font-family:monospace;font-size:0.68rem;color:var(--muted);background:#f1f5f9;border:1px solid var(--line-soft);border-radius:4px;padding:2px 5px;}
 
-    /* Layout */
-    .shell{max-width:1060px;margin:0 auto;padding:24px 20px 40px;}
-    .case-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+    .shell{max-width:740px;margin:0 auto;padding:20px 20px 40px;}
+    .framing{font-size:0.76rem;color:var(--muted);font-style:italic;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line-soft);line-height:1.5;}
 
-    /* Cards */
-    .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;}
-    .card+.card{margin-top:16px;}
-    .section-label{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;}
+    /* Profile card */
+    .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;margin-bottom:16px;}
+    .section-label{font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;}
+    .profile-lines{font-size:0.84rem;line-height:1.8;color:var(--text);}
+    .profile-lines .pk{color:var(--muted);font-weight:700;margin-right:4px;}
+    .profile-lines .pv{font-weight:600;}
+    .profile-lines .sep{color:#ccc;margin:0 8px;}
 
-    /* Profile */
-    .profile-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
-    .profile-table td{padding:6px 0;vertical-align:top;}
-    .profile-table td:first-child{color:var(--muted);font-weight:700;width:45%;padding-right:12px;}
-    .profile-table td:last-child{color:var(--text);font-weight:600;}
-    .profile-table tr+tr td{border-top:1px solid #f0f3f7;}
+    /* Field note */
+    .fn-card{background:#faf8f4;border:1px solid #ddd5c5;border-radius:14px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:16px;}
+    .fn-label{font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#8b7355;margin-bottom:10px;}
+    .fn-text{font-size:0.9rem;color:#4a3f30;line-height:1.9;}
 
-    /* Prior remarks — visually subordinate */
-    .remarks-box{
-      background:#fdfcf8;border:1px dashed #d4cbb8;border-radius:10px;
-      padding:12px 14px;margin-top:16px;
-    }
-    .remarks-tag{
-      display:inline-block;font-size:0.62rem;font-weight:800;font-style:normal;
-      text-transform:uppercase;letter-spacing:0.08em;color:#a0896b;
-      background:#f5efe4;border:1px solid #d4cbb8;border-radius:3px;
-      padding:1px 6px;margin-bottom:6px;
-    }
-    .remarks-text{font-size:0.84rem;color:#6b5e4a;font-style:italic;line-height:1.6;}
-
-    /* Rule badge */
-    .rule-badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 10px;font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;border:1px solid transparent;}
-    .rule-ELIGIBLE_BY_RULE{background:var(--green-bg);color:var(--green-text);border-color:var(--green-line);}
-    .rule-INELIGIBLE_BY_RULE{background:var(--red-bg);color:var(--red-text);border-color:var(--red-line);}
-
-    /* Algo box */
-    .algo-box{border-radius:12px;border:1px solid transparent;padding:14px;text-align:center;}
-    .algo-approve{background:var(--green-bg);border-color:var(--green-line);color:var(--green-text);}
-    .algo-reject{background:var(--red-bg);border-color:var(--red-line);color:var(--red-text);}
-    .algo-label{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;opacity:0.85;}
-    .algo-value{font-size:1.15rem;font-weight:900;}
+    /* Algorithm — subtle with directional tint */
+    .algo-line{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;margin-bottom:16px;border:1px solid var(--line-soft);}
+    .algo-line.al-approve{background:#f8faf9;border-color:#d4e5d9;}
+    .algo-line.al-reject{background:#fdf8f8;border-color:#e8d5d5;}
+    .algo-lbl{font-size:0.72rem;color:var(--muted);font-weight:700;}
+    .algo-val{font-size:0.84rem;font-weight:700;}
+    .algo-val.av-approve{color:#2d6e46;}
+    .algo-val.av-reject{color:#8b3a3a;}
 
     /* Decision */
-    .decision-card{position:sticky;top:80px;}
+    .dec-card{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;}
     .btn-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-    .dec-btn{
-      border:1px solid var(--line);background:#fff;color:var(--ink);
-      border-radius:10px;padding:12px 10px;font-size:0.82rem;font-weight:800;
-      cursor:pointer;text-align:center;transition:border-color 0.15s,background 0.15s;
-    }
+    .dec-btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:11px 10px;font-size:0.82rem;font-weight:800;cursor:pointer;text-align:center;transition:border-color 0.15s,background 0.15s;}
     .dec-btn:hover{background:#f9fbfe;border-color:#bfd0e7;}
     .dec-btn.sel-approve{background:var(--green-text);color:#fff;border-color:var(--green-text);}
     .dec-btn.sel-reject{background:var(--red-text);color:#fff;border-color:var(--red-text);}
     .dec-btn.sel-escalate{background:var(--teal-text);color:#fff;border-color:var(--teal-text);}
+    .reason-area{width:100%;min-height:56px;resize:vertical;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);padding:10px 12px;font-size:0.84rem;line-height:1.5;font-family:inherit;}
+    .reason-area:focus{outline:none;border-color:var(--ink-2);box-shadow:var(--focus);}
+    .sub-btn{display:block;margin:12px auto 0;width:200px;height:40px;border:0;border-radius:10px;background:var(--ink);color:#fff;font-size:0.82rem;font-weight:800;cursor:pointer;transition:background 0.15s;}
+    .sub-btn:hover{background:var(--ink-2);}
+    .sub-btn:disabled{background:#b0b8c7;cursor:not-allowed;}
 
-    .reasoning-area{
-      width:100%;min-height:80px;resize:vertical;border:1px solid var(--line);
-      border-radius:10px;background:#fff;color:var(--text);padding:10px 12px;
-      font-size:0.85rem;line-height:1.5;font-family:inherit;
-    }
-    .reasoning-area:focus{outline:none;border-color:var(--ink-2);box-shadow:var(--focus);}
-    .char-hint{margin-top:4px;font-size:0.7rem;color:var(--muted);text-align:right;font-weight:700;}
-
-    .submit-btn{
-      width:100%;margin-top:12px;height:46px;border:0;border-radius:10px;
-      background:#163764;color:#fff;font-size:0.88rem;font-weight:900;
-      cursor:pointer;transition:background 0.15s;
-    }
-    .submit-btn:hover{background:#214a85;}
-    .submit-btn:disabled{background:#9caabf;cursor:not-allowed;}
-
-    /* Confirm */
-    .confirm-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(12,23,38,0.5);backdrop-filter:blur(3px);justify-content:center;align-items:center;}
-    .confirm-box{background:#fff;border-radius:14px;padding:24px 22px;box-shadow:0 20px 50px rgba(16,42,86,0.18);max-width:400px;width:calc(100% - 32px);text-align:center;}
-    .confirm-box h3{font-size:0.95rem;color:var(--ink);margin:0 0 6px;}
-    .confirm-box p{font-size:0.82rem;color:var(--muted);margin:0 0 18px;line-height:1.5;}
-    .confirm-actions{display:flex;gap:8px;justify-content:center;}
-    .confirm-actions button{padding:9px 18px;border-radius:8px;font-size:0.8rem;font-weight:800;cursor:pointer;border:1px solid var(--line);}
-    .btn-yes{background:var(--ink);color:#fff;border-color:var(--ink);}
-    .btn-no{background:#fff;color:var(--ink);}
+    /* Confirm overlay */
+    .cov{display:none;position:fixed;inset:0;z-index:200;background:rgba(12,23,38,0.5);backdrop-filter:blur(3px);justify-content:center;align-items:center;}
+    .cbox{background:#fff;border-radius:14px;padding:24px 22px;box-shadow:0 20px 50px rgba(16,42,86,0.18);max-width:380px;width:calc(100% - 32px);text-align:center;}
+    .cbox h3{font-size:0.92rem;color:var(--ink);margin:0 0 6px;}
+    .cbox p{font-size:0.8rem;color:var(--muted);margin:0 0 16px;line-height:1.5;}
+    .cacts{display:flex;gap:8px;justify-content:center;}
+    .cacts button{padding:8px 16px;border-radius:8px;font-size:0.78rem;font-weight:800;cursor:pointer;border:1px solid var(--line);}
+    .cbtn-y{background:var(--ink);color:#fff;border-color:var(--ink);}
+    .cbtn-n{background:#fff;color:var(--ink);}
 
     /* Loading */
-    .loading{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);justify-content:center;align-items:center;flex-direction:column;gap:14px;}
-    .spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:var(--ink);border-radius:50%;animation:spin 1s linear infinite;}
-    @keyframes spin{to{transform:rotate(360deg);}}
-
-    @media(max-width:860px){.case-grid{grid-template-columns:1fr;}.decision-card{position:static;}}
+    .ldg{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);justify-content:center;align-items:center;flex-direction:column;gap:14px;}
+    .spin{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--ink);border-radius:50%;animation:sp 1s linear infinite;}
+    @keyframes sp{to{transform:rotate(360deg);}}
   </style>
 </head>
 <body>
@@ -129,7 +93,7 @@
         <div class="brand-sub">{% if locale == "mr" %}प्रकरण पुनरावलोकन{% else %}Case Review{% endif %}</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
       <div class="progress-outer"><div class="progress-inner" id="pbar" style="width:0%;"></div></div>
       <span class="session-code">{{ session_id[:8] }}</span>
     </div>
@@ -137,241 +101,226 @@
 </div>
 
 <div class="shell">
-  <div class="case-grid" id="case-grid">
+  <div class="framing">
+    {% if locale == "mr" %}अंतिम-टप्पा पुनरावलोकन. पूर्व सत्यापनाची क्षेत्र नोंद खाली दर्शविली आहे.{% else %}Final-stage review. Field note from prior verification is shown below.{% endif %}
+  </div>
 
-    <!-- Left -->
-    <div>
-      <!-- Profile -->
-      <div class="card">
-        <div class="section-label">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
-        <table class="profile-table" id="s-profile"></table>
-      </div>
+  <!-- 1. Applicant Profile -->
+  <div class="card">
+    <div class="section-label">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
+    <div class="profile-lines" id="s-profile"></div>
+  </div>
 
-      <!-- Rule result -->
-      <div class="card">
-        <div class="section-label">{% if locale == "mr" %}नियम निकाल{% else %}Rule Result{% endif %}</div>
-        <span class="rule-badge" id="s-rule"></span>
-      </div>
+  <!-- 2. Field Note -->
+  <div class="fn-card">
+    <div class="fn-label">{% if locale == "mr" %}क्षेत्र नोंद{% else %}Field Note{% endif %}</div>
+    <div class="fn-text" id="s-fn"></div>
+  </div>
 
-      <!-- Prior remarks -->
-      <div class="remarks-box" id="s-remarks-box">
-        <div class="remarks-tag">{% if locale == "mr" %}पूर्व / अप्रमाणित{% else %}Prior / Unverified{% endif %}</div>
-        <div class="remarks-text" id="s-remarks"></div>
-      </div>
+  <!-- 3. Algorithm -->
+  <div class="algo-line" id="s-algo">
+    <span class="algo-lbl">{% if locale == "mr" %}अल्गोरिदम शिफारस{% else %}Algorithm Recommendation{% endif %}</span>
+    <span class="algo-val" id="s-algo-val"></span>
+  </div>
+
+  <!-- 4. Decision -->
+  <div class="dec-card">
+    <div class="section-label">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
+    <div class="btn-group">
+      <div class="dec-btn" id="btn-approve" onclick="pick('approve')">{% if locale == "mr" %}मंजूर{% else %}APPROVE{% endif %}</div>
+      <div class="dec-btn" id="btn-reject" onclick="pick('reject')">{% if locale == "mr" %}नाकार{% else %}REJECT{% endif %}</div>
+      <div class="dec-btn" id="btn-escalate" onclick="pick('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे{% else %}ESCALATE{% endif %}</div>
     </div>
-
-    <!-- Right -->
-    <div>
-      <!-- Algo recommendation -->
-      <div class="card">
-        <div class="section-label">{% if locale == "mr" %}प्रणाली शिफारस{% else %}System Recommendation{% endif %}</div>
-        <div class="algo-box" id="s-algo">
-          <div class="algo-label">{% if locale == "mr" %}अल्गोरिदम{% else %}Algorithm Recommendation{% endif %}</div>
-          <div class="algo-value" id="s-algo-val"></div>
-        </div>
-      </div>
-
-      <!-- Decision -->
-      <div class="card decision-card">
-        <div class="section-label">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
-        <div class="btn-group">
-          <div class="dec-btn" id="btn-approve" onclick="pick('approve')">{% if locale == "mr" %}मंजूर{% else %}APPROVE{% endif %}</div>
-          <div class="dec-btn" id="btn-reject" onclick="pick('reject')">{% if locale == "mr" %}नाकार{% else %}REJECT{% endif %}</div>
-          <div class="dec-btn" id="btn-escalate" onclick="pick('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे{% else %}ESCALATE{% endif %}</div>
-        </div>
-        <textarea class="reasoning-area" id="d-reason"
-          placeholder="{% if locale == 'mr' %}या निर्णयावर कोणत्या घटकाने सर्वात जास्त प्रभाव पाडला? (आवश्यक, ३०० अक्षरे){% else %}What factor most influenced this decision? (required, 300 chars){% endif %}"
-          maxlength="300" oninput="onInput()"></textarea>
-        <div class="char-hint" id="chint">0 / 300</div>
-        <button class="submit-btn" id="btn-sub" onclick="onSub()" disabled>
-          {% if locale == "mr" %}सबमिट{% else %}Submit Decision{% endif %}
-        </button>
-      </div>
-    </div>
+    <textarea class="reason-area" id="d-reason" maxlength="300"
+      placeholder="{% if locale == 'mr' %}या प्रकरणात तुमच्या निर्णयावर विशेषतः कशाचा प्रभाव पडला?{% else %}What specifically influenced your decision in this case?{% endif %}"></textarea>
+    <button class="sub-btn" id="btn-sub" onclick="onSub()" disabled>{% if locale == "mr" %}सबमिट{% else %}Submit{% endif %}</button>
   </div>
 </div>
 
 <!-- Confirm -->
-<div class="confirm-overlay" id="cov">
-  <div class="confirm-box">
+<div class="cov" id="cov">
+  <div class="cbox">
     <h3>{% if locale == "mr" %}निर्णय लॉक करा{% else %}Lock Decision{% endif %}</h3>
-    <p>{% if locale == "mr" %}सबमिट केल्यानंतर बदलता येणार नाही.{% else %}This cannot be changed after submission.{% endif %}</p>
-    <div class="confirm-actions">
-      <button class="btn-no" onclick="hc()">{% if locale == "mr" %}मागे{% else %}Go Back{% endif %}</button>
-      <button class="btn-yes" onclick="doSubmit()">{% if locale == "mr" %}सबमिट{% else %}Confirm{% endif %}</button>
+    <p>{% if locale == "mr" %}सबमिट केल्यानंतर बदलता येणार नाही.{% else %}Cannot be changed after submission.{% endif %}</p>
+    <div class="cacts">
+      <button class="cbtn-n" onclick="hc()">{% if locale == "mr" %}मागे{% else %}Back{% endif %}</button>
+      <button class="cbtn-y" onclick="doSubmit()">{% if locale == "mr" %}सबमिट{% else %}Confirm{% endif %}</button>
     </div>
   </div>
 </div>
 
 <!-- Loading -->
-<div class="loading" id="ld">
-  <div class="spinner"></div>
-  <p style="font-size:0.82rem;color:var(--muted);">{% if locale == "mr" %}पुढचे प्रकरण…{% else %}Next case…{% endif %}</p>
+<div class="ldg" id="ld">
+  <div class="spin"></div>
+  <p style="font-size:0.8rem;color:var(--muted);">{% if locale == "mr" %}पुढचे प्रकरण…{% else %}Next case…{% endif %}</p>
 </div>
 
 <script>
-const SID   = {{ session_id | tojson }};
-const LOC   = {{ locale | tojson }};
+const SID=  {{ session_id | tojson }};
+const LOC = {{ locale | tojson }};
 const CASES = {{ cases | tojson }};
-const N     = CASES.length;
+const N = CASES.length;
 
-let ci = 0, dec = null, openT = null, firstAct = null, decT = null;
+let ci=0, dec=null, openT=null, firstAct=null, decT=null;
+function t(e,m){return LOC==='mr'?m:e;}
 
-function t(e, m) { return LOC === 'mr' ? m : e; }
-
-const PL = {
-  electoral_roll_year:  t('Electoral Roll Year','मतदार यादी वर्ष'),
-  structure_type:       t('Structure Type','संरचना प्रकार'),
-  carpet_area_sqft:     t('Carpet Area (sq ft)','कार्पेट क्षेत्र'),
-  pre_cutoff_status:    t('Pre-Cutoff Status','कटऑफपूर्व'),
-  documents:            t('Documents','कागदपत्रे'),
-  declared_income_band: t('Declared Income','जाहीर उत्पन्न'),
-  household_size:       t('Household Size','कुटुंब आकार'),
+// Profile labels
+const L = {
+  age:           t('Age','वय'),
+  slum:          t('Location','ठिकाण'),
+  claimed_since: t('Residence since','वास्तव्य'),
+  voter_roll:    t('Voter roll','मतदार यादी'),
+  housing:       t('Structure','संरचना'),
+  society:       t('Society','सोसायटी'),
+  documents:     t('Documents','कागदपत्रे'),
 };
 
-// Preferred display order
-const KEY_ORDER = ['electoral_roll_year','structure_type','carpet_area_sqft',
-  'pre_cutoff_status','declared_income_band','household_size','documents'];
+// Which keys to show, in order. Two groups:
+// Row 1-style: inline pairs separated by |
+// Full line: documents
+const ROW_KEYS = [
+  ['name','age'],
+  ['slum','claimed_since'],
+  ['housing','voter_roll'],
+  ['society'],
+];
+const FULL_KEYS = ['documents'];
 
-function findPending() {
-  for (let i = 0; i < N; i++) if (!CASES[i].submitted) return i;
-  return N;
-}
+// Never show
+const SKIP = new Set(['signal_direction','category','name','survey_no','occupancy_type',
+  'prior_occupant_proof','transfer_proof','otc','father_status','property_flag',
+  'municipal_tax']);
 
-function render(idx) {
-  if (idx >= N) { window.location.href = `/session/${SID}/survey`; return; }
-  const c = CASES[idx];
-  if (c.submitted) { ci++; render(ci); return; }
+function findPending(){for(let i=0;i<N;i++)if(!CASES[i].submitted)return i;return N;}
 
-  dec = null; firstAct = null; decT = null; openT = Date.now();
+function render(idx){
+  if(idx>=N){window.location.href=`/session/${SID}/survey`;return;}
+  const c=CASES[idx];
+  if(c.submitted){ci++;render(ci);return;}
 
-  // Profile — ordered table
-  const pt = document.getElementById('s-profile');
-  pt.innerHTML = '';
-  const prof = c.profile || {};
-  KEY_ORDER.forEach(k => {
-    if (!(k in prof)) return;
-    let v = prof[k];
-    if (Array.isArray(v)) v = v.join(', ');
-    const label = PL[k] || k.replace(/_/g,' ');
-    pt.innerHTML += `<tr><td>${label}</td><td>${v ?? '—'}</td></tr>`;
+  dec=null; firstAct=null; decT=null; openT=Date.now();
+
+  // ── Profile: compact inline rows ──
+  const el=document.getElementById('s-profile');
+  const prof=c.profile||{};
+  let html='';
+
+  // Paired rows
+  ROW_KEYS.forEach(row => {
+    const parts=[];
+    row.forEach(k => {
+      if(!(k in prof)||SKIP.has(k)) return;
+      let v=prof[k];
+      if(Array.isArray(v)) v=v.join(', ');
+      const label=L[k]||k.replace(/_/g,' ');
+      parts.push(`<span class="pk">${label}:</span> <span class="pv">${v??'—'}</span>`);
+    });
+    if(parts.length) html += parts.join('<span class="sep">|</span>') + '<br>';
   });
 
-  // Rule
-  const re = document.getElementById('s-rule');
-  re.textContent = c.rule_result;
-  re.className = `rule-badge rule-${c.rule_result}`;
+  // Full-width rows (documents)
+  FULL_KEYS.forEach(k => {
+    if(!(k in prof)||SKIP.has(k)) return;
+    let v=prof[k];
+    if(Array.isArray(v)) v=v.join(', ');
+    const label=L[k]||k.replace(/_/g,' ');
+    html += `<span class="pk">${label}:</span> <span class="pv">${v??'—'}</span>`;
+  });
 
-  // Prior remarks (field_note is the remark in the new vignette structure)
-  document.getElementById('s-remarks').textContent = c.field_note || '—';
+  // Any remaining non-skipped keys
+  Object.keys(prof).forEach(k => {
+    const allShown=[].concat(...ROW_KEYS,...FULL_KEYS);
+    if(allShown.includes(k)||SKIP.has(k)) return;
+    let v=prof[k];
+    if(Array.isArray(v)) v=v.join(', ');
+    const label=L[k]||k.replace(/_/g,' ');
+    html += `<br><span class="pk">${label}:</span> <span class="pv">${v??'—'}</span>`;
+  });
 
-  // Algo
-  document.getElementById('s-algo-val').textContent = c.algo_recommendation.toUpperCase();
-  document.getElementById('s-algo').className = `algo-box algo-${c.algo_recommendation}`;
+  el.innerHTML=html;
 
-  // Reset
-  ['btn-approve','btn-reject','btn-escalate'].forEach(id => document.getElementById(id).className = 'dec-btn');
-  document.getElementById('d-reason').value = '';
-  document.getElementById('chint').textContent = '0 / 300';
-  document.getElementById('btn-sub').disabled = true;
-  document.getElementById('btn-sub').textContent = t('Submit Decision','सबमिट');
+  // Field note
+  document.getElementById('s-fn').textContent=c.field_note||'—';
+
+  // Algorithm
+  const av=c.algo_recommendation.toLowerCase();
+  document.getElementById('s-algo').className=`algo-line al-${av}`;
+  const vs=document.getElementById('s-algo-val');
+  vs.textContent=c.algo_recommendation.toUpperCase();
+  vs.className=`algo-val av-${av}`;
+
+  // Reset decision
+  ['btn-approve','btn-reject','btn-escalate'].forEach(id=>document.getElementById(id).className='dec-btn');
+  document.getElementById('d-reason').value='';
+  document.getElementById('btn-sub').disabled=true;
+  document.getElementById('btn-sub').textContent=t('Submit','सबमिट');
 
   // Progress
-  const done = CASES.filter(x => x.submitted).length;
-  document.getElementById('pbar').style.width = Math.round((done/N)*100) + '%';
-
-  document.getElementById('ld').style.display = 'none';
+  const done=CASES.filter(x=>x.submitted).length;
+  document.getElementById('pbar').style.width=Math.round((done/N)*100)+'%';
+  document.getElementById('ld').style.display='none';
+  window.scrollTo(0,0);
 }
 
-function fa() { if (!firstAct) firstAct = Date.now(); }
-
-function pick(d) {
-  fa(); dec = d; decT = Date.now();
-  ['btn-approve','btn-reject','btn-escalate'].forEach(id => document.getElementById(id).className = 'dec-btn');
-  document.getElementById(`btn-${d}`).className = `dec-btn sel-${d}`;
-  chk();
+function fa(){if(!firstAct)firstAct=Date.now();}
+function pick(d){
+  fa();dec=d;decT=Date.now();
+  ['btn-approve','btn-reject','btn-escalate'].forEach(id=>document.getElementById(id).className='dec-btn');
+  document.getElementById(`btn-${d}`).className=`dec-btn sel-${d}`;
+  document.getElementById('btn-sub').disabled=false;
 }
+function onSub(){document.getElementById('cov').style.display='flex';}
+function hc(){document.getElementById('cov').style.display='none';}
 
-function onInput() {
-  fa();
-  const l = document.getElementById('d-reason').value.length;
-  document.getElementById('chint').textContent = `${l} / 300`;
-  chk();
-}
-
-function chk() {
-  document.getElementById('btn-sub').disabled = !(dec && document.getElementById('d-reason').value.trim().length > 0);
-}
-
-function onSub() { document.getElementById('cov').style.display = 'flex'; }
-function hc()    { document.getElementById('cov').style.display = 'none'; }
-
-async function doSubmit() {
+async function doSubmit(){
   hc();
-  const c = CASES[ci];
-  const btn = document.getElementById('btn-sub');
-  btn.disabled = true;
-  btn.textContent = t('Submitting…','सबमिट…');
+  const c=CASES[ci];
+  const btn=document.getElementById('btn-sub');
+  btn.disabled=true;
+  btn.textContent=t('Submitting…','सबमिट…');
 
-  const tfa = firstAct ? (firstAct - openT) : null;
-  const tad = decT ? (Date.now() - decT) : null;
+  const tfa=firstAct?(firstAct-openT):null;
+  const tad=decT?(Date.now()-decT):null;
+  const reasoning=document.getElementById('d-reason').value.trim();
 
-  try {
-    const res = await fetch(`/session/${SID}/evaluate`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        case_id: c.case_id,
-        decision: dec,
-        reasoning: document.getElementById('d-reason').value.trim(),
-        opened_at: new Date(openT).toISOString(),
-        time_to_first_action_ms: tfa,
-        time_after_decision_ms: tad,
+  try{
+    const res=await fetch(`/session/${SID}/evaluate`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        case_id:c.case_id, decision:dec, reasoning:reasoning||'—',
+        opened_at:new Date(openT).toISOString(),
+        time_to_first_action_ms:tfa, time_after_decision_ms:tad,
       }),
     });
-
-    if (!res.ok) {
-      const d = await res.json().catch(()=>({}));
-      alert(t('Error: ','त्रुटी: ') + (d.detail || 'Failed'));
-      btn.disabled = false;
-      btn.textContent = t('Submit Decision','सबमिट');
-      return;
+    if(!res.ok){
+      const d=await res.json().catch(()=>({}));
+      alert(t('Error: ','त्रुटी: ')+(d.detail||'Failed'));
+      btn.disabled=false;btn.textContent=t('Submit','सबमिट');return;
     }
-
-    const data = await res.json();
-    CASES[ci].submitted = true;
-
-    if (data.all_done) {
-      window.location.href = `/session/${SID}/survey`;
-      return;
-    }
-
-    document.getElementById('ld').style.display = 'flex';
+    const data=await res.json();
+    CASES[ci].submitted=true;
+    if(data.all_done){window.location.href=`/session/${SID}/survey`;return;}
+    document.getElementById('ld').style.display='flex';
     ci++;
-    setTimeout(() => render(ci), 500);
-
-  } catch(e) {
+    setTimeout(()=>render(ci),500);
+  }catch(e){
     alert(t('Network error.','नेटवर्क त्रुटी.'));
-    btn.disabled = false;
-    btn.textContent = t('Submit Decision','सबमिट');
+    btn.disabled=false;btn.textContent=t('Submit','सबमिट');
   }
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') e.preventDefault(); });
+document.addEventListener('keydown',e=>{if(e.key==='Escape')e.preventDefault();});
 
-// Device logging (item 32)
-fetch('/admin/log-device', {
-  method:'POST', headers:{'Content-Type':'application/json'},
-  body: JSON.stringify({
-    session_id: SID,
-    user_agent: navigator.userAgent,
-    screen_width: screen.width,
-    screen_height: screen.height,
-    device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-  }),
-}).catch(() => {});
+// Device logging
+fetch('/admin/log-device',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({session_id:SID,user_agent:navigator.userAgent,
+    screen_width:screen.width,screen_height:screen.height,
+    device_type:/Mobi|Android/i.test(navigator.userAgent)?'mobile':'desktop'}),
+}).catch(()=>{});
 
-ci = findPending();
-if (ci >= N) window.location.href = `/session/${SID}/survey`;
+ci=findPending();
+if(ci>=N)window.location.href=`/session/${SID}/survey`;
 else render(ci);
 </script>
 </body>

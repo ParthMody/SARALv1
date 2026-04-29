@@ -395,11 +395,10 @@ def reviewer_queue(
     assigned_list = list(assigned)
     rng.shuffle(assigned_list)
 
-    # Profile keys matching the new vignette structure
+    # Profile keys — no PII (name, survey_no excluded)
     profile_keys = [
-        "electoral_roll_year", "structure_type", "carpet_area_sqft",
-        "pre_cutoff_status", "documents", "declared_income_band",
-        "household_size",
+        "age", "slum", "claimed_since",
+        "voter_roll", "housing", "society", "documents",
     ]
 
     cases_view: list[dict[str, Any]] = []

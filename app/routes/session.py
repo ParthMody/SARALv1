@@ -140,23 +140,23 @@ def _assign_cases(operator: Operator, db: Session) -> list[str]:
 # ─────────────────────────────────────────────
 
 OPERATOR_VISIBLE_PROFILE_KEYS = [
-    "electoral_roll_year",
-    "structure_type",
-    "carpet_area_sqft",
-    "pre_cutoff_status",
+    "age",
+    "slum",
+    "claimed_since",
+    "voter_roll",
+    "housing",
+    "society",
     "documents",
-    "declared_income_band",
-    "household_size",
 ]
 
 PROFILE_LABELS = {
-    "electoral_roll_year":   "Electoral Roll Year",
-    "structure_type":        "Structure Type",
-    "carpet_area_sqft":      "Carpet Area (sq ft)",
-    "pre_cutoff_status":     "Pre-Cutoff Status",
-    "documents":             "Documents",
-    "declared_income_band":  "Declared Income Band",
-    "household_size":        "Household Size",
+    "age":            "Age",
+    "slum":           "Location",
+    "claimed_since":  "Residence since",
+    "voter_roll":     "Voter Roll",
+    "housing":        "Structure",
+    "society":        "Society",
+    "documents":      "Documents",
 }
 
 
@@ -360,8 +360,6 @@ async def submit_evaluation(
         raise HTTPException(400, "case_id is required")
     if decision not in ("approve", "reject", "escalate"):
         raise HTTPException(400, "decision must be approve / reject / escalate")
-    if not reasoning:
-        raise HTTPException(400, "reasoning is required")
 
     # ── Fetch evaluation row ──────────────────
     ev = (
