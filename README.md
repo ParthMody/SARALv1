@@ -1,5 +1,4 @@
 # SARAL v1.3
-**System for Algorithmic Fairness in Responsible Access to Livelihoods**
 
 A transparent, offline-first **research prototype** to study AI-assisted welfare access and human decision-making under algorithmic guidance.
 
