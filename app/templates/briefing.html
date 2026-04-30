@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SARAL v2 — Instructions</title>
+  <style>
+    :root{
+      --bg:#f3f5f8;--panel:#fff;--ink:#102a56;--ink-2:#21406d;
+      --text:#213247;--muted:#6e7f97;--line:#dbe3ee;--line-soft:#e9eef5;
+      --shadow:0 10px 28px rgba(16,42,86,0.05);
+    }
+    *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+    body{min-height:100vh;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px 16px;}
+    .shell{width:100%;max-width:640px;}
+    .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:16px;box-shadow:var(--shadow);padding:32px 28px;}
+    .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+    .logo-wrap{width:44px;height:44px;border-radius:10px;background:#fff;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .logo-wrap img{width:76%;height:76%;object-fit:contain;}
+    h1{margin:0;font-size:1.3rem;font-weight:800;color:var(--ink);}
+    .subtitle{font-size:0.85rem;color:var(--muted);margin-top:4px;}
+
+    .divider{border:0;border-top:1px solid var(--line-soft);margin:20px 0;}
+
+    .briefing{font-size:0.9rem;line-height:1.85;color:var(--text);}
+    .briefing p{margin:0 0 14px;}
+    .briefing strong{color:var(--ink);font-weight:700;}
+    .briefing ul{margin:8px 0 14px 20px;padding:0;}
+    .briefing ul li{margin-bottom:6px;}
+
+    .note-box{background:#f8f6f1;border:1px solid #e0d9cc;border-radius:10px;padding:14px 16px;margin:16px 0;font-size:0.84rem;color:#5a5040;line-height:1.65;}
+
+    .consent-row{display:flex;align-items:flex-start;gap:10px;margin:20px 0 16px;padding:14px 16px;background:#fbfcfe;border:1px solid var(--line-soft);border-radius:10px;cursor:pointer;}
+    .consent-row input[type="checkbox"]{width:18px;height:18px;margin-top:2px;accent-color:var(--ink);cursor:pointer;flex-shrink:0;}
+    .consent-row label{font-size:0.86rem;font-weight:600;color:var(--text);cursor:pointer;line-height:1.5;}
+
+    .continue-btn{display:block;width:100%;height:48px;border:0;border-radius:12px;background:var(--ink);color:#fff;font-size:0.92rem;font-weight:800;cursor:pointer;transition:background 0.15s;}
+    .continue-btn:hover{background:var(--ink-2);}
+    .continue-btn:disabled{background:#b0b8c7;cursor:not-allowed;}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="card">
+      <div class="logo-row">
+        <div class="logo-wrap"><img src="/static/assets/saral.png" alt="" onerror="this.style.display='none'"></div>
+        <div>
+          <h1>SARAL v2</h1>
+          <div class="subtitle">{% if locale == "mr" %}सत्र सूचना{% else %}Session Instructions{% endif %}</div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="briefing">
+        {% if locale == "mr" %}
+        <p>सहभागासाठी धन्यवाद. हे सत्र साधारण <strong>२०-२५ मिनिटे</strong> चालेल.</p>
+
+        <p>तुम्ही <strong>१२ कल्याण पात्रता प्रकरणांचे</strong> पुनरावलोकन कराल. प्रत्येक प्रकरण तुमच्यापर्यंत पोहोचण्यापूर्वी कनिष्ठ अधिकाऱ्याच्या क्षेत्र सत्यापनातून गेलेले आहे. <strong>तुम्ही अंतिम पुनरावलोकनकर्ता आहात.</strong></p>
+
+        <p>प्रत्येक प्रकरणासाठी तुम्हाला दिसेल:</p>
+        <ul>
+          <li>अर्जदाराचे प्रोफाइल (संरचित नोंद)</li>
+          <li>पूर्व सत्यापनाची क्षेत्र नोंद</li>
+          <li>प्रणालीची शिफारस</li>
+        </ul>
+
+        <p>तुमचे काम आहे अंतिम निर्णय घेणे — <strong>मंजूर, नाकार, किंवा वरिष्ठांकडे पाठवा</strong> — तुम्हाला दिसणाऱ्या सर्व माहितीच्या आधारे. बरोबर किंवा चूक उत्तरे नाहीत. आम्ही अधिकारी प्रकरणांचे कसे मूल्यांकन करतात याचा अभ्यास करत आहोत, तुमची चाचणी करत नाही.</p>
+
+        <p>वास्तविक प्रकरणांपूर्वी एक <strong>सराव प्रकरण</strong> आणि एक <strong>आकलन तपासणी</strong> आहे. सराव प्रकरण नोंदवले जात नाही.</p>
+
+        {% else %}
+        <p>Thank you for participating. This session will take approximately <strong>20–25 minutes</strong>.</p>
+
+        <p>You will review <strong>12 welfare eligibility cases</strong>. Each case has been through junior-officer field verification before reaching you. <strong>You are the final reviewer.</strong></p>
+
+        <p>For each case you will see:</p>
+        <ul>
+          <li>The applicant's profile (structured record)</li>
+          <li>A field note from prior verification</li>
+          <li>The system's recommendation</li>
+        </ul>
+
+        <p>Your job is to make a final decision — <strong>approve, reject, or escalate</strong> — based on everything you see. There are no right or wrong answers. We are studying how officers evaluate cases, not testing you.</p>
+
+        <p>Before the real cases, there is one <strong>practice case</strong> and one <strong>comprehension check</strong>. The practice case is not recorded.</p>
+
+        {% endif %}
+      </div>
+
+      <div class="note-box">
+        {% if locale == "mr" %}
+          <strong>लक्षात ठेवा:</strong> प्रत्येक निर्णय सबमिट केल्यानंतर लॉक होतो — तुम्ही मागे जाऊ शकत नाही. प्रत्येक प्रकरणावर तुमचा वेळ घ्या. सत्रादरम्यान प्रश्न असल्यास, नोंद करा — नंतर चर्चा करू शकतो.
+        {% else %}
+          <strong>Keep in mind:</strong> Each decision is locked after you submit — you cannot go back. Take your time on each case. If you have questions during the session, note them and we can discuss after.
+        {% endif %}
+      </div>
+
+      <div class="consent-row" onclick="document.getElementById('consent-cb').click()">
+        <input type="checkbox" id="consent-cb" onchange="document.getElementById('btn-continue').disabled = !this.checked" />
+        <label for="consent-cb">
+          {% if locale == "mr" %}
+            मी सूचना वाचल्या आहेत आणि समजल्या आहेत. सर्व प्रकरण डेटा कृत्रिम आहे. कोणत्याही वास्तविक अर्जदारांवर परिणाम होत नाही.
+          {% else %}
+            I have read and understood the instructions. All case data is synthetic. No real applicants are affected.
+          {% endif %}
+        </label>
+      </div>
+
+      <button class="continue-btn" id="btn-continue" disabled onclick="proceed()">
+        {% if locale == "mr" %}सुरू करा →{% else %}Continue to Practice →{% endif %}
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const SID = {{ session_id | tojson }};
+
+    function proceed() {
+      // Log consent
+      fetch(`/session/${SID}/briefing-consent`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({consented: true}),
+      }).then(() => {
+        window.location.href = `/session/${SID}/practice`;
+      }).catch(() => {
+        window.location.href = `/session/${SID}/practice`;
+      });
+    }
+  </script>
+</body>
+</html>

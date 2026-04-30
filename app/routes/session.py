@@ -215,10 +215,11 @@ def session_view(
     if op.status == SessionStatusEnum.COMPLETED:
         return RedirectResponse(url=f"/session/{session_id}/complete", status_code=303)
 
-    # ── First visit: redirect to practice if not done ─────
+    # ── First visit: redirect through briefing → practice → comprehension ──
     if not op.cases_assigned:
-        # Check if comprehension check was completed (logged by POST /session/{id}/comprehension)
         from app.models import AuditLog
+
+        # Check if comprehension done (implies briefing + practice also done)
         comprehension_done = (
             db.query(AuditLog)
             .filter(
@@ -229,7 +230,20 @@ def session_view(
             .first()
         )
         if not comprehension_done:
-            return RedirectResponse(url=f"/session/{session_id}/practice", status_code=303)
+            # Check if briefing consent was given
+            briefing_done = (
+                db.query(AuditLog)
+                .filter(
+                    AuditLog.session_id == session_id,
+                    AuditLog.action == AuditActionEnum.LOGIN,
+                    AuditLog.payload.contains("briefing_consent"),
+                )
+                .first()
+            )
+            if not briefing_done:
+                return RedirectResponse(url=f"/session/{session_id}/briefing", status_code=303)
+            else:
+                return RedirectResponse(url=f"/session/{session_id}/practice", status_code=303)
 
     # ── First visit: assign cases ─────────────
     if not op.cases_assigned:
@@ -677,3 +691,56 @@ async def log_comprehension(
     )
 
     return {"ok": True, "passed": passed, "attempts": attempts}
+
+
+# ─────────────────────────────────────────────
+# GET /session/{session_id}/briefing
+# Standardised operator instructions (item 37)
+# ─────────────────────────────────────────────
+
+@router.get("/session/{session_id}/briefing", response_class=HTMLResponse)
+def briefing_view(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    _check_session_cookie(request, session_id)
+    op = _get_operator_or_404(session_id, db)
+    return templates.TemplateResponse(
+        "briefing.html",
+        {
+            "request":    request,
+            "session_id": session_id,
+            "locale":     op.locale.value,
+        },
+    )
+
+
+# ─────────────────────────────────────────────
+# POST /session/{session_id}/briefing-consent
+# Logs that operator read and consented to instructions
+# ─────────────────────────────────────────────
+
+@router.post("/session/{session_id}/briefing-consent")
+async def log_briefing_consent(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    _check_session_cookie(request, session_id)
+    op = _get_operator_or_404(session_id, db)
+
+    body = await request.json()
+
+    log_event(
+        db,
+        AuditActionEnum.LOGIN,
+        actor_id   = op.operator_id,
+        session_id = session_id,
+        payload    = {
+            "action":    "briefing_consent",
+            "consented": body.get("consented", False),
+        },
+    )
+
+    return {"ok": True}
