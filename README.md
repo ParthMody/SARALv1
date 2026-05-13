@@ -248,9 +248,7 @@ uvicorn app.main:app --reload
 
 ## 10. Status
 
-**Instrument finalised.** Field deployment scheduled May 2026 in Mumbai.
-
-The intended contribution is a reusable research instrument for studying how field-generated context changes human responses to rule-based algorithmic recommendations, with the SRA deployment serving as a first instantiation against a documented welfare-eligibility framework.
+**Instrument finalised.** Mixed-mode deployment: in-person sessions in Mumbai with administrator-adjacent professionals (May 2026, opportunistic recruitment due to institutional access constraints with active SRA officers), and online deployment via Prolific with public-administration-background screening (June 2026, target N≈200). Combined deployment serves as the first instantiation of the instrument
 
 ---
 
