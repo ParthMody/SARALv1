@@ -37,12 +37,10 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 from .routes import dashboard  # noqa: E402
 from .routes import session    # noqa: E402
 from .routes import admin      # noqa: E402
-from .routes import review     # noqa: E402
 
 app.include_router(dashboard.router)
 app.include_router(session.router)
 app.include_router(admin.router)
-app.include_router(review.router)
 # ─────────────────────────────────────────────────────────────────────────────
 
 

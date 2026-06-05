@@ -1,249 +1,131 @@
 <!DOCTYPE html>
-<html lang="{{ locale }}">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SARAL v2 — Post-Task Survey</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{
-      font-family:Inter,"Segoe UI",Arial,sans-serif;
-      background:#f4f6f9;min-height:100vh;
-      display:flex;align-items:center;justify-content:center;padding:2rem;
-      color:#213247;
-    }
-    .card{
-      background:#fff;border-radius:12px;
-      box-shadow:0 2px 16px rgba(0,0,0,0.08);
-      width:100%;max-width:560px;padding:2.5rem 2rem;
-    }
-    h1{font-size:1.3rem;font-weight:800;color:#102a56;margin-bottom:0.3rem;text-align:center;}
-    .subtitle{font-size:0.85rem;color:#6e7f97;margin-bottom:2rem;text-align:center;line-height:1.5;}
-
-    .section-label{
-      font-size:0.72rem;font-weight:800;text-transform:uppercase;
-      letter-spacing:0.1em;color:#6e7f97;margin-bottom:12px;padding-bottom:8px;
-      border-bottom:1px solid #e9eef5;
-    }
-
-    .form-group{margin-bottom:1.2rem;}
-    label{display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:0.35rem;}
-    label .req{color:#ef4444;margin-left:2px;}
-    input[type="text"],input[type="number"],select,textarea{
-      width:100%;padding:0.55rem 0.75rem;font-size:0.92rem;
-      border:1px solid #d1d5db;border-radius:6px;background:#fafafa;
-      color:#111827;transition:border-color 0.15s,box-shadow 0.15s;
-      font-family:inherit;
-    }
-    input:focus,select:focus,textarea:focus{
-      outline:none;border-color:#3b82f6;
-      box-shadow:0 0 0 3px rgba(59,130,246,0.12);background:#fff;
-    }
-    textarea{min-height:80px;resize:vertical;}
-    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-    .divider{border:none;border-top:1px solid #e5e7eb;margin:1.8rem 0;}
-
-    /* Likert scale */
+    body{font-family:Inter,"Segoe UI",Arial,sans-serif;background:#f4f6f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;color:#213247;}
+    .card{background:#fff;border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,0.08);width:100%;max-width:560px;padding:2rem 1.8rem;}
+    h1{font-size:1.2rem;font-weight:800;color:#102a56;margin-bottom:0.3rem;text-align:center;}
+    .sub{font-size:0.84rem;color:#6e7f97;margin-bottom:1.5rem;text-align:center;line-height:1.5;}
+    .section-label{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#6e7f97;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e9eef5;}
     .likert-group{margin-bottom:1.4rem;}
     .likert-label{font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:10px;line-height:1.5;}
     .likert-scale{display:flex;gap:6px;}
-    .likert-btn{
-      flex:1;padding:10px 4px;border:2px solid #e5e7eb;border-radius:8px;
-      background:#fff;color:#374151;font-size:0.85rem;font-weight:700;
-      cursor:pointer;text-align:center;transition:border-color 0.15s,background 0.15s;
-    }
+    .likert-btn{flex:1;padding:10px 4px;border:2px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;font-size:0.85rem;font-weight:700;cursor:pointer;text-align:center;transition:border-color 0.15s,background 0.15s;}
     .likert-btn:hover{border-color:#93c5fd;background:#f0f7ff;}
     .likert-btn.selected{border-color:#102a56;background:#edf4ff;color:#102a56;}
     .likert-anchors{display:flex;justify-content:space-between;font-size:0.72rem;color:#9ca3af;margin-top:4px;padding:0 2px;}
-
-    .submit-btn{
-      width:100%;padding:14px;font-size:1rem;font-weight:700;
-      color:#fff;background:#1a2b4a;border:none;border-radius:8px;
-      cursor:pointer;transition:background 0.15s;margin-top:0.5rem;
-    }
+    .form-group{margin-bottom:1.2rem;}
+    label{display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:0.35rem;}
+    textarea{width:100%;min-height:80px;resize:vertical;padding:0.55rem 0.75rem;font-size:0.92rem;border:1px solid #d1d5db;border-radius:6px;background:#fafafa;color:#111827;font-family:inherit;transition:border-color 0.15s;}
+    textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.12);background:#fff;}
+    .submit-btn{width:100%;padding:14px;font-size:1rem;font-weight:700;color:#fff;background:#1a2b4a;border:none;border-radius:8px;cursor:pointer;transition:background 0.15s;margin-top:0.5rem;}
     .submit-btn:hover{background:#253d6a;}
     .submit-btn:disabled{background:#9caabf;cursor:not-allowed;}
-
-    @media(max-width:500px){.row-2{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>{% if locale == "mr" %}सत्र पूर्ण{% else %}Session Complete{% endif %}</h1>
-    <p class="subtitle">
-      {% if locale == "mr" %}कृपया खालील माहिती भरा. सर्व प्रश्न आवश्यक आहेत.{% else %}Please complete the following. All questions are required.{% endif %}
-    </p>
+    <h1>Almost Done</h1>
+    <p class="sub">Please answer these brief questions about your experience.</p>
 
-    <!-- Section 1: Salience survey -->
-    <div class="section-label">
-      {% if locale == "mr" %}पुनरावलोकन अनुभव{% else %}Review Experience{% endif %}
-    </div>
+    <div class="section-label">Your Experience</div>
 
     <div class="likert-group">
-      <div class="likert-label">
-        {% if locale == "mr" %}क्षेत्र नोंदींनी तुमच्या निर्णयांवर किती प्रभाव पाडला?{% else %}How much did the field notes / prior remarks influence your decisions?{% endif %}
-      </div>
+      <div class="likert-label">1. Overall, how much did the information in the field notes influence your decisions?</div>
       <div class="likert-scale" data-field="salience_rating">
-        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 1)">1</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 2)">2</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 3)">3</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 4)">4</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'salience_rating', 5)">5</div>
+        <div class="likert-btn" onclick="selectLikert(this,'salience_rating',1)">1</div>
+        <div class="likert-btn" onclick="selectLikert(this,'salience_rating',2)">2</div>
+        <div class="likert-btn" onclick="selectLikert(this,'salience_rating',3)">3</div>
+        <div class="likert-btn" onclick="selectLikert(this,'salience_rating',4)">4</div>
+        <div class="likert-btn" onclick="selectLikert(this,'salience_rating',5)">5</div>
       </div>
-      <div class="likert-anchors">
-        <span>{% if locale == "mr" %}अजिबात नाही{% else %}Not at all{% endif %}</span>
-        <span>{% if locale == "mr" %}खूप{% else %}Very much{% endif %}</span>
-      </div>
+      <div class="likert-anchors"><span>Not at all</span><span>Very strongly</span></div>
     </div>
 
     <div class="likert-group">
-      <div class="likert-label">
-        {% if locale == "mr" %}कोणत्या विशिष्ट निरीक्षणांनी तुमचे लक्ष वेधले?{% else %}Did any specific observations stand out to you across cases?{% endif %}
-      </div>
+      <div class="likert-label">2. Were there any specific observations in the case notes that stood out to you?</div>
       <div class="likert-scale" data-field="standout_rating">
-        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 1)">1</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 2)">2</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 3)">3</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 4)">4</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'standout_rating', 5)">5</div>
+        <div class="likert-btn" onclick="selectLikert(this,'standout_rating',1)">1</div>
+        <div class="likert-btn" onclick="selectLikert(this,'standout_rating',2)">2</div>
+        <div class="likert-btn" onclick="selectLikert(this,'standout_rating',3)">3</div>
+        <div class="likert-btn" onclick="selectLikert(this,'standout_rating',4)">4</div>
+        <div class="likert-btn" onclick="selectLikert(this,'standout_rating',5)">5</div>
       </div>
-      <div class="likert-anchors">
-        <span>{% if locale == "mr" %}काहीच नाही{% else %}Nothing{% endif %}</span>
-        <span>{% if locale == "mr" %}खूप{% else %}Very much{% endif %}</span>
-      </div>
+      <div class="likert-anchors"><span>None stood out</span><span>Several stood out clearly</span></div>
     </div>
 
     <div class="likert-group">
-      <div class="likert-label">
-        {% if locale == "mr" %}एकूणच तुमच्या निर्णयांबद्दल तुम्हाला किती आत्मविश्वास होता?{% else %}How confident were you overall in your decisions?{% endif %}
-      </div>
+      <div class="likert-label">3. How confident were you in your decisions overall?</div>
       <div class="likert-scale" data-field="confidence_rating">
-        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 1)">1</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 2)">2</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 3)">3</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 4)">4</div>
-        <div class="likert-btn" onclick="selectLikert(this, 'confidence_rating', 5)">5</div>
+        <div class="likert-btn" onclick="selectLikert(this,'confidence_rating',1)">1</div>
+        <div class="likert-btn" onclick="selectLikert(this,'confidence_rating',2)">2</div>
+        <div class="likert-btn" onclick="selectLikert(this,'confidence_rating',3)">3</div>
+        <div class="likert-btn" onclick="selectLikert(this,'confidence_rating',4)">4</div>
+        <div class="likert-btn" onclick="selectLikert(this,'confidence_rating',5)">5</div>
       </div>
-      <div class="likert-anchors">
-        <span>{% if locale == "mr" %}अजिबात नाही{% else %}Not at all{% endif %}</span>
-        <span>{% if locale == "mr" %}खूप{% else %}Very confident{% endif %}</span>
-      </div>
-    </div>
-
-    <!-- End-of-session feedback (item 20) -->
-    <div class="form-group">
-      <label>{% if locale == "mr" %}या कार्यात काही अस्पष्ट किंवा गोंधळात टाकणारे होते का? (ऐच्छिक){% else %}Was anything about this task unclear or confusing? (optional){% endif %}</label>
-      <textarea id="feedback" placeholder="{% if locale == 'mr' %}तुमचा अभिप्राय...{% else %}Your feedback...{% endif %}" maxlength="500"></textarea>
-    </div>
-
-    <hr class="divider" />
-
-    <!-- Section 2: Demographics (moved from login — item 15) -->
-    <div class="section-label">
-      {% if locale == "mr" %}तुमची माहिती{% else %}About You{% endif %}
+      <div class="likert-anchors"><span>Not confident</span><span>Very confident</span></div>
     </div>
 
     <div class="form-group">
-      <label>{% if locale == "mr" %}आद्याक्षरे{% else %}Initials{% endif %} <span class="req">*</span></label>
-      <input type="text" id="initials" maxlength="8" placeholder="{% if locale == 'mr' %}उदा. अ.क.{% else %}e.g. A.K.{% endif %}" required />
-    </div>
-
-    <div class="row-2">
-      <div class="form-group">
-        <label>{% if locale == "mr" %}वय{% else %}Age{% endif %} <span class="req">*</span></label>
-        <input type="number" id="age" min="18" max="80" placeholder="{% if locale == 'mr' %}उदा. ३४{% else %}e.g. 34{% endif %}" required />
-      </div>
-      <div class="form-group">
-        <label>{% if locale == "mr" %}अनुभव (वर्षे){% else %}Years of Experience{% endif %} <span class="req">*</span></label>
-        <input type="number" id="experience_years" min="0" max="60" placeholder="{% if locale == 'mr' %}उदा. १२{% else %}e.g. 12{% endif %}" required />
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>{% if locale == "mr" %}पद{% else %}Role{% endif %} <span class="req">*</span></label>
-      <select id="role" required>
-        <option value="" disabled selected>{% if locale == "mr" %}पद निवडा…{% else %}Select your role…{% endif %}</option>
-        <option value="welfare_officer">{% if locale == "mr" %}कल्याण अधिकारी{% else %}Welfare Officer{% endif %}</option>
-        <option value="administrative_officer">{% if locale == "mr" %}प्रशासकीय अधिकारी{% else %}Administrative Officer{% endif %}</option>
-        <option value="field_supervisor">{% if locale == "mr" %}क्षेत्र पर्यवेक्षक{% else %}Field Supervisor{% endif %}</option>
-        <option value="retired_official">{% if locale == "mr" %}निवृत्त अधिकारी{% else %}Retired Official{% endif %}</option>
-        <option value="other">{% if locale == "mr" %}इतर{% else %}Other{% endif %}</option>
-      </select>
+      <label>4. Was anything about the task unclear or confusing? (optional)</label>
+      <textarea id="feedback" placeholder="Your feedback…" maxlength="500"></textarea>
     </div>
 
     <button type="button" class="submit-btn" id="btn-submit" onclick="submitSurvey()" disabled>
-      {% if locale == "mr" %}सबमिट करा{% else %}Submit & Complete{% endif %}
+      Submit & Complete →
     </button>
   </div>
 
   <script>
     const SESSION_ID = {{ session_id | tojson }};
-    const LOCALE     = {{ locale | tojson }};
-    const ratings = { salience_rating: null, standout_rating: null, confidence_rating: null };
+    const ratings = {salience_rating: null, standout_rating: null, confidence_rating: null};
 
     function selectLikert(btn, field, value) {
       ratings[field] = value;
-      const scale = btn.parentElement;
-      scale.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+      btn.parentElement.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      validateForm();
+      validate();
     }
 
-    function validateForm() {
-      const allRatings = Object.values(ratings).every(v => v !== null);
-      const initials   = document.getElementById('initials').value.trim();
-      const age        = document.getElementById('age').value;
-      const exp        = document.getElementById('experience_years').value;
-      const role       = document.getElementById('role').value;
-      document.getElementById('btn-submit').disabled = !(allRatings && initials && age && exp && role);
+    function validate() {
+      document.getElementById('btn-submit').disabled = !Object.values(ratings).every(v => v !== null);
     }
-
-    // Validate on any input change
-    ['initials','age','experience_years','role'].forEach(id => {
-      document.getElementById(id).addEventListener('input', validateForm);
-      document.getElementById(id).addEventListener('change', validateForm);
-    });
 
     async function submitSurvey() {
       const btn = document.getElementById('btn-submit');
       btn.disabled = true;
-      btn.textContent = LOCALE === 'mr' ? 'सबमिट करत आहे…' : 'Submitting…';
-
-      const payload = {
-        salience_rating:   ratings.salience_rating,
-        standout_rating:   ratings.standout_rating,
-        confidence_rating: ratings.confidence_rating,
-        feedback:          document.getElementById('feedback').value.trim(),
-        // Demographics
-        initials:         document.getElementById('initials').value.trim().toUpperCase(),
-        age:              parseInt(document.getElementById('age').value),
-        experience_years: parseInt(document.getElementById('experience_years').value),
-        role:             document.getElementById('role').value,
-      };
+      btn.textContent = 'Submitting…';
 
       try {
         const res = await fetch(`/session/${SESSION_ID}/survey`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            salience_rating:   ratings.salience_rating,
+            standout_rating:   ratings.standout_rating,
+            confidence_rating: ratings.confidence_rating,
+            feedback:          document.getElementById('feedback').value.trim(),
+          }),
         });
 
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
           alert('Error: ' + (d.detail || 'Submission failed'));
           btn.disabled = false;
-          btn.textContent = LOCALE === 'mr' ? 'सबमिट करा' : 'Submit & Complete';
+          btn.textContent = 'Submit & Complete →';
           return;
         }
 
         const data = await res.json();
-        if (data.redirect) {
-          window.location.href = data.redirect;
-        }
+        if (data.redirect) window.location.href = data.redirect;
       } catch(e) {
-        alert(LOCALE === 'mr' ? 'नेटवर्क त्रुटी' : 'Network error. Please try again.');
+        alert('Network error. Please try again.');
         btn.disabled = false;
-        btn.textContent = LOCALE === 'mr' ? 'सबमिट करा' : 'Submit & Complete';
+        btn.textContent = 'Submit & Complete →';
       }
     }
   </script>

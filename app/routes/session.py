@@ -215,11 +215,32 @@ def session_view(
     if op.status == SessionStatusEnum.COMPLETED:
         return RedirectResponse(url=f"/session/{session_id}/complete", status_code=303)
 
-    # ── First visit: redirect through briefing → practice → comprehension ──
+    # ── First visit: check full onboarding flow ──
     if not op.cases_assigned:
         from app.models import AuditLog
 
-        # Check if comprehension done (implies briefing + practice also done)
+        # 1. Consent?
+        if not op.consent_given:
+            return RedirectResponse(url=f"/session/{session_id}/consent", status_code=303)
+
+        # 2. Demographics?
+        if not op.highest_education:
+            return RedirectResponse(url=f"/session/{session_id}/demographics", status_code=303)
+
+        # 3. Briefing?
+        briefing_done = (
+            db.query(AuditLog)
+            .filter(
+                AuditLog.session_id == session_id,
+                AuditLog.action == AuditActionEnum.LOGIN,
+                AuditLog.payload.contains("briefing_consent"),
+            )
+            .first()
+        )
+        if not briefing_done:
+            return RedirectResponse(url=f"/session/{session_id}/briefing", status_code=303)
+
+        # 4. Comprehension?
         comprehension_done = (
             db.query(AuditLog)
             .filter(
@@ -230,20 +251,7 @@ def session_view(
             .first()
         )
         if not comprehension_done:
-            # Check if briefing consent was given
-            briefing_done = (
-                db.query(AuditLog)
-                .filter(
-                    AuditLog.session_id == session_id,
-                    AuditLog.action == AuditActionEnum.LOGIN,
-                    AuditLog.payload.contains("briefing_consent"),
-                )
-                .first()
-            )
-            if not briefing_done:
-                return RedirectResponse(url=f"/session/{session_id}/briefing", status_code=303)
-            else:
-                return RedirectResponse(url=f"/session/{session_id}/practice", status_code=303)
+            return RedirectResponse(url=f"/session/{session_id}/practice", status_code=303)
 
     # ── First visit: assign cases ─────────────
     if not op.cases_assigned:
@@ -532,12 +540,6 @@ async def submit_survey(
     confidence = body.get("confidence_rating")
     feedback   = (body.get("feedback") or "").strip()
 
-    # Demographics (item 15 — collected post-task)
-    initials         = (body.get("initials") or "").strip().upper()
-    age_raw          = body.get("age")
-    experience_raw   = body.get("experience_years")
-    role             = (body.get("role") or "").strip()
-
     # Validate Likert
     for name, val in [
         ("salience_rating", salience),
@@ -547,45 +549,30 @@ async def submit_survey(
         if val is None or not isinstance(val, int) or not (1 <= val <= 5):
             raise HTTPException(400, f"{name} must be an integer 1–5")
 
-    # Validate demographics
-    if not initials or len(initials) > 8:
-        raise HTTPException(400, "Initials required (1–8 characters)")
-    try:
-        age = int(age_raw)
-        if not (18 <= age <= 80):
-            raise ValueError
-    except (TypeError, ValueError):
-        raise HTTPException(400, "Age must be 18–80")
-    try:
-        experience_years = int(experience_raw)
-        if not (0 <= experience_years <= 60):
-            raise ValueError
-    except (TypeError, ValueError):
-        raise HTTPException(400, "Experience years must be 0–60")
-    if not role:
-        raise HTTPException(400, "Role is required")
-
-    # ── Update operator demographics ─────────
-    op.initials         = initials
-    op.age              = age
-    op.role             = role
-    op.experience_years = experience_years
-
     survey = SurveyResponse(
         operator_id       = op.operator_id,
         session_id        = session_id,
         salience_rating   = salience,
         standout_rating   = standout,
         confidence_rating = confidence,
+        feedback          = feedback,
         submitted_at      = _utcnow(),
     )
     db.add(survey)
 
-    # Session completion (items 7, 33)
-    op.status                 = SessionStatusEnum.COMPLETED
-    op.completed_at           = _utcnow()
-    op.session_complete       = True
-    op.session_end_timestamp  = _utcnow()
+    # Generate completion code: SARAL-XXXXXX
+    import string as _string
+    code_chars = _string.ascii_uppercase + _string.digits
+    code_suffix = ''.join(random.choices(code_chars, k=6))
+    completion_code = f"SARAL-{code_suffix}"
+
+    # Session completion
+    op.status                    = SessionStatusEnum.COMPLETED
+    op.completed_at              = _utcnow()
+    op.session_complete          = True
+    op.session_end_timestamp     = _utcnow()
+    op.completion_timestamp      = _utcnow()
+    op.prolific_completion_code  = completion_code
 
     db.commit()
 
@@ -595,14 +582,11 @@ async def submit_survey(
         actor_id   = op.operator_id,
         session_id = session_id,
         payload    = {
-            "salience_rating":   salience,
-            "standout_rating":   standout,
-            "confidence_rating": confidence,
-            "feedback":          feedback,
-            "initials":          initials,
-            "age":               age,
-            "role":              role,
-            "experience_years":  experience_years,
+            "salience_rating":          salience,
+            "standout_rating":          standout,
+            "confidence_rating":        confidence,
+            "feedback":                 feedback,
+            "prolific_completion_code": completion_code,
         },
     )
     log_event(
@@ -611,9 +595,9 @@ async def submit_survey(
         actor_id   = op.operator_id,
         session_id = session_id,
         payload    = {
-            "cases_completed":       op.cases_completed,
-            "instrument_version":    op.instrument_version,
-            "list_assignment":       op.list_assignment,
+            "cases_completed":          op.cases_completed,
+            "instrument_version":       op.instrument_version,
+            "prolific_completion_code": completion_code,
         },
     )
 
@@ -632,9 +616,18 @@ def session_complete(
 ):
     _check_session_cookie(request, session_id)
     op = _get_operator_or_404(session_id, db)
+
+    completion_code = op.prolific_completion_code or "SARAL-000000"
+    prolific_redirect = settings.PROLIFIC_COMPLETION_URL.replace("{code}", completion_code)
+
     return templates.TemplateResponse(
         "complete.html",
-        {"request": request, "operator": op},
+        {
+            "request":              request,
+            "operator":             op,
+            "completion_code":      completion_code,
+            "prolific_redirect_url": prolific_redirect,
+        },
     )
 
 # ─────────────────────────────────────────────

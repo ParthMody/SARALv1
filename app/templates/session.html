@@ -80,6 +80,18 @@
     .ldg{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);justify-content:center;align-items:center;flex-direction:column;gap:14px;}
     .spin{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--ink);border-radius:50%;animation:sp 1s linear infinite;}
     @keyframes sp{to{transform:rotate(360deg);}}
+
+    /* Help panel */
+    .help-btn{position:fixed;bottom:20px;right:20px;z-index:50;width:44px;height:44px;border-radius:50%;background:#102a56;color:#fff;border:none;font-size:1.1rem;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(16,42,86,0.2);transition:background 0.15s;}
+    .help-btn:hover{background:#214a85;}
+    .help-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(12,23,38,0.4);backdrop-filter:blur(2px);}
+    .help-panel{position:fixed;right:0;top:0;bottom:0;width:340px;max-width:90vw;background:#fff;box-shadow:-10px 0 40px rgba(0,0,0,0.12);padding:24px 20px;overflow-y:auto;z-index:301;transform:translateX(100%);transition:transform 0.25s ease;}
+    .help-panel.open{transform:translateX(0);}
+    .help-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border:none;background:#f1f5f9;border-radius:8px;font-size:1rem;cursor:pointer;color:#6e7f97;}
+    .help-title{font-size:0.9rem;font-weight:800;color:#102a56;margin-bottom:16px;}
+    .help-panel dt{font-weight:700;color:#102a56;font-size:0.84rem;margin-top:12px;}
+    .help-panel dt:first-of-type{margin-top:0;}
+    .help-panel dd{margin:2px 0 8px 0;font-size:0.82rem;color:#374151;line-height:1.6;}
   </style>
 </head>
 <body>
@@ -102,7 +114,7 @@
 
 <div class="shell">
   <div class="framing">
-    {% if locale == "mr" %}अंतिम-टप्पा पुनरावलोकन. पूर्व सत्यापनाची क्षेत्र नोंद खाली दर्शविली आहे.{% else %}Final-stage review. Field note from prior verification is shown below.{% endif %}
+    {% if locale == "mr" %}Final-stage review. Field note from prior verification is shown below.{% else %}Final-stage review. Field note from prior verification is shown below.{% endif %}
   </div>
 
   <!-- 1. Applicant Profile -->
@@ -322,6 +334,38 @@ fetch('/admin/log-device',{
 ci=findPending();
 if(ci>=N)window.location.href=`/session/${SID}/survey`;
 else render(ci);
+</script>
+
+<!-- Help panel -->
+<button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+<div class="help-overlay" id="help-ov" onclick="toggleHelp()"></div>
+<div class="help-panel" id="help-panel">
+  <button class="help-close" onclick="toggleHelp()">×</button>
+  <div class="help-title">Reference</div>
+  <dl>
+    <dt>Structured Record</dt>
+    <dd>Formal case information available before final review — applicant age, location, housing type, voter roll status, documents submitted.</dd>
+    <dt>Field Note</dt>
+    <dd>Information recorded during prior verification by a junior officer. May contain observations, third-party statements, or contextual details.</dd>
+    <dt>Algorithmic Recommendation</dt>
+    <dd>A system-generated suggestion (approve or reject) based on available case information.</dd>
+    <dt>Approve</dt>
+    <dd>Accept the applicant's eligibility for welfare-housing.</dd>
+    <dt>Reject</dt>
+    <dd>Deny the applicant's eligibility.</dd>
+    <dt>Escalate</dt>
+    <dd>Defer for further review when information is insufficient or ambiguous.</dd>
+  </dl>
+</div>
+
+<script>
+function toggleHelp(){
+  const p=document.getElementById('help-panel');
+  const o=document.getElementById('help-ov');
+  const isOpen=p.classList.contains('open');
+  if(isOpen){p.classList.remove('open');o.style.display='none';}
+  else{p.classList.add('open');o.style.display='block';}
+}
 </script>
 </body>
 </html>

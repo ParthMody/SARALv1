@@ -1,42 +1,48 @@
 <!DOCTYPE html>
-<html lang="{{ locale }}">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SARAL v2 — Instructions</title>
+  <title>SARAL v2 — Task Briefing</title>
   <style>
-    :root{
-      --bg:#f3f5f8;--panel:#fff;--ink:#102a56;--ink-2:#21406d;
-      --text:#213247;--muted:#6e7f97;--line:#dbe3ee;--line-soft:#e9eef5;
-      --shadow:0 10px 28px rgba(16,42,86,0.05);
-    }
-    *{box-sizing:border-box;}html,body{margin:0;padding:0;}
-    body{min-height:100vh;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px 16px;}
-    .shell{width:100%;max-width:640px;}
-    .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:16px;box-shadow:var(--shadow);padding:32px 28px;}
-    .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
-    .logo-wrap{width:44px;height:44px;border-radius:10px;background:#fff;border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Inter,"Segoe UI",Arial,sans-serif;background:#f4f6f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;color:#213247;}
+    .shell{width:100%;max-width:680px;}
+    .card{background:#fff;border:1px solid #e9eef5;border-radius:16px;box-shadow:0 10px 28px rgba(16,42,86,0.05);padding:2rem 1.8rem;}
+    .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+    .logo-wrap{width:42px;height:42px;border-radius:10px;background:#fff;border:1px solid #e9eef5;display:flex;align-items:center;justify-content:center;overflow:hidden;}
     .logo-wrap img{width:76%;height:76%;object-fit:contain;}
-    h1{margin:0;font-size:1.3rem;font-weight:800;color:var(--ink);}
-    .subtitle{font-size:0.85rem;color:var(--muted);margin-top:4px;}
+    h1{margin:0;font-size:1.2rem;font-weight:800;color:#102a56;}
+    .sub{font-size:0.82rem;color:#6e7f97;margin-top:3px;}
+    .divider{border:0;border-top:1px solid #e9eef5;margin:18px 0;}
 
-    .divider{border:0;border-top:1px solid var(--line-soft);margin:20px 0;}
+    .section{margin-bottom:20px;}
+    .section-head{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#6e7f97;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f3f7;}
+    .section p{font-size:0.88rem;line-height:1.8;color:#213247;margin:0 0 10px;}
+    .section strong{color:#102a56;}
 
-    .briefing{font-size:0.9rem;line-height:1.85;color:var(--text);}
-    .briefing p{margin:0 0 14px;}
-    .briefing strong{color:var(--ink);font-weight:700;}
-    .briefing ul{margin:8px 0 14px 20px;padding:0;}
-    .briefing ul li{margin-bottom:6px;}
+    .context-box{background:#f8f6f1;border:1px solid #e0d9cc;border-radius:10px;padding:14px 16px;margin:12px 0;font-size:0.84rem;line-height:1.7;color:#5a5040;}
+    .context-box strong{color:#3d3528;}
 
-    .note-box{background:#f8f6f1;border:1px solid #e0d9cc;border-radius:10px;padding:14px 16px;margin:16px 0;font-size:0.84rem;color:#5a5040;line-height:1.65;}
+    .proof-list{margin:8px 0 12px 18px;padding:0;font-size:0.86rem;line-height:1.7;color:#374151;}
+    .proof-list li{margin-bottom:4px;}
 
-    .consent-row{display:flex;align-items:flex-start;gap:10px;margin:20px 0 16px;padding:14px 16px;background:#fbfcfe;border:1px solid var(--line-soft);border-radius:10px;cursor:pointer;}
-    .consent-row input[type="checkbox"]{width:18px;height:18px;margin-top:2px;accent-color:var(--ink);cursor:pointer;flex-shrink:0;}
-    .consent-row label{font-size:0.86rem;font-weight:600;color:var(--text);cursor:pointer;line-height:1.5;}
+    .role-box{background:#edf4ff;border:1px solid #a9c6f5;border-radius:10px;padding:14px 16px;margin:12px 0;font-size:0.86rem;line-height:1.7;color:#1d4f91;}
+    .role-box strong{color:#102a56;}
 
-    .continue-btn{display:block;width:100%;height:48px;border:0;border-radius:12px;background:var(--ink);color:#fff;font-size:0.92rem;font-weight:800;cursor:pointer;transition:background 0.15s;}
-    .continue-btn:hover{background:var(--ink-2);}
+    .def-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:0.84rem;margin:10px 0;line-height:1.6;}
+    .def-label{font-weight:700;color:#102a56;white-space:nowrap;}
+    .def-desc{color:#374151;}
+
+    .note-box{background:#faf8f4;border:1px solid #ddd5c5;border-radius:10px;padding:12px 14px;margin:14px 0;font-size:0.82rem;color:#5a5040;line-height:1.6;}
+
+    .consent-row{display:flex;align-items:flex-start;gap:10px;margin:18px 0 14px;padding:12px 14px;background:#f8fafc;border:1px solid #e9eef5;border-radius:10px;cursor:pointer;}
+    .consent-row input[type="checkbox"]{width:18px;height:18px;margin-top:2px;accent-color:#102a56;cursor:pointer;flex-shrink:0;}
+    .consent-row label{font-size:0.84rem;font-weight:600;color:#213247;cursor:pointer;line-height:1.5;}
+    .continue-btn{display:block;width:100%;height:46px;border:0;border-radius:10px;background:#1a2b4a;color:#fff;font-size:0.9rem;font-weight:800;cursor:pointer;transition:background 0.15s;}
+    .continue-btn:hover{background:#253d6a;}
     .continue-btn:disabled{background:#b0b8c7;cursor:not-allowed;}
+    .time-note{text-align:center;font-size:0.74rem;color:#9ca3af;margin-top:12px;}
   </style>
 </head>
 <body>
@@ -45,71 +51,96 @@
       <div class="logo-row">
         <div class="logo-wrap"><img src="/static/assets/saral.png" alt="" onerror="this.style.display='none'"></div>
         <div>
-          <h1>SARAL v2</h1>
-          <div class="subtitle">{% if locale == "mr" %}सत्र सूचना{% else %}Session Instructions{% endif %}</div>
+          <h1>Task Briefing</h1>
+          <div class="sub">Read carefully — about 2 minutes</div>
         </div>
       </div>
 
       <hr class="divider" />
 
-      <div class="briefing">
-        {% if locale == "mr" %}
-        <p>सहभागासाठी धन्यवाद. हे सत्र साधारण <strong>२०-२५ मिनिटे</strong> चालेल.</p>
-
-        <p>तुम्ही <strong>१२ कल्याण पात्रता प्रकरणांचे</strong> पुनरावलोकन कराल. प्रत्येक प्रकरण तुमच्यापर्यंत पोहोचण्यापूर्वी कनिष्ठ अधिकाऱ्याच्या क्षेत्र सत्यापनातून गेलेले आहे. <strong>तुम्ही अंतिम पुनरावलोकनकर्ता आहात.</strong></p>
-
-        <p>प्रत्येक प्रकरणासाठी तुम्हाला दिसेल:</p>
-        <ul>
-          <li>अर्जदाराचे प्रोफाइल (संरचित नोंद)</li>
-          <li>पूर्व सत्यापनाची क्षेत्र नोंद</li>
-          <li>प्रणालीची शिफारस</li>
-        </ul>
-
-        <p>तुमचे काम आहे अंतिम निर्णय घेणे — <strong>मंजूर, नाकार, किंवा वरिष्ठांकडे पाठवा</strong> — तुम्हाला दिसणाऱ्या सर्व माहितीच्या आधारे. बरोबर किंवा चूक उत्तरे नाहीत. आम्ही अधिकारी प्रकरणांचे कसे मूल्यांकन करतात याचा अभ्यास करत आहोत, तुमची चाचणी करत नाही.</p>
-
-        <p>वास्तविक प्रकरणांपूर्वी एक <strong>सराव प्रकरण</strong> आणि एक <strong>आकलन तपासणी</strong> आहे. सराव प्रकरण नोंदवले जात नाही.</p>
-
-        {% else %}
-        <p>Thank you for participating. This session will take approximately <strong>20–25 minutes</strong>.</p>
-
-        <p>You will review <strong>12 welfare eligibility cases</strong>. Each case has been through junior-officer field verification before reaching you. <strong>You are the final reviewer.</strong></p>
-
-        <p>For each case you will see:</p>
-        <ul>
-          <li>The applicant's profile (structured record)</li>
-          <li>A field note from prior verification</li>
-          <li>The system's recommendation</li>
-        </ul>
-
-        <p>Your job is to make a final decision — <strong>approve, reject, or escalate</strong> — based on everything you see. There are no right or wrong answers. We are studying how officers evaluate cases, not testing you.</p>
-
-        <p>Before the real cases, there is one <strong>practice case</strong> and one <strong>comprehension check</strong>. The practice case is not recorded.</p>
-
-        {% endif %}
+      <!-- 1. The scheme -->
+      <div class="section">
+        <div class="section-head">The Scheme</div>
+        <p>You will review cases from a <strong>welfare-housing rehabilitation programme</strong> for slum dwellers. Under this scheme, eligible residents of informal settlements receive permanent housing. The government must verify each applicant's eligibility before approving them.</p>
       </div>
 
+      <!-- 2. The eligibility rule -->
+      <div class="section">
+        <div class="section-head">Eligibility Rule</div>
+        <p>The core rule: the applicant's slum structure must have <strong>existed on or before 1 January 2011</strong>. This is called the <strong>cutoff date</strong>.</p>
+        <p>To be eligible, an applicant must provide documentary proof that their structure existed before this date. The types of proof accepted include:</p>
+        <ul class="proof-list">
+          <li><strong>Voter roll entry</strong> — registered at the slum address before 2011</li>
+          <li><strong>Electricity bill</strong> — connection established before 2011</li>
+          <li><strong>Property tax receipt</strong> — municipal records predating 2011</li>
+          <li><strong>Housing society membership</strong> — cooperative registered before 2011</li>
+        </ul>
+        <p>Applicants must also submit an <strong>identity document</strong> (Aadhaar) and a <strong>self-declaration</strong> that they own no other property.</p>
+      </div>
+
+      <!-- 3. What disqualifies -->
+      <div class="section">
+        <div class="section-head">Common Disqualifications</div>
+        <p>An applicant may be <strong>rejected</strong> if:</p>
+        <ul class="proof-list">
+          <li>No documentary proof of residence before 2011</li>
+          <li>A family member already received free rehabilitation housing</li>
+          <li>The applicant cannot prove independent occupancy (e.g. shares address with a family member who filed separately)</li>
+          <li>The self-declaration is found to be false (e.g. applicant owns another property)</li>
+        </ul>
+      </div>
+
+      <!-- 4. The verification process -->
+      <div class="section">
+        <div class="section-head">The Verification Process</div>
+        <p>Before a case reaches you, a <strong>junior officer visits the site</strong> to verify the applicant's claims. The officer inspects the structure, speaks with neighbours, and checks documents against physical reality. Their observations are recorded in a <strong>field note</strong>.</p>
+
+      <div class="context-box">
+        The field note contains the verifier's first-hand observations from the site visit — what they saw at the structure, what neighbours said, and what condition the documents were in.
+      </div>
+      </div>
+
+      <!-- 5. The algorithm -->
+      <div class="section">
+        <div class="section-head">The System Recommendation</div>
+        <p>An <strong>algorithm</strong> checks the applicant's documents against the eligibility rules and produces a recommendation: <strong>approve</strong> or <strong>reject</strong>. This recommendation is shown to you alongside the case.</p>
+        <p>The algorithm does not see the field note. It only evaluates the structured record.</p>
+      </div>
+
+      <!-- 6. Your role -->
+      <div class="section">
+        <div class="section-head">Your Role</div>
+        <div class="role-box">
+          You are the <strong>final reviewer</strong>. You see the applicant's profile, the field note from the site visit, and the algorithm's recommendation. You make the final decision.
+        </div>
+        <p>For each case, you choose one of three actions:</p>
+        <div class="def-grid">
+          <span class="def-label">Approve</span>
+          <span class="def-desc">Accept the applicant's eligibility for rehabilitation housing.</span>
+          <span class="def-label">Reject</span>
+          <span class="def-desc">Deny the applicant's eligibility.</span>
+          <span class="def-label">Escalate</span>
+          <span class="def-desc">Defer for further review when information is insufficient or ambiguous.</span>
+        </div>
+      </div>
+
+      <!-- 7. Session structure -->
+      <div class="section">
+        <p>You will review <strong>12 fictional but realistic eligibility cases</strong> from a welfare-housing rehabilitation programme for slum dwellers. Under this scheme, eligible residents of informal settlements receive permanent housing. The government must verify each applicant's eligibility before approving them. The cases you review are composite vignettes inspired by real verification work; no case corresponds to a specific real applicant.</p>
       <div class="note-box">
-        {% if locale == "mr" %}
-          <strong>लक्षात ठेवा:</strong> प्रत्येक निर्णय सबमिट केल्यानंतर लॉक होतो — तुम्ही मागे जाऊ शकत नाही. प्रत्येक प्रकरणावर तुमचा वेळ घ्या. सत्रादरम्यान प्रश्न असल्यास, नोंद करा — नंतर चर्चा करू शकतो.
-        {% else %}
-          <strong>Keep in mind:</strong> Each decision is locked after you submit — you cannot go back. Take your time on each case. If you have questions during the session, note them and we can discuss after.
-        {% endif %}
+        <strong>Keep in mind:</strong> Each decision is locked after submission — you cannot go back. Take your time on each case. A <strong>help button (?)</strong> is available on every case screen if you need to review these definitions.
       </div>
 
-      <div class="consent-row" onclick="document.getElementById('consent-cb').click()">
-        <input type="checkbox" id="consent-cb" onchange="document.getElementById('btn-continue').disabled = !this.checked" />
-        <label for="consent-cb">
-          {% if locale == "mr" %}
-            मी सूचना वाचल्या आहेत आणि समजल्या आहेत. सर्व प्रकरण डेटा कृत्रिम आहे. कोणत्याही वास्तविक अर्जदारांवर परिणाम होत नाही.
-          {% else %}
-            I have read and understood the instructions. All case data is synthetic. No real applicants are affected.
-          {% endif %}
-        </label>
+      <div class="consent-row" onclick="document.getElementById('brief-cb').click()">
+        <input type="checkbox" id="brief-cb" onchange="document.getElementById('btn-go').disabled = !this.checked" />
+        <label for="brief-cb">I have read and understood the briefing above.</label>
       </div>
 
-      <button class="continue-btn" id="btn-continue" disabled onclick="proceed()">
-        {% if locale == "mr" %}सुरू करा →{% else %}Continue to Practice →{% endif %}
+      <button class="continue-btn" id="btn-go" disabled onclick="proceed()">
+        Continue to Practice →
       </button>
+
+      <p class="time-note">There are no right or wrong answers. We are studying how people evaluate cases, not testing you.</p>
     </div>
   </div>
 
@@ -117,7 +148,6 @@
     const SID = {{ session_id | tojson }};
 
     function proceed() {
-      // Log consent
       fetch(`/session/${SID}/briefing-consent`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},

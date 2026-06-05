@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SARAL v2 — About You</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Inter,"Segoe UI",Arial,sans-serif;background:#f4f6f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;color:#213247;}
+    .card{background:#fff;border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,0.08);width:100%;max-width:520px;padding:2rem 1.8rem;}
+    h1{font-size:1.2rem;font-weight:800;color:#102a56;margin-bottom:0.3rem;text-align:center;}
+    .sub{font-size:0.84rem;color:#6e7f97;text-align:center;margin-bottom:1.5rem;line-height:1.5;}
+    .form-group{margin-bottom:1.1rem;}
+    label{display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:0.3rem;}
+    label .req{color:#ef4444;margin-left:2px;}
+    select,input[type="number"],input[type="text"]{width:100%;padding:0.6rem 0.75rem;font-size:0.92rem;border:1px solid #d1d5db;border-radius:6px;background:#fafafa;color:#111827;font-family:inherit;appearance:none;transition:border-color 0.15s;}
+    select:focus,input:focus{outline:none;border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
+    .continue-btn{display:block;width:100%;height:46px;border:0;border-radius:10px;background:#1a2b4a;color:#fff;font-size:0.92rem;font-weight:800;cursor:pointer;transition:background 0.15s;margin-top:0.5rem;}
+    .continue-btn:hover{background:#253d6a;}
+    .continue-btn:disabled{background:#b0b8c7;cursor:not-allowed;}
+    .note{margin-top:1rem;font-size:0.76rem;color:#9ca3af;text-align:center;line-height:1.5;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Brief Background</h1>
+    <p class="sub">This helps us understand the range of participants in the study. All fields are required.</p>
+
+    <div class="form-group">
+      <label for="education">Highest education completed <span class="req">*</span></label>
+      <select id="education" onchange="validate()">
+        <option value="" disabled selected>Select…</option>
+        <option value="high_school">High school / Secondary</option>
+        <option value="bachelors">Bachelor's degree</option>
+        <option value="masters">Master's degree</option>
+        <option value="doctorate">Doctorate / PhD</option>
+        <option value="professional">Professional degree (law, medicine, etc.)</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="occupation">Occupation category <span class="req">*</span></label>
+      <select id="occupation" onchange="validate()">
+        <option value="" disabled selected>Select…</option>
+        <option value="government">Government / Public sector</option>
+        <option value="education">Education / Academia</option>
+        <option value="nonprofit">Non-profit / NGO</option>
+        <option value="legal">Legal / Regulatory</option>
+        <option value="policy">Public policy / Governance</option>
+        <option value="research">Research</option>
+        <option value="administration">Administration / Management</option>
+        <option value="private_sector">Private sector</option>
+        <option value="student">Student</option>
+        <option value="retired">Retired</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="experience">Years of public administration / policy / civil services experience <span class="req">*</span></label>
+      <input type="number" id="experience" min="0" max="50" placeholder="0 is acceptable" onchange="validate()" oninput="validate()" />
+    </div>
+
+    <div class="form-group">
+      <label for="country">Country of residence <span class="req">*</span></label>
+      <input type="text" id="country" placeholder="e.g. India, United Kingdom, United States" oninput="validate()" />
+    </div>
+
+    <button class="continue-btn" id="btn-continue" disabled onclick="submitDemographics()">
+      Continue to Briefing →
+    </button>
+
+    <p class="note">This information is used for research purposes only and is not shared with Prolific or any third party.</p>
+  </div>
+
+  <script>
+    const SID = {{ session_id | tojson }};
+
+    function validate() {
+      const ed = document.getElementById('education').value;
+      const oc = document.getElementById('occupation').value;
+      const ex = document.getElementById('experience').value;
+      const co = document.getElementById('country').value.trim();
+      document.getElementById('btn-continue').disabled = !(ed && oc && ex !== '' && co);
+    }
+
+    async function submitDemographics() {
+      const btn = document.getElementById('btn-continue');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      try {
+        const res = await fetch(`/session/${SID}/demographics`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            highest_education: document.getElementById('education').value,
+            occupation_category: document.getElementById('occupation').value,
+            public_admin_experience_years: parseInt(document.getElementById('experience').value) || 0,
+            country_of_residence: document.getElementById('country').value.trim(),
+          }),
+        });
+        if (res.ok) {
+          window.location.href = `/session/${SID}/briefing`;
+        } else {
+          alert('Error saving. Please try again.');
+          btn.disabled = false;
+          btn.textContent = 'Continue to Briefing →';
+        }
+      } catch(e) {
+        alert('Network error. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Continue to Briefing →';
+      }
+    }
+  </script>
+</body>
+</html>

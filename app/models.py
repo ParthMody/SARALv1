@@ -1,4 +1,14 @@
 # app/models.py
+"""
+SARAL v2 Phase 2 — Data Model (Prolific deployment)
+
+Tables:
+  operators (participants)  — one row per session
+  vignettes                 — pre-loaded pool (32 objects)
+  evaluations               — primary outcome (one row per participant × case)
+  survey_responses           — post-task survey
+  audit_log                  — immutable event trail
+"""
 from __future__ import annotations
 
 import enum
@@ -7,16 +17,8 @@ import json
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    Column,
-    String,
-    Enum as SAEnum,
-    ForeignKey,
-    DateTime,
-    Float,
-    Boolean,
-    Integer,
-    Text,
-    UniqueConstraint,
+    Column, String, Enum as SAEnum, ForeignKey, DateTime,
+    Float, Boolean, Integer, Text, UniqueConstraint,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.types import TypeDecorator, TEXT
@@ -25,57 +27,39 @@ from .db import Base
 
 
 # ─────────────────────────────────────────────
-# SQLite-safe JSON helpers (carried from v1.3)
+# SQLite-safe JSON helpers
 # ─────────────────────────────────────────────
 
 class JsonList(TypeDecorator):
-    """Stores a Python list as a JSON array string."""
     impl = TEXT
     cache_ok = True
-
     def process_bind_param(self, value, dialect):
-        if value is None:
-            return "[]"
-        if isinstance(value, list):
-            return json.dumps(value, ensure_ascii=False)
-        if isinstance(value, str):
-            s = value.strip()
-            return s if s else "[]"
+        if value is None: return "[]"
+        if isinstance(value, list): return json.dumps(value, ensure_ascii=False)
+        if isinstance(value, str): return value.strip() or "[]"
         return "[]"
-
     def process_result_value(self, value, dialect):
-        if not value:
-            return []
+        if not value: return []
         try:
-            parsed = json.loads(value)
-            return parsed if isinstance(parsed, list) else []
-        except Exception:
-            return []
+            p = json.loads(value)
+            return p if isinstance(p, list) else []
+        except: return []
 
 
 class JsonDict(TypeDecorator):
-    """Stores a Python dict as a JSON object string."""
     impl = TEXT
     cache_ok = True
-
     def process_bind_param(self, value, dialect):
-        if value is None:
-            return "{}"
-        if isinstance(value, dict):
-            return json.dumps(value, ensure_ascii=False)
-        if isinstance(value, str):
-            s = value.strip()
-            return s if s else "{}"
+        if value is None: return "{}"
+        if isinstance(value, dict): return json.dumps(value, ensure_ascii=False)
+        if isinstance(value, str): return value.strip() or "{}"
         return "{}"
-
     def process_result_value(self, value, dialect):
-        if not value:
-            return {}
+        if not value: return {}
         try:
-            parsed = json.loads(value)
-            return parsed if isinstance(parsed, dict) else {}
-        except Exception:
-            return {}
+            p = json.loads(value)
+            return p if isinstance(p, dict) else {}
+        except: return {}
 
 
 # ─────────────────────────────────────────────
@@ -86,38 +70,27 @@ class LocaleEnum(str, enum.Enum):
     EN = "en"
     MR = "mr"
 
-
 class ArmEnum(str, enum.Enum):
     CONTROL   = "control"
     TREATMENT = "treatment"
-
 
 class AlgoRecommendationEnum(str, enum.Enum):
     APPROVE = "approve"
     REJECT  = "reject"
 
-
 class RuleResultEnum(str, enum.Enum):
     ELIGIBLE_BY_RULE   = "ELIGIBLE_BY_RULE"
     INELIGIBLE_BY_RULE = "INELIGIBLE_BY_RULE"
-
 
 class DecisionEnum(str, enum.Enum):
     APPROVE  = "approve"
     REJECT   = "reject"
     ESCALATE = "escalate"
 
-
-class ReviewTypeEnum(str, enum.Enum):
-    EXPERIENCED = "experienced"
-    RANDOM      = "random"
-
-
 class SessionStatusEnum(str, enum.Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED   = "completed"
     ABANDONED   = "abandoned"
-
 
 class AuditActionEnum(str, enum.Enum):
     LOGIN          = "LOGIN"
@@ -135,198 +108,145 @@ def _uuid() -> str:
 
 
 # ─────────────────────────────────────────────
-# Core Tables
+# Operator / Participant
+# Table name kept as "operators" for backward compat
 # ─────────────────────────────────────────────
 
 class Operator(Base):
-    """
-    Created at login. One row per operator session.
-    operator_id is UUID4 — no PII derivation.
-    """
     __tablename__ = "operators"
 
     operator_id  = Column(String, primary_key=True, default=_uuid)
     session_id   = Column(String, nullable=False, unique=True, default=_uuid, index=True)
 
-    # Demographics (login form inputs)
-    initials            = Column(String(8),  nullable=False)
-    age                 = Column(Integer,    nullable=False)
-    role                = Column(String(64), nullable=False)
-    experience_years    = Column(Integer,    nullable=False)
-    locale              = Column(SAEnum(LocaleEnum), nullable=False, default=LocaleEnum.EN)
+    # ── Prolific integration ──
+    prolific_id  = Column(String, nullable=True, index=True)  # from URL param
 
-    # Session lifecycle
-    status       = Column(SAEnum(SessionStatusEnum), nullable=False, default=SessionStatusEnum.IN_PROGRESS)
-    cases_assigned   = Column(JsonList, default=list, nullable=False)  # ordered list of case_ids
-    list_assignment  = Column(String,  nullable=True)               # "A" or "B" counterbalance list
-    case_order_seed  = Column(Integer, nullable=True)               # seed used to shuffle case order
-    cases_completed  = Column(Integer,  nullable=False, default=0)
+    # ── Consent ──
+    consent_given     = Column(Boolean, nullable=True)
+    consent_timestamp = Column(DateTime(timezone=True), nullable=True)
 
-    created_at   = Column(DateTime(timezone=True), server_default=func.now())
-    completed_at = Column(DateTime(timezone=True), nullable=True)
+    # ── Demographics (collected between consent and briefing) ──
+    highest_education           = Column(String, nullable=True)
+    occupation_category         = Column(String, nullable=True)
+    public_admin_experience_years = Column(Integer, nullable=True)
+    country_of_residence        = Column(String, nullable=True)
 
-    # Session timing (item 33)
-    session_start_timestamp = Column(DateTime(timezone=True), nullable=True)
-    session_end_timestamp   = Column(DateTime(timezone=True), nullable=True)
+    # ── Legacy fields (kept for field-arm compat, optional for Prolific) ──
+    initials         = Column(String(8),  nullable=True)
+    age              = Column(Integer,    nullable=True)
+    role             = Column(String(64), nullable=True)
+    experience_years = Column(Integer,    nullable=True)
 
-    # Language logging (item 31)
-    language_selected = Column(String, nullable=True)   # "en" or "mr" as selected at login
+    # ── Session config ──
+    locale           = Column(SAEnum(LocaleEnum), nullable=False, default=LocaleEnum.EN)
+    status           = Column(SAEnum(SessionStatusEnum), nullable=False, default=SessionStatusEnum.IN_PROGRESS)
+    cases_assigned   = Column(JsonList, default=list, nullable=False)
+    list_assignment  = Column(String, nullable=True)
+    case_order_seed  = Column(Integer, nullable=True)
+    cases_completed  = Column(Integer, nullable=False, default=0)
 
-    # Instrument version (item 10)
-    instrument_version = Column(String, nullable=True)
+    # ── Timestamps ──
+    created_at               = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at             = Column(DateTime(timezone=True), nullable=True)
+    session_start_timestamp  = Column(DateTime(timezone=True), nullable=True)
+    session_end_timestamp    = Column(DateTime(timezone=True), nullable=True)
 
-    # Session completion flag (item 7)
-    session_complete = Column(Boolean, nullable=False, default=False)
+    # ── Metadata ──
+    language_selected    = Column(String, nullable=True)
+    instrument_version   = Column(String, nullable=True)
+    session_complete     = Column(Boolean, nullable=False, default=False)
 
+    # ── Quality control (Prolific) ──
+    comprehension_failures  = Column(Integer, nullable=True, default=0)
+    attention_check_passed  = Column(Boolean, nullable=True)
+    prolific_completion_code = Column(String, nullable=True)
+    completion_timestamp    = Column(DateTime(timezone=True), nullable=True)
+
+
+# ─────────────────────────────────────────────
+# Vignettes
+# ─────────────────────────────────────────────
 
 class Vignette(Base):
-    """
-    Pre-loaded synthetic case pool. 320 rows total:
-      160 control  (80 approve, 80 reject)
-      160 treatment (80 approve, 80 reject)
-    Loaded once by seed script — never mutated at runtime.
-    """
     __tablename__ = "vignettes"
 
-    case_id = Column(String, primary_key=True, default=_uuid)
-
-    arm                 = Column(SAEnum(ArmEnum),                nullable=False, index=True)
+    case_id             = Column(String, primary_key=True, default=_uuid)
+    arm                 = Column(SAEnum(ArmEnum), nullable=False, index=True)
     algo_recommendation = Column(SAEnum(AlgoRecommendationEnum), nullable=False, index=True)
-    rule_result         = Column(SAEnum(RuleResultEnum),         nullable=False)
+    rule_result         = Column(SAEnum(RuleResultEnum), nullable=False)
+    profile_data        = Column(JsonDict, nullable=False, default=dict)
+    field_note_en       = Column(Text, nullable=False, default="")
+    field_note_mr       = Column(Text, nullable=False, default="")
+    pool_version        = Column(String, nullable=False, default="v2.0")
+    used_count          = Column(Integer, nullable=False, default=0)
+    pair_id             = Column(Integer, nullable=True)
+    list_assignment     = Column(String, nullable=True)
+    created_at          = Column(DateTime(timezone=True), server_default=func.now())
 
-    # Structured applicant profile (displayed to operator)
-    profile_data = Column(JsonDict, nullable=False, default=dict)
 
-    # Field note — sterile (control) or signal-injected (treatment)
-    # Stored in both locales; served based on operator.locale at runtime
-    field_note_en = Column(Text, nullable=False, default="")
-    field_note_mr = Column(Text, nullable=False, default="")
-
-    # Pool management
-    pool_version     = Column(String,  nullable=False, default="v2.0")
-    used_count       = Column(Integer, nullable=False, default=0)   # sessions that drew this case
-    pair_id          = Column(Integer, nullable=True)               # matched pair index (1-6)
-    list_assignment  = Column(String,  nullable=True)               # "A" or "B" — which counterbalance list
-
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
+# ─────────────────────────────────────────────
+# Evaluations
+# ─────────────────────────────────────────────
 
 class Evaluation(Base):
-    """
-    One row per operator × case decision.
-    Primary outcome table.
-    override = 1 when operator decision != algo_recommendation.
-    """
     __tablename__ = "evaluations"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
+    id           = Column(Integer, primary_key=True, autoincrement=True)
     operator_id  = Column(String, ForeignKey("operators.operator_id"), nullable=False, index=True)
-    session_id   = Column(String, ForeignKey("operators.session_id"),  nullable=False, index=True)
-    case_id      = Column(String, ForeignKey("vignettes.case_id"),     nullable=False, index=True)
+    session_id   = Column(String, ForeignKey("operators.session_id"), nullable=False, index=True)
+    case_id      = Column(String, ForeignKey("vignettes.case_id"), nullable=False, index=True)
 
-    # Denormalised from Vignette for clean export (avoids joins in analysis)
-    arm                 = Column(SAEnum(ArmEnum),                nullable=False)
+    arm                 = Column(SAEnum(ArmEnum), nullable=False)
     algo_recommendation = Column(SAEnum(AlgoRecommendationEnum), nullable=False)
-    rule_result         = Column(SAEnum(RuleResultEnum),         nullable=False)
+    rule_result         = Column(SAEnum(RuleResultEnum), nullable=False)
 
-    # Operator inputs
-    decision  = Column(SAEnum(DecisionEnum), nullable=True)   # null until submitted
-    reasoning = Column(Text, nullable=True)                    # 1-2 lines, mandatory on submit
+    decision  = Column(SAEnum(DecisionEnum), nullable=True)
+    reasoning = Column(Text, nullable=True)
+    override  = Column(Boolean, nullable=True)
 
-    # Derived outcome (set on submit)
-    override = Column(Boolean, nullable=True)  # True if decision != algo_recommendation
-
-    # Timing
-    timestamp_open   = Column(DateTime(timezone=True), nullable=True)   # set when case loads
-    timestamp_submit = Column(DateTime(timezone=True), nullable=True)   # set on submit
-    response_time_sec = Column(Float, nullable=True)                    # derived: submit - open (item 29)
-
-    # Dwell time tracking (item 5)
-    time_to_first_action_ms = Column(Integer, nullable=True)   # open → first click/keystroke
-    time_after_decision_ms  = Column(Integer, nullable=True)   # decision select → submit
-
-    # Fast response flag (item 4)
-    is_fast_response = Column(Boolean, nullable=True)  # True if response_time < 5s; logged, not blocked
-
-    # Sequence within session (1–16)
-    case_sequence = Column(Integer, nullable=False)
+    timestamp_open            = Column(DateTime(timezone=True), nullable=True)
+    timestamp_submit          = Column(DateTime(timezone=True), nullable=True)
+    response_time_sec         = Column(Float, nullable=True)
+    time_to_first_action_ms   = Column(Integer, nullable=True)
+    time_after_decision_ms    = Column(Integer, nullable=True)
+    is_fast_response          = Column(Boolean, nullable=True)
+    case_sequence             = Column(Integer, nullable=False)
 
     __table_args__ = (
         UniqueConstraint("operator_id", "case_id", name="uq_operator_case"),
     )
 
 
+# ─────────────────────────────────────────────
+# Survey Responses
+# ─────────────────────────────────────────────
+
 class SurveyResponse(Base):
-    """
-    Post-task salience survey — submitted after all 16 cases.
-    3 Likert items (1–5).
-    """
     __tablename__ = "survey_responses"
 
     id          = Column(Integer, primary_key=True, autoincrement=True)
     operator_id = Column(String, ForeignKey("operators.operator_id"), nullable=False, unique=True)
-    session_id  = Column(String, ForeignKey("operators.session_id"),  nullable=False)
+    session_id  = Column(String, ForeignKey("operators.session_id"), nullable=False)
 
-    # Q1: How much did field notes influence your decisions?
-    salience_rating  = Column(Integer, nullable=False)  # 1–5
-
-    # Q2: Did specific observations stand out?
-    standout_rating  = Column(Integer, nullable=False)  # 1–5
-
-    # Q3: How confident were you overall?
-    confidence_rating = Column(Integer, nullable=False)  # 1–5
-
-    # End-of-session feedback (item 20)
-    feedback = Column(Text, nullable=True)  # open-ended, optional
+    salience_rating   = Column(Integer, nullable=False)
+    standout_rating   = Column(Integer, nullable=False)
+    confidence_rating = Column(Integer, nullable=False)
+    feedback          = Column(Text, nullable=True)
 
     submitted_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
-class SecondReview(Base):
-    """
-    Optional second-stage review.
-    Triggered only for: arm=treatment AND override=True.
-    Primary decision is hidden from secondary reviewer until they submit.
-    """
-    __tablename__ = "second_reviews"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    case_id              = Column(String, ForeignKey("vignettes.case_id"),     nullable=False, index=True)
-    primary_operator_id  = Column(String, ForeignKey("operators.operator_id"), nullable=False)
-    secondary_operator_id = Column(String, ForeignKey("operators.operator_id"), nullable=True)
-
-    experience_gap  = Column(Integer,              nullable=True)   # secondary - primary experience_years
-    review_type     = Column(SAEnum(ReviewTypeEnum), nullable=True)  # experienced / random
-
-    # Primary decision stored here but NOT served to secondary reviewer
-    # until secondary_decision is submitted (enforced at query layer)
-    primary_decision   = Column(SAEnum(DecisionEnum), nullable=False)
-    secondary_decision = Column(SAEnum(DecisionEnum), nullable=True)   # null until reviewed
-    secondary_reasoning = Column(Text, nullable=True)   # reasoning text from second reviewer
-
-    created_at     = Column(DateTime(timezone=True), server_default=func.now())
-    reviewed_at    = Column(DateTime(timezone=True), nullable=True)
-
-    __table_args__ = (
-        UniqueConstraint("case_id", "primary_operator_id", name="uq_second_review_case_primary"),
-    )
-
+# ─────────────────────────────────────────────
+# Audit Log
+# ─────────────────────────────────────────────
 
 class AuditLog(Base):
-    """
-    Immutable audit trail for all significant system events.
-    Replaces the v1.3 Event table (which had the .ts bug and mixed concerns).
-    Never updated — append only.
-    """
     __tablename__ = "audit_log"
 
-    id          = Column(Integer, primary_key=True, autoincrement=True)
-    action      = Column(SAEnum(AuditActionEnum), nullable=False, index=True)
-    actor_id    = Column(String, nullable=True, index=True)   # operator_id or "SYSTEM"
-    session_id  = Column(String, nullable=True, index=True)
-    case_id     = Column(String, nullable=True, index=True)
-    payload     = Column(Text,   nullable=False, default="{}")  # JSON blob
-
-    created_at  = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    action     = Column(SAEnum(AuditActionEnum), nullable=False, index=True)
+    actor_id   = Column(String, nullable=True, index=True)
+    session_id = Column(String, nullable=True, index=True)
+    case_id    = Column(String, nullable=True, index=True)
+    payload    = Column(Text, nullable=False, default="{}")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)

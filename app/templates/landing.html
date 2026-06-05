@@ -6,60 +6,35 @@
   <title>SARAL v2 — Welcome</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{
-      font-family:Inter,"Segoe UI",Arial,sans-serif;
-      background:#f4f6f9;min-height:100vh;
-      display:flex;align-items:center;justify-content:center;padding:2rem;
-    }
-    .card{
-      background:#fff;border-radius:12px;
-      box-shadow:0 2px 16px rgba(0,0,0,0.08);
-      width:100%;max-width:440px;padding:2.5rem 2rem;text-align:center;
-    }
+    body{font-family:Inter,"Segoe UI",Arial,sans-serif;background:#f4f6f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;color:#213247;}
+    .card{background:#fff;border-radius:12px;box-shadow:0 2px 16px rgba(0,0,0,0.08);width:100%;max-width:480px;padding:2.5rem 2rem;text-align:center;}
     .logo{width:64px;height:64px;margin:0 auto 1.2rem;border-radius:14px;background:#fff;border:1px solid #e9eef5;display:flex;align-items:center;justify-content:center;overflow:hidden;}
     .logo img{width:80%;height:80%;object-fit:contain;}
     h1{font-size:1.5rem;font-weight:800;color:#102a56;margin-bottom:0.3rem;}
-    .subtitle{font-size:0.88rem;color:#6e7f97;margin-bottom:2rem;line-height:1.5;}
-
-    .lang-options{display:flex;flex-direction:column;gap:12px;margin-bottom:1.5rem;}
-    .lang-btn{
-      display:flex;align-items:center;justify-content:center;gap:10px;
-      width:100%;padding:16px;border:2px solid #e5e7eb;border-radius:10px;
-      background:#fff;color:#1a2b4a;font-size:1rem;font-weight:700;
-      cursor:pointer;transition:border-color 0.15s,background 0.15s;
-    }
+    .subtitle{font-size:0.88rem;color:#6e7f97;margin-bottom:1.5rem;line-height:1.5;}
+    .error-banner{background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:0.85rem;padding:0.75rem 1rem;margin-bottom:1.25rem;}
+    .lang-options{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;}
+    .lang-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:2px solid #e5e7eb;border-radius:10px;background:#fff;color:#1a2b4a;font-size:1rem;font-weight:700;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
     .lang-btn:hover{border-color:#3b82f6;background:#f8faff;}
     .lang-btn.selected{border-color:#102a56;background:#edf4ff;}
-
-    .start-btn{
-      width:100%;padding:14px;font-size:1rem;font-weight:700;
-      color:#fff;background:#1a2b4a;border:none;border-radius:8px;
-      cursor:pointer;transition:background 0.15s;
-    }
+    .start-btn{width:100%;padding:14px;font-size:1rem;font-weight:700;color:#fff;background:#1a2b4a;border:none;border-radius:8px;cursor:pointer;transition:background 0.15s;}
     .start-btn:hover{background:#253d6a;}
     .start-btn:disabled{background:#9caabf;cursor:not-allowed;}
-
     .footer{margin-top:1.5rem;font-size:0.76rem;color:#9ca3af;line-height:1.5;}
-
-    {% if error %}
-    .error-banner{
-      background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;
-      color:#b91c1c;font-size:0.85rem;padding:0.75rem 1rem;margin-bottom:1.25rem;
-    }
-    {% endif %}
+    .pid-notice{font-size:0.78rem;color:#6e7f97;margin-bottom:1rem;padding:8px 12px;background:#f8fafc;border:1px solid #e9eef5;border-radius:6px;}
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="logo">
-      <img src="/static/assets/saral.png" alt="SARAL" onerror="this.style.display='none'">
-    </div>
+    <div class="logo"><img src="/static/assets/saral.png" alt="SARAL" onerror="this.style.display='none'"></div>
     <h1>SARAL v2</h1>
-    <p class="subtitle">Welfare Eligibility Case Review</p>
+    <p class="subtitle">Eligibility Review with Field Verification Notes</p>
 
     {% if error %}
     <div class="error-banner">{{ error }}</div>
     {% endif %}
+
+    <div class="pid-notice" id="pid-notice" style="display:none;"></div>
 
     <form method="POST" action="/" id="login-form">
       <p style="font-size:0.85rem;color:#374151;font-weight:600;margin-bottom:12px;">
@@ -67,35 +42,37 @@
       </p>
 
       <div class="lang-options">
-        <button type="button" class="lang-btn" onclick="selectLang('en', this)">
-          English
-        </button>
-        <button type="button" class="lang-btn" onclick="selectLang('mr', this)">
-          मराठी (Marathi)
-        </button>
+        <button type="button" class="lang-btn" onclick="selectLang('en', this)">English</button>
+        <button type="button" class="lang-btn" onclick="selectLang('mr', this)">मराठी (Marathi)</button>
       </div>
 
       <input type="hidden" name="locale" id="locale-input" value="" />
+      <input type="hidden" name="prolific_id" id="prolific-id-input" value="" />
 
-      <button type="submit" class="start-btn" id="start-btn" disabled>
-        Begin Session →
-      </button>
+      <button type="submit" class="start-btn" id="start-btn" disabled>Continue →</button>
     </form>
 
     <p class="footer">
       All case data is synthetic. No real applicants are affected.<br>
-      By continuing, you consent to participate in this research study.
+      Study materials: <a href="https://parthmody.me/saral-materials" style="color:#6e7f97;">parthmody.me/saral-materials</a>
     </p>
   </div>
 
   <script>
-    let selectedLocale = null;
+    // Capture Prolific ID from URL params
+    const params = new URLSearchParams(window.location.search);
+    const prolificId = params.get('PROLIFIC_PID') || params.get('prolific_pid') || '';
+    document.getElementById('prolific-id-input').value = prolificId;
+
+    if (prolificId) {
+      const notice = document.getElementById('pid-notice');
+      notice.textContent = `Prolific ID detected: ${prolificId}`;
+      notice.style.display = 'block';
+    }
 
     function selectLang(locale, btn) {
-      selectedLocale = locale;
       document.getElementById('locale-input').value = locale;
       document.getElementById('start-btn').disabled = false;
-
       document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
     }
