@@ -395,7 +395,16 @@ async def submit_evaluation(
     if not ev:
         raise HTTPException(404, "Case not assigned to this session")
     if ev.timestamp_submit is not None:
-        raise HTTPException(409, "Case already submitted")
+        # Already submitted (e.g. network dropped after server commit)
+        # Return success so the JS can advance
+        all_done = op.cases_completed >= settings.CASES_PER_SESSION
+        return JSONResponse({
+            "status":          "already_submitted",
+            "case_id":         case_id,
+            "decision":        ev.decision.value,
+            "override":        ev.override,
+            "all_done":        all_done,
+        })
 
     # ── Timestamps ───────────────────────────
     if opened_at_str:

@@ -299,7 +299,7 @@ async function doSubmit(){
     const res=await fetch(`/session/${SID}/evaluate`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        case_id:c.case_id, decision:dec, reasoning:reasoning||'—',
+        case_id:c.case_id, decision:dec, reasoning:reasoning||'',
         opened_at:new Date(openT).toISOString(),
         time_to_first_action_ms:tfa, time_after_decision_ms:tad,
       }),
