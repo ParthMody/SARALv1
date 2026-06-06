@@ -618,7 +618,7 @@ def session_complete(
     op = _get_operator_or_404(session_id, db)
 
     completion_code = op.prolific_completion_code or "SARAL-000000"
-    prolific_redirect = settings.PROLIFIC_COMPLETION_URL.replace("{code}", completion_code)
+    prolific_redirect = settings.PROLIFIC_COMPLETION_URL
 
     return templates.TemplateResponse(
         "complete.html",
