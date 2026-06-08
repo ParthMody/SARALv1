@@ -37,8 +37,8 @@
     .note-box{background:#faf8f4;border:1px solid #ddd5c5;border-radius:10px;padding:12px 14px;margin:14px 0;font-size:0.82rem;color:#5a5040;line-height:1.6;}
 
     .consent-row{display:flex;align-items:flex-start;gap:10px;margin:18px 0 14px;padding:12px 14px;background:#f8fafc;border:1px solid #e9eef5;border-radius:10px;cursor:pointer;}
-    .consent-row input[type="checkbox"]{width:18px;height:18px;margin-top:2px;accent-color:#102a56;cursor:pointer;flex-shrink:0;}
-    .consent-row label{font-size:0.84rem;font-weight:600;color:#213247;cursor:pointer;line-height:1.5;}
+    .consent-row input[type="checkbox"]{width:22px;height:22px;margin-top:1px;accent-color:#102a56;cursor:pointer;flex-shrink:0;}
+    .consent-row span{font-size:0.84rem;font-weight:600;color:#213247;cursor:pointer;line-height:1.5;}
     .continue-btn{display:block;width:100%;height:46px;border:0;border-radius:10px;background:#1a2b4a;color:#fff;font-size:0.9rem;font-weight:800;cursor:pointer;transition:background 0.15s;}
     .continue-btn:hover{background:#253d6a;}
     .continue-btn:disabled{background:#b0b8c7;cursor:not-allowed;}
@@ -95,9 +95,9 @@
         <div class="section-head">The Verification Process</div>
         <p>Before a case reaches you, a <strong>junior officer visits the site</strong> to verify the applicant's claims. The officer inspects the structure, speaks with neighbours, and checks documents against physical reality. Their observations are recorded in a <strong>field note</strong>.</p>
 
-      <div class="context-box">
-        The field note contains the verifier's first-hand observations from the site visit — what they saw at the structure, what neighbours said, and what condition the documents were in.
-      </div>
+        <div class="context-box">
+          <strong>The field note is central to this study.</strong> It contains the verifier's first-hand observations — what they saw at the site, what neighbours said, what condition the structure was in. Some notes contain routine procedural observations; others contain specific details that may affect your assessment.
+        </div>
       </div>
 
       <!-- 5. The algorithm -->
@@ -126,14 +126,18 @@
 
       <!-- 7. Session structure -->
       <div class="section">
-        <p>You will review <strong>12 fictional but realistic eligibility cases</strong> from a welfare-housing rehabilitation programme for slum dwellers. Under this scheme, eligible residents of informal settlements receive permanent housing. The government must verify each applicant's eligibility before approving them. The cases you review are composite vignettes inspired by real verification work; no case corresponds to a specific real applicant.</p>
+        <div class="section-head">Session Structure</div>
+        <p>You will review <strong>12 cases</strong>. Before the real cases, there is one <strong>practice case</strong> (not recorded) and a short <strong>comprehension check</strong>.</p>
+      </div>
+
       <div class="note-box">
         <strong>Keep in mind:</strong> Each decision is locked after submission — you cannot go back. Take your time on each case. A <strong>help button (?)</strong> is available on every case screen if you need to review these definitions.
       </div>
 
-      <div class="consent-row" onclick="document.getElementById('brief-cb').click()">
+      <label class="consent-row" for="brief-cb">
         <input type="checkbox" id="brief-cb" onchange="document.getElementById('btn-go').disabled = !this.checked" />
-        <label for="brief-cb">I have read and understood the briefing above.</label>
+        <span>I have read and understood the briefing above.</span>
+      </label>
       </div>
 
       <button class="continue-btn" id="btn-go" disabled onclick="proceed()">

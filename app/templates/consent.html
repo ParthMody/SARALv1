@@ -19,8 +19,8 @@
     .summary ol{margin:0.5rem 0 1rem 1.2rem;padding:0;}
     .summary ol li{margin-bottom:0.5rem;}
     .consent-row{display:flex;align-items:flex-start;gap:10px;margin:1.2rem 0;padding:14px 16px;background:#f8fafc;border:1px solid #e9eef5;border-radius:10px;cursor:pointer;}
-    .consent-row input[type="checkbox"]{width:18px;height:18px;margin-top:2px;accent-color:#102a56;cursor:pointer;flex-shrink:0;}
-    .consent-row label{font-size:0.86rem;font-weight:600;color:#213247;cursor:pointer;line-height:1.5;}
+    .consent-row input[type="checkbox"]{width:22px;height:22px;margin-top:1px;accent-color:#102a56;cursor:pointer;flex-shrink:0;}
+    .consent-row span{font-size:0.86rem;font-weight:600;color:#213247;cursor:pointer;line-height:1.5;}
     .continue-btn{display:block;width:100%;height:48px;border:0;border-radius:10px;background:#1a2b4a;color:#fff;font-size:0.92rem;font-weight:800;cursor:pointer;transition:background 0.15s;}
     .continue-btn:hover{background:#253d6a;}
     .continue-btn:disabled{background:#b0b8c7;cursor:not-allowed;}
@@ -42,21 +42,19 @@
       <div class="summary">
         <p><strong>Study summary:</strong></p>
         <ol>
-          <li>You will review <strong>12 fictional welfare-housing eligibility cases</strong>, inspired by real verification work but not corresponding to any specific real applicant, and make approve/reject/escalate decisions. The session takes approximately 20–25 minutes.</li>
-          <li>Participation is voluntary. You may stop the session at any time before submission; partial data will not be analysed. After completion, you may request deletion of your data by emailing modyparth7@gmail.com with your Prolific ID; deletion is completed within seven days.</li>
-          <li>The cases are composite vignettes. No real applicant is involved in or affected by your decisions.</li>
+          <li>You will review <strong>12 synthetic welfare-housing eligibility cases</strong> and make approve/reject/escalate decisions. The session takes approximately 20–25 minutes.</li>
+          <li>Participation is voluntary. You may close the browser at any time to withdraw, or request data deletion after completion using your Prolific ID.</li>
+          <li>All cases are synthetic. No real applicant is involved or affected by your decisions.</li>
           <li>The study collects your Prolific ID (for payment only), demographic information (education, occupation, experience, country), decisions, optional reasoning, timing data, and survey responses.</li>
-          <li>Your data are stored securely and used only in anonymised or aggregate form. Raw data are retained for seven years from the date of working paper publication, after which they are permanently deleted.</li>
+          <li>Your data are stored securely and used only in anonymised or aggregate form. Data are retained for seven years after publication, then permanently deleted.</li>
           <li>You will receive completion-based payment through Prolific upon finishing the session.</li>
         </ol>
       </div>
 
-      <div class="consent-row" onclick="document.getElementById('consent-cb').click()">
+      <label class="consent-row" for="consent-cb">
         <input type="checkbox" id="consent-cb" onchange="document.getElementById('btn-consent').disabled = !this.checked" />
-        <label for="consent-cb">
-          I have read and understood the Participant Information Sheet and consent to participate in this study under the conditions above.
-        </label>
-      </div>
+        <span>I have read and understood the Participant Information Sheet and consent to participate in this study under the conditions above.</span>
+      </label>
 
       <button class="continue-btn" id="btn-consent" disabled onclick="submitConsent()">
         Continue →
