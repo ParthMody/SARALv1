@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ locale }}">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -85,7 +85,7 @@
 <div class="topbar">
   <div class="topbar-inner">
     <div class="brand-logo"><img src="/static/assets/saral.png" alt="" onerror="this.style.display='none'"></div>
-    <div class="brand-title">SARAL v2 — {% if locale == "mr" %}सराव{% else %}Practice{% endif %}</div>
+    <div class="brand-title">SARAL v2 — Practice</div>
   </div>
 </div>
 
@@ -95,33 +95,33 @@
 
   <!-- Profile -->
   <div class="card">
-    <div class="section-label">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
+    <div class="section-label">Applicant Profile</div>
     <div class="profile-lines" id="p-profile"></div>
   </div>
 
   <!-- Field Note -->
   <div class="fn-card">
-    <div class="fn-label">{% if locale == "mr" %}क्षेत्र नोंद{% else %}Field Note{% endif %}</div>
+    <div class="fn-label">Field Note</div>
     <div class="fn-text" id="p-fn"></div>
   </div>
 
   <!-- Algorithm -->
   <div class="algo-line" id="p-algo">
-    <span class="algo-lbl">{% if locale == "mr" %}अल्गोरिदम शिफारस{% else %}Algorithm Recommendation{% endif %}</span>
+    <span class="algo-lbl">Algorithm Recommendation</span>
     <span class="algo-val" id="p-algo-val"></span>
   </div>
 
   <!-- Decision -->
   <div class="dec-card">
-    <div class="section-label">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
+    <div class="section-label">Your Decision</div>
     <div class="btn-group">
-      <div class="dec-btn" id="btn-approve" onclick="pick('approve')">{% if locale == "mr" %}मंजूर{% else %}APPROVE{% endif %}</div>
-      <div class="dec-btn" id="btn-reject" onclick="pick('reject')">{% if locale == "mr" %}नाकार{% else %}REJECT{% endif %}</div>
-      <div class="dec-btn" id="btn-escalate" onclick="pick('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे{% else %}ESCALATE{% endif %}</div>
+      <div class="dec-btn" id="btn-approve" onclick="pick('approve')">APPROVE</div>
+      <div class="dec-btn" id="btn-reject" onclick="pick('reject')">REJECT</div>
+      <div class="dec-btn" id="btn-escalate" onclick="pick('escalate')" style="grid-column:span 2;">ESCALATE</div>
     </div>
     <textarea class="reason-area" id="d-reason" maxlength="300"
-      placeholder="{% if locale == 'mr' %}या प्रकरणात तुमच्या निर्णयावर विशेषतः कशाचा प्रभाव पडला?{% else %}What specifically influenced your decision in this case?{% endif %}"></textarea>
-    <button class="sub-btn" id="btn-sub" onclick="submit()" disabled>{% if locale == "mr" %}सबमिट{% else %}Submit{% endif %}</button>
+      placeholder="What specifically influenced your decision in this case?"></textarea>
+    <button class="sub-btn" id="btn-sub" onclick="submit()" disabled>Submit</button>
     <div class="fb" id="fb"></div>
     <button class="proceed" id="btn-go" onclick="proceed()"></button>
   </div>
@@ -129,8 +129,8 @@
 
 <script>
 const SID = {{ session_id | tojson }};
-const LOC = {{ locale | tojson }};
-function t(e,m){return LOC==='mr'?m:e;}
+
+
 
 let phase = 'practice';
 let dec = null;
@@ -148,10 +148,7 @@ const PRACTICE = {
     society: 'Dharavi CHS (registered 2001)',
     documents: ['Voter roll (1999)', 'Electricity bill (2001)', 'Aadhaar', 'Self-declaration (A+B)'],
   },
-  field_note: t(
-    'Applicant on voter roll since 1999. Electricity from 2001. Society member. All documents verified. Pre-cutoff existence confirmed. Current occupancy verified.',
-    'अर्जदार १९९९ पासून मतदार यादीत. २००१ पासून वीज. सोसायटी सदस्य. सर्व कागदपत्रे सत्यापित. कटऑफपूर्व अस्तित्व पुष्टी. सध्याचे वास्तव्य सत्यापित.'
-  ),
+  field_note: 'Applicant on voter roll since 1999. Electricity from 2001. Society member. All documents verified. Pre-cutoff existence confirmed. Current occupancy verified.',
   algo: 'APPROVE',
   algo_class: 'al-approve',
   algo_val_class: 'av-approve',
@@ -168,10 +165,7 @@ const CHECK = {
     society: 'None',
     documents: ['Aadhaar', 'Self-declaration (A+B)'],
   },
-  field_note: t(
-    'Applicant arrived in 2018. No pre-cutoff proof of structure existence. No voter roll entry before 2019. No electricity bill before 2020. Self-declarations filed. During site visit, structure appeared newly built with finished flooring and painted walls.',
-    'अर्जदार २०१८ मध्ये आला. संरचनेच्या कटऑफपूर्व अस्तित्वाचा पुरावा नाही. २०१९ पूर्वी मतदार यादी नोंद नाही. २०२० पूर्वी वीज बिल नाही. स्वघोषणापत्रे दाखल. क्षेत्रभेटीत संरचना नवीन बांधलेली दिसली, तयार फ्लोअरिंग आणि रंगवलेल्या भिंती.'
-  ),
+  field_note: 'Applicant arrived in 2018. No pre-cutoff proof of structure existence. No voter roll entry before 2019. No electricity bill before 2020. Self-declarations filed. During site visit, structure appeared newly built with finished flooring and painted walls.',
   algo: 'REJECT',
   algo_class: 'al-reject',
   algo_val_class: 'av-reject',
@@ -181,13 +175,13 @@ const CHECK = {
 const ROW_KEYS = [['age','slum'],['claimed_since','voter_roll'],['housing','society']];
 const FULL_KEYS = ['documents'];
 const L = {
-  age:           t('Age','वय'),
-  slum:          t('Location','ठिकाण'),
-  claimed_since: t('Residence since','वास्तव्य'),
-  voter_roll:    t('Voter roll','मतदार यादी'),
-  housing:       t('Structure','संरचना'),
-  society:       t('Society','सोसायटी'),
-  documents:     t('Documents','कागदपत्रे'),
+  age:           'Age',
+  slum:          'Location',
+  claimed_since: 'Residence since',
+  voter_roll:    'Voter roll',
+  housing:       'Structure',
+  society:       'Society',
+  documents:     'Documents',
 };
 
 function renderProfile(prof) {
@@ -233,18 +227,12 @@ function updatePhaseUI() {
   const instr = document.getElementById('instructions');
 
   if (phase === 'practice') {
-    pill.innerHTML = `<span class="phase-pill pill-practice">${t('Practice Case','सराव प्रकरण')}</span>`;
-    instr.innerHTML = t(
-      '<strong>Practice case.</strong> Not recorded. Familiarise yourself with the layout — review the profile, read the field note, then make a decision.',
-      '<strong>सराव प्रकरण.</strong> नोंदवले जाणार नाही. लेआउटशी परिचित व्हा — प्रोफाइल पहा, क्षेत्र नोंद वाचा, मग निर्णय घ्या.'
-    );
+    pill.innerHTML = `<span class="phase-pill pill-practice">${'Practice Case'}</span>`;
+    instr.innerHTML = '<strong>Practice case.</strong> Not recorded. Familiarise yourself with the layout — review the profile, read the field note, then make a decision.';
     renderCase(PRACTICE);
   } else {
-    pill.innerHTML = `<span class="phase-pill pill-check">${t('Comprehension Check','आकलन तपासणी')}</span>`;
-    instr.innerHTML = t(
-      '<strong>Comprehension check.</strong> Review this case carefully. The structured record and field note should guide your decision. You have 2 attempts.',
-      '<strong>आकलन तपासणी.</strong> हे प्रकरण काळजीपूर्वक पहा. संरचित नोंद आणि क्षेत्र नोंदीनुसार निर्णय घ्या. तुम्हाला २ प्रयत्न आहेत.'
-    );
+    pill.innerHTML = `<span class="phase-pill pill-check">${'Comprehension Check'}</span>`;
+    instr.innerHTML = '<strong>Comprehension check.</strong> Review this case carefully. The structured record and field note should guide your decision. You have 2 attempts.';
     renderCase(CHECK);
   }
 }
@@ -262,25 +250,19 @@ function submit() {
 
   if (phase === 'practice') {
     fb.className = 'fb fb-ok';
-    fb.textContent = t(
-      'Practice complete. Continue to the comprehension check.',
-      'सराव पूर्ण. आकलन तपासणीकडे पुढे जा.'
-    );
+    fb.textContent = 'Practice complete. Continue to the comprehension check.';
     fb.style.display = 'block';
     go.style.display = 'block';
-    go.textContent = t('Continue →', 'पुढे जा →');
+    go.textContent = 'Continue →';
     document.getElementById('btn-sub').disabled = true;
   } else {
     checkAttempts++;
     if (dec === CHECK.correct) {
       fb.className = 'fb fb-ok';
-      fb.textContent = t(
-        'Correct. The structured record shows no pre-cutoff proof and the field note confirms recent construction. You may now proceed.',
-        'बरोबर. संरचित नोंदीत कटऑफपूर्व पुरावा नाही आणि क्षेत्र नोंद नवीन बांधकाम पुष्टी करते. आता पुढे जा.'
-      );
+      fb.textContent = 'Correct. The structured record shows no pre-cutoff proof and the field note confirms recent construction. You may now proceed.';
       fb.style.display = 'block';
       go.style.display = 'block';
-      go.textContent = t('Begin Cases →', 'प्रकरणे सुरू करा →');
+      go.textContent = 'Begin Cases →';
       document.getElementById('btn-sub').disabled = true;
 
       fetch(`/session/${SID}/comprehension`, {
@@ -290,13 +272,10 @@ function submit() {
 
     } else if (checkAttempts >= MAX_ATTEMPTS) {
       fb.className = 'fb fb-warn';
-      fb.textContent = t(
-        'The expected answer was REJECT based on the record. You may still proceed — your responses will be flagged for review.',
-        'नोंदीनुसार अपेक्षित उत्तर नाकारणे होते. तुम्ही पुढे जाऊ शकता — तुमची उत्तरे पुनरावलोकनासाठी चिन्हांकित केली जातील.'
-      );
+      fb.textContent = 'The expected answer was REJECT based on the record. You may still proceed — your responses will be flagged for review.';
       fb.style.display = 'block';
       go.style.display = 'block';
-      go.textContent = t('Proceed →', 'पुढे जा →');
+      go.textContent = 'Proceed →';
       document.getElementById('btn-sub').disabled = true;
 
       fetch(`/session/${SID}/comprehension`, {
@@ -306,10 +285,7 @@ function submit() {
 
     } else {
       fb.className = 'fb fb-err';
-      fb.textContent = t(
-        `Incorrect. Look at the record carefully — does this applicant meet the criteria? ${MAX_ATTEMPTS - checkAttempts} attempt remaining.`,
-        `चुकीचे. नोंद काळजीपूर्वक पहा — हा अर्जदार निकष पूर्ण करतो का? ${MAX_ATTEMPTS - checkAttempts} प्रयत्न शिल्लक.`
-      );
+      fb.textContent = `Incorrect. Look at the record carefully — does this applicant meet the criteria? ${MAX_ATTEMPTS - checkAttempts} attempt remaining.`;
       fb.style.display = 'block';
       dec = null;
       ['btn-approve','btn-reject','btn-escalate'].forEach(id => document.getElementById(id).className = 'dec-btn');

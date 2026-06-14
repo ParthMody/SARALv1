@@ -60,8 +60,7 @@ def start_session(
     prolific_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
-    if locale not in ("en", "mr"):
-        locale = "en"
+    locale = "en"  # Prolific arm: English only
 
     prolific_id = prolific_id.strip()
 

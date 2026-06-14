@@ -170,7 +170,7 @@ def _build_case_view(
     Never exposes arm.
     """
     field_note = (
-        vignette.field_note_mr if locale == "mr" else vignette.field_note_en
+        vignette.field_note_en
     )
     full_profile = vignette.profile_data or {}
 

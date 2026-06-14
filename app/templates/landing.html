@@ -13,10 +13,7 @@
     h1{font-size:1.5rem;font-weight:800;color:#102a56;margin-bottom:0.3rem;}
     .subtitle{font-size:0.88rem;color:#6e7f97;margin-bottom:1.5rem;line-height:1.5;}
     .error-banner{background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:0.85rem;padding:0.75rem 1rem;margin-bottom:1.25rem;}
-    .lang-options{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;}
-    .lang-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:2px solid #e5e7eb;border-radius:10px;background:#fff;color:#1a2b4a;font-size:1rem;font-weight:700;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
-    .lang-btn:hover{border-color:#3b82f6;background:#f8faff;}
-    .lang-btn.selected{border-color:#102a56;background:#edf4ff;}
+    
     .start-btn{width:100%;padding:14px;font-size:1rem;font-weight:700;color:#fff;background:#1a2b4a;border:none;border-radius:8px;cursor:pointer;transition:background 0.15s;}
     .start-btn:hover{background:#253d6a;}
     .start-btn:disabled{background:#9caabf;cursor:not-allowed;}
@@ -37,23 +34,14 @@
     <div class="pid-notice" id="pid-notice" style="display:none;"></div>
 
     <form method="POST" action="/" id="login-form">
-      <p style="font-size:0.85rem;color:#374151;font-weight:600;margin-bottom:12px;">
-        Select your preferred language:
-      </p>
-
-      <div class="lang-options">
-        <button type="button" class="lang-btn" onclick="selectLang('en', this)">English</button>
-        <button type="button" class="lang-btn" onclick="selectLang('mr', this)">मराठी (Marathi)</button>
-      </div>
-
-      <input type="hidden" name="locale" id="locale-input" value="" />
+      <input type="hidden" name="locale" id="locale-input" value="en" />
       <input type="hidden" name="prolific_id" id="prolific-id-input" value="" />
 
-      <button type="submit" class="start-btn" id="start-btn" disabled>Continue →</button>
+      <button type="submit" class="start-btn" id="start-btn">Continue →</button>
     </form>
 
     <p class="footer">
-      All case data is synthetic. No real applicants are affected.<br>
+      All cases are fictional composite vignettes. No real applicants are involved or affected.<br>
       Study materials: <a href="https://parthmody.me/saral-materials" style="color:#6e7f97;">parthmody.me/saral-materials</a>
     </p>
   </div>
@@ -70,12 +58,7 @@
       notice.style.display = 'block';
     }
 
-    function selectLang(locale, btn) {
-      document.getElementById('locale-input').value = locale;
-      document.getElementById('start-btn').disabled = false;
-      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    }
+
   </script>
 </body>
 </html>

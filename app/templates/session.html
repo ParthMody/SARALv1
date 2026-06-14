@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ locale }}">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -102,7 +102,7 @@
       <div class="brand-logo"><img src="/static/assets/saral.png" alt="" onerror="this.style.display='none'"></div>
       <div>
         <div class="brand-title">SARAL v2</div>
-        <div class="brand-sub">{% if locale == "mr" %}प्रकरण पुनरावलोकन{% else %}Case Review{% endif %}</div>
+        <div class="brand-sub">Case Review</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
@@ -114,49 +114,49 @@
 
 <div class="shell">
   <div class="framing">
-    {% if locale == "mr" %}Final-stage review. Field note from prior verification is shown below.{% else %}Final-stage review. Field note from prior verification is shown below.{% endif %}
+    Final-stage review. Field note from prior verification is shown below.
   </div>
 
   <!-- 1. Applicant Profile -->
   <div class="card">
-    <div class="section-label">{% if locale == "mr" %}अर्जदार प्रोफाइल{% else %}Applicant Profile{% endif %}</div>
+    <div class="section-label">Applicant Profile</div>
     <div class="profile-lines" id="s-profile"></div>
   </div>
 
   <!-- 2. Field Note -->
   <div class="fn-card">
-    <div class="fn-label">{% if locale == "mr" %}क्षेत्र नोंद{% else %}Field Note{% endif %}</div>
+    <div class="fn-label">Field Note</div>
     <div class="fn-text" id="s-fn"></div>
   </div>
 
   <!-- 3. Algorithm -->
   <div class="algo-line" id="s-algo">
-    <span class="algo-lbl">{% if locale == "mr" %}अल्गोरिदम शिफारस{% else %}Algorithm Recommendation{% endif %}</span>
+    <span class="algo-lbl">Algorithm Recommendation</span>
     <span class="algo-val" id="s-algo-val"></span>
   </div>
 
   <!-- 4. Decision -->
   <div class="dec-card">
-    <div class="section-label">{% if locale == "mr" %}तुमचा निर्णय{% else %}Your Decision{% endif %}</div>
+    <div class="section-label">Your Decision</div>
     <div class="btn-group">
-      <div class="dec-btn" id="btn-approve" onclick="pick('approve')">{% if locale == "mr" %}मंजूर{% else %}APPROVE{% endif %}</div>
-      <div class="dec-btn" id="btn-reject" onclick="pick('reject')">{% if locale == "mr" %}नाकार{% else %}REJECT{% endif %}</div>
-      <div class="dec-btn" id="btn-escalate" onclick="pick('escalate')" style="grid-column:span 2;">{% if locale == "mr" %}वरिष्ठांकडे{% else %}ESCALATE{% endif %}</div>
+      <div class="dec-btn" id="btn-approve" onclick="pick('approve')">APPROVE</div>
+      <div class="dec-btn" id="btn-reject" onclick="pick('reject')">REJECT</div>
+      <div class="dec-btn" id="btn-escalate" onclick="pick('escalate')" style="grid-column:span 2;">ESCALATE</div>
     </div>
     <textarea class="reason-area" id="d-reason" maxlength="300"
-      placeholder="{% if locale == 'mr' %}या प्रकरणात तुमच्या निर्णयावर विशेषतः कशाचा प्रभाव पडला?{% else %}What specifically influenced your decision in this case?{% endif %}"></textarea>
-    <button class="sub-btn" id="btn-sub" onclick="onSub()" disabled>{% if locale == "mr" %}सबमिट{% else %}Submit{% endif %}</button>
+      placeholder="What specifically influenced your decision in this case?"></textarea>
+    <button class="sub-btn" id="btn-sub" onclick="onSub()" disabled>Submit</button>
   </div>
 </div>
 
 <!-- Confirm -->
 <div class="cov" id="cov">
   <div class="cbox">
-    <h3>{% if locale == "mr" %}निर्णय लॉक करा{% else %}Lock Decision{% endif %}</h3>
-    <p>{% if locale == "mr" %}सबमिट केल्यानंतर बदलता येणार नाही.{% else %}Cannot be changed after submission.{% endif %}</p>
+    <h3>Lock Decision</h3>
+    <p>Cannot be changed after submission.</p>
     <div class="cacts">
-      <button class="cbtn-n" onclick="hc()">{% if locale == "mr" %}मागे{% else %}Back{% endif %}</button>
-      <button class="cbtn-y" onclick="doSubmit()">{% if locale == "mr" %}सबमिट{% else %}Confirm{% endif %}</button>
+      <button class="cbtn-n" onclick="hc()">Back</button>
+      <button class="cbtn-y" onclick="doSubmit()">Confirm</button>
     </div>
   </div>
 </div>
@@ -164,27 +164,27 @@
 <!-- Loading -->
 <div class="ldg" id="ld">
   <div class="spin"></div>
-  <p style="font-size:0.8rem;color:var(--muted);">{% if locale == "mr" %}पुढचे प्रकरण…{% else %}Next case…{% endif %}</p>
+  <p style="font-size:0.8rem;color:var(--muted);">Next case…</p>
 </div>
 
 <script>
 const SID=  {{ session_id | tojson }};
-const LOC = {{ locale | tojson }};
+
 const CASES = {{ cases | tojson }};
 const N = CASES.length;
 
 let ci=0, dec=null, openT=null, firstAct=null, decT=null;
-function t(e,m){return LOC==='mr'?m:e;}
+
 
 // Profile labels
 const L = {
-  age:           t('Age','वय'),
-  slum:          t('Location','ठिकाण'),
-  claimed_since: t('Residence since','वास्तव्य'),
-  voter_roll:    t('Voter roll','मतदार यादी'),
-  housing:       t('Structure','संरचना'),
-  society:       t('Society','सोसायटी'),
-  documents:     t('Documents','कागदपत्रे'),
+  age:           'Age',
+  slum:          'Location',
+  claimed_since: 'Residence since',
+  voter_roll:    'Voter roll',
+  housing:       'Structure',
+  society:       'Society',
+  documents:     'Documents',
 };
 
 // Which keys to show, in order. Two groups:
@@ -265,7 +265,7 @@ function render(idx){
   ['btn-approve','btn-reject','btn-escalate'].forEach(id=>document.getElementById(id).className='dec-btn');
   document.getElementById('d-reason').value='';
   document.getElementById('btn-sub').disabled=true;
-  document.getElementById('btn-sub').textContent=t('Submit','सबमिट');
+  document.getElementById('btn-sub').textContent='Submit';
 
   // Progress
   const done=CASES.filter(x=>x.submitted).length;
@@ -289,7 +289,7 @@ async function doSubmit(){
   const c=CASES[ci];
   const btn=document.getElementById('btn-sub');
   btn.disabled=true;
-  btn.textContent=t('Submitting…','सबमिट…');
+  btn.textContent='Submitting…';
 
   const tfa=firstAct?(firstAct-openT):null;
   const tad=decT?(Date.now()-decT):null;
@@ -306,8 +306,8 @@ async function doSubmit(){
     });
     if(!res.ok){
       const d=await res.json().catch(()=>({}));
-      alert(t('Error: ','त्रुटी: ')+(d.detail||'Failed'));
-      btn.disabled=false;btn.textContent=t('Submit','सबमिट');return;
+      alert('Error: '+(d.detail||'Failed'));
+      btn.disabled=false;btn.textContent='Submit';return;
     }
     const data=await res.json();
     CASES[ci].submitted=true;
@@ -316,8 +316,8 @@ async function doSubmit(){
     ci++;
     setTimeout(()=>render(ci),500);
   }catch(e){
-    alert(t('Network error.','नेटवर्क त्रुटी.'));
-    btn.disabled=false;btn.textContent=t('Submit','सबमिट');
+    alert('Network error.');
+    btn.disabled=false;btn.textContent='Submit';
   }
 }
 
