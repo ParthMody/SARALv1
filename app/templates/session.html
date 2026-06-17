@@ -82,16 +82,20 @@
     @keyframes sp{to{transform:rotate(360deg);}}
 
     /* Help panel */
-    .help-btn{position:fixed;bottom:20px;right:20px;z-index:50;width:44px;height:44px;border-radius:50%;background:#102a56;color:#fff;border:none;font-size:1.1rem;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(16,42,86,0.2);transition:background 0.15s;}
-    .help-btn:hover{background:#214a85;}
-    .help-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(12,23,38,0.4);backdrop-filter:blur(2px);}
-    .help-panel{position:fixed;right:0;top:0;bottom:0;width:340px;max-width:90vw;background:#fff;box-shadow:-10px 0 40px rgba(0,0,0,0.12);padding:24px 20px;overflow-y:auto;z-index:301;transform:translateX(100%);transition:transform 0.25s ease;}
+    .help-btn{position:fixed;bottom:20px;right:20px;z-index:50;display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:999px;background:#102a56;color:#fff;border:none;font-size:0.82rem;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(16,42,86,0.25);transition:background 0.15s,transform 0.15s;}
+    .help-btn:hover{background:#214a85;transform:scale(1.05);}
+    .help-btn .qmark{font-size:1.1rem;font-weight:900;line-height:1;}
+    .help-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(12,23,38,0.15);}
+    .help-panel{position:fixed;right:0;top:0;bottom:0;width:360px;max-width:90vw;background:#fff;box-shadow:-10px 0 40px rgba(0,0,0,0.12);padding:24px 20px;overflow-y:auto;z-index:301;transform:translateX(100%);transition:transform 0.25s ease;}
     .help-panel.open{transform:translateX(0);}
     .help-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border:none;background:#f1f5f9;border-radius:8px;font-size:1rem;cursor:pointer;color:#6e7f97;}
     .help-title{font-size:0.9rem;font-weight:800;color:#102a56;margin-bottom:16px;}
     .help-panel dt{font-weight:700;color:#102a56;font-size:0.84rem;margin-top:12px;}
     .help-panel dt:first-of-type{margin-top:0;}
     .help-panel dd{margin:2px 0 8px 0;font-size:0.82rem;color:#374151;line-height:1.6;}
+    .help-hint{position:fixed;bottom:70px;right:20px;z-index:51;background:#102a56;color:#fff;font-size:0.78rem;font-weight:700;padding:10px 14px;border-radius:10px;box-shadow:0 4px 16px rgba(16,42,86,0.25);opacity:0;transform:translateY(8px);transition:opacity 0.3s,transform 0.3s;pointer-events:none;max-width:220px;line-height:1.5;}
+    .help-hint.show{opacity:1;transform:translateY(0);}
+    .help-hint::after{content:'';position:absolute;bottom:-6px;right:24px;width:12px;height:12px;background:#102a56;transform:rotate(45deg);}
   </style>
 </head>
 <body>
@@ -173,7 +177,7 @@ const SID=  {{ session_id | tojson }};
 const CASES = {{ cases | tojson }};
 const N = CASES.length;
 
-let ci=0, dec=null, openT=null, firstAct=null, decT=null;
+let ci=0, dec=null, openT=null, firstAct=null, decT=null, hintShown=false;
 
 
 // Profile labels
@@ -311,6 +315,15 @@ async function doSubmit(){
     }
     const data=await res.json();
     CASES[ci].submitted=true;
+
+    // One-time hint after Case 1
+    if(!hintShown && CASES.filter(x=>x.submitted).length===1){
+      hintShown=true;
+      const hint=document.getElementById('help-hint');
+      hint.classList.add('show');
+      setTimeout(()=>hint.classList.remove('show'),5000);
+    }
+
     if(data.all_done){window.location.href=`/session/${SID}/survey`;return;}
     document.getElementById('ld').style.display='flex';
     ci++;
@@ -337,7 +350,8 @@ else render(ci);
 </script>
 
 <!-- Help panel -->
-<button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+<button class="help-btn" onclick="toggleHelp()" title="Help"><span class="qmark">?</span> Help</button>
+<div class="help-hint" id="help-hint">Eligibility rules and definitions available here</div>
 <div class="help-overlay" id="help-ov" onclick="toggleHelp()"></div>
 <div class="help-panel" id="help-panel">
   <button class="help-close" onclick="toggleHelp()">×</button>
@@ -356,6 +370,31 @@ else render(ci);
     <dt>Escalate</dt>
     <dd>Defer for further review when information is insufficient or ambiguous.</dd>
   </dl>
+  <hr style="border:0;border-top:1px solid #e9eef5;margin:16px 0;">
+  <div class="help-title">Eligibility Criteria</div>
+  <div style="font-size:0.82rem;color:#374151;line-height:1.6;">
+    <p style="margin:0 0 8px;"><strong>Eligible</strong> if the applicant can show:</p>
+    <ul style="margin:0 0 10px 16px;padding:0;">
+      <li>Structure existed on or before 1 January 2011 (with documentary proof)</li>
+      <li>Current occupancy confirmed</li>
+      <li>Self-declaration: no other property owned</li>
+      <li>Identity document (Aadhaar) submitted</li>
+    </ul>
+    <p style="margin:0 0 8px;"><strong>Accepted proof of pre-2011 residence:</strong></p>
+    <ul style="margin:0 0 10px 16px;padding:0;">
+      <li>Voter roll entry before 2011</li>
+      <li>Electricity bill / connection before 2011</li>
+      <li>Property tax receipt before 2011</li>
+      <li>Housing society membership registered before 2011</li>
+    </ul>
+    <p style="margin:0 0 8px;"><strong>Grounds for rejection may include:</strong></p>
+    <ul style="margin:0 0 0 16px;padding:0;">
+      <li>Insufficient documentary proof of pre-cutoff residence</li>
+      <li>Prior rehabilitation received by applicant or family</li>
+      <li>Inability to demonstrate independent occupancy</li>
+      <li>Inconsistencies in self-declaration or supporting documents</li>
+    </ul>
+  </div>
 </div>
 
 <script>
