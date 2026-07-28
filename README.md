@@ -15,7 +15,7 @@ comply, counter-determine, or decline to resolve. Welfare eligibility is the fir
 instantiation. See [`DESIGN.md`](./DESIGN.md) for the full experimental design and
 the v1→v2 design history.
 
-**Paper and materials:** [parthmody.me/saral](https://www.parthmody.me/saral) ·
+**Paper and materials:** [parthmody.me/saral](https://www.parthmody.me/saral-materials) ·
 pre-registration, consent form, governance protocol, de-identified data, and
 analysis code.
 **Live instrument:** [saral-production.up.railway.app](https://saral-production.up.railway.app/)
@@ -87,7 +87,7 @@ without changing the interface or recording logic.
 ## Data and reproducibility
 
 De-identified data and the analysis code that reproduces every figure and table in
-the paper are at [parthmody.me/saral](https://www.parthmody.me/saral). The analytic
+the paper are at [parthmody.me/saral](https://www.parthmody.me/saral-materials). The analytic
 sample and all reported estimates can be regenerated from the raw exports and the
 session-timing records included there.
 
