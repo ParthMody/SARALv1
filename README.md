@@ -1,267 +1,110 @@
-# SARAL v2
+# SARAL
 
-**Synthetic Administrative Review for Algorithmic Layering**
+**A deployed experimental platform for studying how administrative reviewers integrate machine recommendations with field context.**
 
-A controlled experimental instrument for measuring how administrative decision-makers respond to field-generated context when reviewing rule-based algorithmic recommendations in welfare eligibility verification.
+SARAL presents welfare-eligibility cases to a reviewer alongside a rule-based
+recommendation and a field note from prior verification, and records the
+reviewer's decision (approve / reject / escalate) and reasoning. It was built to
+run a pre-registered experiment on when and how reviewers depart from algorithmic
+recommendations — and, in a live field deployment, to observe the same behaviour
+in practice.
 
----
+The paradigm is not specific to welfare: it generalises to any setting pairing a
+machine recommendation with private contextual evidence and a reviewer who can
+comply, counter-determine, or decline to resolve. Welfare eligibility is the first
+instantiation. See [`DESIGN.md`](./DESIGN.md) for the full experimental design and
+the v1→v2 design history.
 
-## 1. What This Is
-
-SARAL v2 is **not a workflow system** and not a production tool.
-
-It is a **session-based experimental instrument** designed to measure the causal effect of field-generated signals on operator override behaviour, and to test whether interpretive content in prior-officer notes shifts final-layer decisions on rule-eligible cases.
-
-SARAL v1.3 was a kiosk-style workflow prototype with live case processing, a shared operator dashboard, and a unidirectional ML risk score. v2 replaces that entirely with a controlled experimental design grounded in the Slum Rehabilitation Authority (SRA) Annexure-II eligibility framework (GR ZoPuDho-0810/2018).
-
----
-
-## 2. Research Design
-
-### 2.1 Primary Research Question
-
-How do administrative decision-makers incorporate informal signals from prior field-level verification when reviewing a case with a formal eligibility record, and how does this influence their decision to follow, override, or defer an algorithmic recommendation?
-
-### 2.2 Operator Position
-
-Operators in this study are positioned at the **final-officer layer** (Sub-Divisional Officer / Sakshama Pradhikari), reviewing cases that have completed prior junior-officer field verification. This matches the role at which SARAL is designed to operate in the actual SRA Annexure-II workflow.
-
-### 2.3 Experimental Structure
-
-The vignette set identifies three interacting components:
-
-| Dimension | Levels |
-|---|---|
-| Algorithmic recommendation | Approve / Reject |
-| Field-generated signal | Absent (Control) / Present (Treatment) |
-| Signal direction | Reinforcing (WITH) / Contradicting (AGAINST) the recommendation |
-
-The pool contains **16 base profiles**, each with control and treatment versions (32 vignette objects), balanced **4/4/4/4** across the recommendation × signal direction factorial. This design breaks the confound between algorithm direction and signal direction present in earlier iterations.
-
-### 2.4 Per-Session Structure
-
-Each operator evaluates **12 cases** drawn from the 16-profile pool in randomised order, with **6 control + 6 treatment** enforced at draw. Approve/reject distribution falls out of the draw (averaging ~6/6 across operators).
-
-### 2.5 Primary Outcome
-
-`override = 1` when operator decision ≠ algorithm recommendation.
-
-Override is defined as disagreement with the algorithmic recommendation, not rejection of the applicant.
-
-### 2.6 Secondary Outcomes
-
-- Override response by signal direction (WITH vs. AGAINST)
-- Override response by signal category (six SRA-grounded categories)
-- Inter-rater agreement (second review)
-- Response time as a behavioural proxy for deliberation
-- Post-task salience ratings linked to override patterns
-
-### 2.7 Reasoning Text
-
-Reasoning text is collected but treated as **exploratory** in the analysis plan, given expected sparsity in low-stakes vignette settings. Primary inferences do not depend on reasoning content.
+**Paper and materials:** [parthmody.me/saral](https://www.parthmody.me/saral) ·
+pre-registration, consent form, governance protocol, de-identified data, and
+analysis code.
+**Live instrument:** [saral-production.up.railway.app](https://saral-production.up.railway.app/)
 
 ---
 
-## 3. Grounding and Sources
+## What this is
 
-Vignette signals are paraphrased from one of two sources:
+A research instrument, not a workflow tool. It renders a fixed set of case
+vignettes for an experiment; it is not a case-management or eligibility-adjudication
+system and is not intended for operational use.
 
-1. **Phase 1 verification corpus** (260 PMAY field observations, Maharashtra, January 2026): signal types observed in actual welfare verification practice.
-2. **GR-documented disqualifications** (D1–D4, VP1–VP6, Track A/B requirements) under the 2018 SRA GR.
+Each case presents:
 
-Applicant profiles are synthetic composites identified by case number; no names, addresses, or survey numbers corresponding to identifiable individuals are used. No vignette uses constructed humanitarian scenarios; sympathy framings appear only at the level attested in Phase 1 field notes.
+- a **structured record** (applicant profile, documents, eligibility-relevant facts),
+- a **field note** — first-hand observations from a prior verification visit, which
+  may or may not bear on eligibility,
+- a **rule-based recommendation** (approve / reject), derived from the structured
+  record alone; the recommendation does not see the field note.
 
-### Signal Categories
+The reviewer issues one of three decisions and a brief written rationale:
 
-Re-derived from the Phase 1 corpus and the GR's six-point eligibility framework:
+- **Approve** — accept eligibility.
+- **Reject** — deny eligibility (a *counter-determination* against a recommendation
+  to approve, or agreement with a recommendation to reject).
+- **Escalate** — decline to resolve the case and route it onward for further review.
 
-- Cutoff-date proof
-- Family property holdings
-- Tenancy and occupancy
-- Documentation authenticity
-- Alternate-property declaration integrity
-- Sympathy framing
+The primary outcome, **override**, is any decision that differs from the
+recommendation. Because the reviewer can reject *or* escalate against a binary
+recommendation, override comprises two distinct acts — *reversal* (a counter-
+determination) and *escalation* (a refusal to resolve) — both recorded as override
+and distinguished directly from the decision. This decomposition is central to the
+study; escalation is not treated as compliance.
 
----
+## Session flow
 
-## 4. Key Differences from v1.3
+1. **Consent** — participant information sheet and informed consent.
+2. **Briefing** — the scheme, the eligibility rule, and the three decisions.
+3. **Practice case** (not recorded) — familiarisation with the interface.
+4. **Comprehension check** — a gated item (two attempts) confirming the participant
+   can read the record and field note correctly; passing is required to proceed.
+5. **Cases** — twelve vignettes in randomised order; each decision is final on
+   submission. A reference panel restating the rules and definitions is available
+   on every case screen.
+6. **Post-task survey** — field-note salience, standout observations, decision
+   confidence.
 
-| | v1.3 | v2 |
-|---|---|---|
-| **Purpose** | Workflow prototype | Controlled experiment |
-| **Cases** | Live intake from kiosk | Pre-loaded synthetic vignette pool (16 profiles, 32 vignettes) |
-| **Grounding** | Generic welfare context | SRA Annexure-II, 2018 GR-grounded |
-| **Operator visibility** | Shared queue across operators | Session-isolated, no cross-visibility |
-| **Algorithm output** | Approve only (unidirectional) | Approve and Reject (bidirectional) |
-| **Risk score** | Shown to treatment arm | Excluded — confounds signal isolation |
-| **Cell balance** | Not enforced | 4/4/4/4 across rec × direction factorial |
-| **Post-task survey** | None | 3-item Likert salience survey |
-| **Secondary review** | None | Independent blind review (~10% of cases) |
-| **Data model** | `cases`, `events` | `operators`, `evaluations`, `survey_responses`, `second_reviews`, `audit_log` |
+Blinding, assignment, and outcome recording are handled server-side; the reviewer
+sees only the case, and no personally identifying information (all profiles are
+synthetic composites).
 
----
+## Running it
 
-## 5. System Architecture
-
-| Layer | Technology | Purpose |
-|---|---|---|
-| API | FastAPI + SQLite | Session logic and persistence |
-| Interface | Jinja2 templates | Operator session, admin panel |
-| Vignette engine | Python seeder script | 16-profile pool, paraphrased from Phase 1 + GR |
-| Audit trail | `audit_log` table | Immutable append-only event log |
-| Export | CSV via admin panel | Analysis-ready outputs |
-
-**Design constraints:**
-
-- No external APIs
-- No real-time inference
-- No cross-operator visibility during sessions
-- No feedback shown to operators after session
-- Local-only data storage; no cloud dependency
-
----
-
-## 6. Functional Components
-
-### 6.1 Operator Session Flow
-
-1. **Login** — captures initials, age, role, experience years, locale (English / Marathi)
-2. **Session framing** — operator informed of final-officer review position
-3. **Case assignment** — 6 control + 6 treatment vignettes drawn from 16-profile pool, order randomised per operator
-4. **Case evaluation** — operator sees applicant profile (case number, demographics, claimed timeline, documents, structure), field note (sterile in control, interpretive in treatment), and algorithm recommendation; submits decision (Approve / Reject / Escalate) with brief reasoning
-5. **Post-task survey** — 3 Likert items on field note salience, standout observations, and decision confidence
-6. **Session complete** — no feedback shown; operator notifies researcher
-
-### 6.2 Vignette Pool
-
-16 base profiles × 2 arms (control/treatment) = 32 vignette objects.
-
-**Cell distribution:**
-
-| | WITH algo | AGAINST algo |
-|---|---|---|
-| **APPROVE** | 4 profiles (3, 4, 10, 15) | 4 profiles (7, 8, 13, 14) |
-| **REJECT** | 4 profiles (1, 2, 5, 11) | 4 profiles (6, 9, 12, 16) |
-
-Field notes are stored in both English and Marathi and served based on operator locale at runtime. Marathi translations are researcher-translated; this limitation is acknowledged in the analysis plan.
-
-### 6.3 Admin Panel
-
-Accessible at `/admin` (passcode protected via `SARAL_ADMIN_SECRET`).
-
-- Session monitor — completion status, override counts, response times, crash recovery
-- Second review assignment — triggers post-hoc assignment of treatment-arm overrides
-- Data exports — evaluations, survey responses, second reviews (CSV)
-
-### 6.4 Secondary Review Module
-
-Triggered post-hoc after primary sessions complete. Approximately 10% of cases reviewed.
-
-Assignment priority:
-
-1. Operator with ≥ 10 additional years of experience → `review_type = experienced`
-2. Otherwise → random independent operator → `review_type = random`
-
-Primary decision is stored in the database but never surfaced to the secondary reviewer during their session. Blinding is enforced at the query layer.
-
-### 6.5 Session Recovery
-
-If an operator's browser crashes mid-session, the researcher can resume the session from the admin panel without data loss. All submitted evaluations are preserved. The operator's session code is displayed in the topbar for researcher reference at session start.
-
----
-
-## 7. Data Model
-
-| Table | Description |
-|---|---|
-| `operators` | One row per session — demographics, locale, completion status |
-| `vignettes` | Pre-loaded 32-vignette pool — immutable at runtime |
-| `evaluations` | Primary outcome table — one row per operator × case |
-| `survey_responses` | Post-task Likert survey — one row per operator |
-| `second_reviews` | Secondary review outcomes — blind to primary decision |
-| `audit_log` | Immutable append-only event log |
-
----
-
-## 8. Privacy & Ethics
-
-- Local-only data storage; no cloud dependency
-- No persistent personal identifiers beyond session IDs
-- Operator demographics (initials, age, role, experience) stored for heterogeneity analysis only
-- No citizen PII — all cases are synthetic composites identified by case number
-- No real names, addresses, or survey numbers used in vignettes
-- The study is conducted as **independent research**; a self-governance protocol covering consent, voluntariness, data handling, and withdrawal procedures is documented in lieu of formal institutional ethics review
-- All participation is voluntary; written informed consent obtained before each session
-
----
-
-## 9. Local Setup
-
-### 9.1 Requirements
-
-- Python 3.10+
-- Virtual environment recommended
-
-### 9.2 Install
+**Requirements:** [fill: runtime + versions, e.g. Python 3.11 / Node 18, Postgres 14]
 
 ```bash
-pip install -r requirements.txt
-pip install python-multipart
+# clone
+git clone https://github.com/ParthMody/SARAL.git
+cd SARAL
+
+# [fill: your actual setup steps — env, deps, DB, seed, run]
 ```
 
-### 9.3 Configure
+The vignette pool is defined in [`fill: seeder path`]. Domain content (profiles,
+field notes, eligibility rules) is separated from the decision architecture, so the
+paradigm can be re-instantiated for a different setting by replacing the seeder
+without changing the interface or recording logic.
 
-Create a `.env` file in the project root:
+## Data and reproducibility
 
-```
-SARAL_ADMIN_SECRET=your_admin_passcode_here
-DATABASE_URL=sqlite:///./saral_v2.db
-```
+De-identified data and the analysis code that reproduces every figure and table in
+the paper are at [parthmody.me/saral](https://www.parthmody.me/saral). The analytic
+sample and all reported estimates can be regenerated from the raw exports and the
+session-timing records included there.
 
-### 9.4 Seed the vignette pool
+## Ethics
 
-```bash
-python -m scripts.seed_vignettes
-```
-
-To reseed (drops existing pool):
-
-```bash
-python -m scripts.seed_vignettes --clear
-```
-
-### 9.5 Run
-
-```bash
-uvicorn app.main:app --reload
-```
-
-### 9.6 Access
-
-| URL | Description |
-|---|---|
-| `http://localhost:8000/` | Operator login |
-| `http://localhost:8000/admin` | Admin panel (passcode required) |
-| `http://localhost:8000/reviewer-login` | Secondary reviewer login |
-
----
-
-## 10. Status
-
-**Instrument finalised.** Mixed-mode deployment: in-person sessions in Mumbai with administrator-adjacent professionals (May 2026, opportunistic recruitment due to institutional access constraints with active SRA officers), and online deployment via Prolific with public-administration-background screening (June 2026, target N≈200). Combined deployment serves as the first instantiation of the instrument
-
----
-
-## 11. Documentation
-
-Supporting documents, including consent forms, self-governance protocol, pre-registration, and codebook, will be maintained separately and made available at [parthmody.me](https://parthmody.me) at a later date.
-
----
+Conducted as independent research under a documented self-governance protocol
+(informed consent, voluntariness, withdrawal, data handling, exclusion of
+personally identifying information); no institutional ethics review was available
+to the investigator in this capacity. All applicant profiles are synthetic; no
+vignette corresponds to a real individual. Protocol and consent materials are in
+the linked archive.
 
 ## License
 
-Research code. Not licensed for production use.
+[DECISION NEEDED — see note below]
 
-## Contact
+## Citation
 
-Parth Mody · [parthmody.me](https://parthmody.me)
+> Mody, P. (2026). *SARAL: Field-Generated Context and Algorithmic Override in
+> Welfare Decision-Making* (working paper). https://www.parthmody.me/saral (In progress)
